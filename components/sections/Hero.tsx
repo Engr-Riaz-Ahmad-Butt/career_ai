@@ -12,7 +12,7 @@ export default function Hero() {
       <div className="absolute top-[-10%] left-1/2 -translate-x-1/2 w-[900px] h-[600px] bg-[radial-gradient(ellipse,rgba(59,130,246,0.12)_0%,transparent_70%)] pointer-events-none" />
       <div className="absolute bottom-0 left-[10%] w-[500px] h-[400px] bg-[radial-gradient(ellipse,rgba(34,211,238,0.06)_0%,transparent_70%)] pointer-events-none" />
 
-      <motion.div
+      {/* <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
@@ -20,16 +20,16 @@ export default function Hero() {
       >
         <div className="w-[6px] h-[6px] rounded-full bg-[var(--cyan)] animate-pulse" />
         Powered by Gemini AI & Claude Sonnet
-      </motion.div>
+      </motion.div> */}
 
       <motion.h1
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.7, delay: 0.1 }}
-        className="font-[var(--font-d)] text-[clamp(48px,7vw,92px)] font-bold leading-[0.95] tracking-[-0.04em] max-w-[900px]"
+        className="font-[var(--font-d)] text-[clamp(48px,7vw,92px)] font-bold leading-[1.1] tracking-[-0.04em] max-w-[1000px]"
       >
-        <span className="block text-white mb-3">
-          Build AI-Powered{" "}
+        <span className="block text-white mb-2">Build AI-Powered</span>
+        <span className="block text-white mb-3 min-h-[1.2em]">
           <Typewriter
             words={[
               "Resumes",
@@ -47,7 +47,7 @@ export default function Hero() {
         </span>
         <span className="block text-white relative">
           That Get You Hired
-          <span className="absolute bottom-[-8px] left-0 w-[200px] h-1 bg-gradient-to-r from-[#60a5fa] via-[#22d3ee] to-[#10b981] rounded-[2px]" />
+          <span className="absolute bottom-[-8px] left-1/2 -translate-x-1/2 w-[240px] h-1 bg-gradient-to-r from-[#60a5fa] via-[#22d3ee] to-[#10b981] rounded-[2px]" />
         </span>
       </motion.h1>
 
