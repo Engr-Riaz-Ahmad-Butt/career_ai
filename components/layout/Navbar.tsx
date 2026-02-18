@@ -1,146 +1,127 @@
-'use client'
+"use client";
 
-import { useState, useEffect } from 'react'
-import Link from 'next/link'
-import { motion } from 'framer-motion'
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { useState } from "react";
 
 export default function Navbar() {
-  const [scrolled, setScrolled] = useState(false)
-  const [mobileOpen, setMobileOpen] = useState(false)
+  const pathname = usePathname();
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-  useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 40)
-    window.addEventListener('scroll', onScroll)
-    return () => window.removeEventListener('scroll', onScroll)
-  }, [])
+  const navLinks = [
+    { name: "Features", href: "/#features" },
+    { name: "How It Works", href: "/#how-it-works" },
+    { name: "Reviews", href: "/#testimonials" },
+    { name: "Pricing", href: "/pricing" },
+    { name: "About", href: "/about" },
+  ];
 
   return (
-    <motion.nav
-      initial={{ y: -20, opacity: 0 }}
-      animate={{ y: 0, opacity: 1 }}
-      transition={{ duration: 0.5 }}
-      style={{
-        position: 'fixed',
-        top: 0,
-        left: 0,
-        right: 0,
-        zIndex: 100,
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        padding: scrolled ? '14px 60px' : '20px 60px',
-        background: 'rgba(6,8,16,0.85)',
-        backdropFilter: 'blur(20px)',
-        borderBottom: '1px solid rgba(255,255,255,0.07)',
-        transition: 'all 0.3s ease',
-      }}
-      className="max-md:px-5"
-    >
-      {/* Logo */}
-      <Link href="/" style={{ textDecoration: 'none' }}>
-        <span
-          style={{
-            fontFamily: 'Syne, sans-serif',
-            fontWeight: 800,
-            fontSize: 22,
-            background: 'linear-gradient(135deg, #3b82f6, #22d3ee)',
-            WebkitBackgroundClip: 'text',
-            WebkitTextFillColor: 'transparent',
-            letterSpacing: '-0.5px',
-          }}
-        >
-          CareerForge<span style={{ WebkitTextFillColor: '#fff', opacity: 0.4 }}> AI</span>
-        </span>
+    <nav className="fixed top-0 left-0 right-0 z-[100] flex items-center justify-between px-[60px] py-4 bg-[rgba(6,8,16,0.92)] backdrop-blur-[24px] backdrop-saturate-[180%] border-b border-[rgba(255,255,255,0.08)] shadow-[0_4px_24px_rgba(0,0,0,0.12)] transition-all duration-300">
+      <div className="absolute inset-0 bg-gradient-to-br from-[rgba(59,130,246,0.03)] to-[rgba(34,211,238,0.02)] pointer-events-none" />
+      
+      <Link
+        href="/"
+        className="relative z-[1] font-[var(--font-d)] font-bold text-[22px] bg-gradient-to-r from-[#60a5fa] via-[#22d3ee] to-[#10b981] bg-clip-text text-transparent cursor-pointer tracking-[-0.5px] transition-all duration-300 hover:translate-y-[-1px] hover:brightness-120"
+      >
+        CareerForge AI
       </Link>
 
-      {/* Nav Links — desktop */}
-      <div className="hidden md:flex" style={{ gap: 36, alignItems: 'center' }}>
-        {[
-          { label: 'Features', href: '/#features' },
-          { label: 'How It Works', href: '/#how-it-works' },
-          { label: 'Pricing', href: '/pricing' },
-          { label: 'About', href: '/about' },
-        ].map((link) => (
+      {/* Desktop Navigation */}
+      <div className="hidden md:flex gap-8 items-center relative z-[1]">
+        {navLinks.map((link) => (
           <Link
-            key={link.label}
+            key={link.name}
             href={link.href}
-            style={{
-              fontSize: 14,
-              fontWeight: 400,
-              color: '#9ca3af',
-              textDecoration: 'none',
-              transition: 'color 0.2s',
-              letterSpacing: '0.01em',
-            }}
-            onMouseEnter={e => (e.currentTarget.style.color = '#fff')}
-            onMouseLeave={e => (e.currentTarget.style.color = '#9ca3af')}
+            className={`text-sm font-medium tracking-[-0.01em] transition-all duration-200 relative px-1 py-2 group ${
+              pathname === link.href ? "text-white" : "text-[var(--g3)]"
+            }`}
           >
-            {link.label}
+            {link.name}
+            <span
+              className={`absolute bottom-1 left-0 right-0 h-[2px] bg-gradient-to-r from-[var(--blue)] to-[var(--cyan)] rounded-[2px] transition-transform duration-300 ${
+                pathname === link.href ? "scale-x-100" : "scale-x-0"
+              } group-hover:scale-x-100`}
+            />
           </Link>
         ))}
       </div>
 
-      {/* CTA Buttons — desktop */}
-      <div className="hidden md:flex" style={{ gap: 12, alignItems: 'center' }}>
-        <Link href="/auth/login" className="btn-ghost">Sign In</Link>
-        <Link href="/auth/signup" className="btn-primary">Get Started Free</Link>
+      <div className="hidden md:flex gap-[10px] items-center relative z-[1]">
+        <Link
+          href="/auth/login"
+          className="px-6 py-[10px] rounded-[10px] text-sm font-medium text-[var(--g2)] bg-[rgba(255,255,255,0.05)] border border-[var(--border2)] cursor-pointer transition-all duration-300 relative overflow-hidden z-[1] hover:bg-[rgba(255,255,255,0.08)] hover:text-white hover:border-[rgba(59,130,246,0.4)] hover:translate-y-[-2px] hover:shadow-[0_4px_12px_rgba(0,0,0,0.15)] before:content-[''] before:absolute before:inset-0 before:bg-gradient-to-br before:from-[rgba(59,130,246,0.1)] before:to-[rgba(34,211,238,0.1)] before:opacity-0 before:transition-opacity before:duration-300 before:z-[-1] hover:before:opacity-100"
+        >
+          Sign in
+        </Link>
+        <Link
+          href="/auth/signup"
+          className="px-[26px] py-[10px] rounded-[10px] text-sm font-semibold text-white bg-gradient-to-br from-[#3b82f6] to-[#2563eb] border-none cursor-pointer transition-all duration-300 shadow-[0_4px_16px_rgba(59,130,246,0.4)] relative overflow-hidden hover:translate-y-[-3px] hover:shadow-[0_8px_28px_rgba(59,130,246,0.6)] before:content-[''] before:absolute before:inset-0 before:bg-gradient-to-br before:from-[#60a5fa] before:to-[#3b82f6] before:opacity-0 before:transition-opacity before:duration-300 hover:before:opacity-100"
+        >
+          Get Started Free
+        </Link>
       </div>
 
-      {/* Mobile hamburger */}
+      {/* Mobile Menu Button */}
       <button
-        className="md:hidden"
-        onClick={() => setMobileOpen(!mobileOpen)}
-        style={{
-          background: 'none',
-          border: 'none',
-          color: '#fff',
-          cursor: 'pointer',
-          fontSize: 24,
-        }}
+        className="md:hidden z-[1] text-white"
+        onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
       >
-        {mobileOpen ? '✕' : '☰'}
+        <svg
+          className="w-6 h-6"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          {mobileMenuOpen ? (
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M6 18L18 6M6 6l12 12"
+            />
+          ) : (
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M4 6h16M4 12h16M4 18h16"
+            />
+          )}
+        </svg>
       </button>
 
-      {/* Mobile menu */}
-      {mobileOpen && (
-        <motion.div
-          initial={{ opacity: 0, y: -10 }}
-          animate={{ opacity: 1, y: 0 }}
-          style={{
-            position: 'absolute',
-            top: '100%',
-            left: 0,
-            right: 0,
-            background: 'rgba(13,17,23,0.98)',
-            backdropFilter: 'blur(20px)',
-            borderBottom: '1px solid rgba(255,255,255,0.07)',
-            padding: '20px 24px',
-            display: 'flex',
-            flexDirection: 'column',
-            gap: 16,
-          }}
-        >
-          {[
-            { label: 'Features', href: '/#features' },
-            { label: 'How It Works', href: '/#how-it-works' },
-            { label: 'Pricing', href: '/pricing' },
-            { label: 'About', href: '/about' },
-          ].map((link) => (
+      {/* Mobile Menu */}
+      {mobileMenuOpen && (
+        <div className="md:hidden absolute top-full left-0 right-0 bg-[var(--panel)] border-b border-[var(--border)] p-4">
+          <div className="flex flex-col gap-4">
+            {navLinks.map((link) => (
+              <Link
+                key={link.name}
+                href={link.href}
+                className="text-sm font-medium text-[var(--g3)] hover:text-white transition-colors"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                {link.name}
+              </Link>
+            ))}
             <Link
-              key={link.label}
-              href={link.href}
-              onClick={() => setMobileOpen(false)}
-              style={{ color: '#9ca3af', textDecoration: 'none', fontSize: 15 }}
+              href="/auth/login"
+              className="px-4 py-2 rounded-lg text-sm font-medium text-center text-[var(--g2)] bg-[rgba(255,255,255,0.05)] border border-[var(--border2)]"
+              onClick={() => setMobileMenuOpen(false)}
             >
-              {link.label}
+              Sign in
             </Link>
-          ))}
-          <div style={{ display: 'flex', gap: 12, marginTop: 8 }}>
-            <Link href="/auth/login" className="btn-ghost" style={{ flex: 1, justifyContent: 'center' }}>Sign In</Link>
-            <Link href="/auth/signup" className="btn-primary" style={{ flex: 1, justifyContent: 'center' }}>Get Started</Link>
+            <Link
+              href="/auth/signup"
+              className="px-4 py-2 rounded-lg text-sm font-semibold text-center text-white bg-gradient-to-br from-[#3b82f6] to-[#2563eb]"
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              Get Started Free
+            </Link>
           </div>
-        </motion.div>
+        </div>
       )}
-    </motion.nav>
-  )
+    </nav>
+  );
 }
