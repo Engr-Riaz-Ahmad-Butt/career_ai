@@ -6,7 +6,7 @@ export default function Testimonials() {
             <div className="inline-block text-[11px] font-semibold tracking-[0.1em] uppercase text-[var(--blue)] mb-[14px]">
                 Real Results
             </div>
-            <h2 className="font-[var(--font-d)] text-[clamp(30px,3.5vw,48px)] font-extrabold tracking-[-0.03em] text-white leading-tight max-w-[600px]">
+            <h2 className="font-[var(--font-d)] text-[clamp(30px,3.5vw,48px)] font-extrabold tracking-[-0.03em] text-[var(--white)] leading-tight max-w-[600px]">
                 Thousands hired.
                 <br />
                 Real stories.
@@ -38,7 +38,7 @@ export default function Testimonials() {
                                 {testimonial.avatar}
                             </div>
                             <div>
-                                <div className="text-xs font-semibold text-white">
+                                <div className="text-xs font-semibold text-[var(--white)]">
                                     {testimonial.name}
                                 </div>
                                 <div className="text-[10px] text-[var(--g3)]">

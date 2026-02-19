@@ -7,7 +7,7 @@ export default function HowItWorks() {
             <div className="inline-block text-[11px] font-semibold tracking-[0.1em] uppercase text-[var(--blue)] mb-[14px]">
                 Simple Process
             </div>
-            <h2 className="font-[var(--font-d)] text-[clamp(30px,3.5vw,48px)] font-extrabold tracking-[-0.03em] text-white leading-tight mx-auto">
+            <h2 className="font-[var(--font-d)] text-[clamp(30px,3.5vw,48px)] font-extrabold tracking-[-0.03em] text-[var(--white)] leading-tight mx-auto">
                 From signup to hired — in 4 steps
             </h2>
 
@@ -29,7 +29,7 @@ export default function HowItWorks() {
                         >
                             {step.num}
                         </div>
-                        <h4 className="font-[var(--font-d)] text-sm font-bold text-white mb-[7px]">
+                        <h4 className="font-[var(--font-d)] text-sm font-bold text-[var(--white)] mb-[7px]">
                             {step.title}
                         </h4>
                         <p className="text-xs text-[var(--g3)] leading-relaxed">

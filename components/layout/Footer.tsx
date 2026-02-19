@@ -15,7 +15,7 @@ export default function Footer() {
         </div>
 
         <div>
-          <h4 className="text-[11px] font-bold text-white uppercase tracking-wider mb-[14px]">
+          <h4 className="text-[11px] font-bold text-[var(--white)] uppercase tracking-wider mb-[14px]">
             Product
           </h4>
           <Link
@@ -51,7 +51,7 @@ export default function Footer() {
         </div>
 
         <div>
-          <h4 className="text-[11px] font-bold text-white uppercase tracking-wider mb-[14px]">
+          <h4 className="text-[11px] font-bold text-[var(--white)] uppercase tracking-wider mb-[14px]">
             Resources
           </h4>
           <Link
@@ -81,7 +81,7 @@ export default function Footer() {
         </div>
 
         <div>
-          <h4 className="text-[11px] font-bold text-white uppercase tracking-wider mb-[14px]">
+          <h4 className="text-[11px] font-bold text-[var(--white)] uppercase tracking-wider mb-[14px]">
             Company
           </h4>
           <Link
@@ -111,7 +111,7 @@ export default function Footer() {
         </div>
       </footer>
 
-      <div className="px-[60px] py-[18px] border-t border-[rgba(255,255,255,0.05)] flex justify-between items-center text-[11px] text-[var(--g4)] max-w-[1200px] mx-auto">
+      <div className="px-[60px] py-[18px] border-t border-[var(--border)] flex justify-between items-center text-[11px] text-[var(--g4)] max-w-[1200px] mx-auto">
         <div>© 2025 CareerForge AI. All rights reserved.</div>
         <div>
           <Link href="#" className="text-[var(--g4)] no-underline ml-4">

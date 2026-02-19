@@ -49,21 +49,21 @@ export default function DashboardPage() {
           </div>
           <a
             href="#"
-            className="flex items-center gap-[9px] px-[10px] py-2 rounded-[7px] text-xs font-medium bg-[rgba(59,130,246,0.14)] text-[var(--blue)] mb-[1px]"
+            className="flex items-center gap-[9px] px-[10px] py-2 rounded-[7px] text-xs font-medium bg-[rgb(var(--blue-rgb)/0.14)] text-[var(--blue)] mb-[1px]"
           >
             <span className="text-sm opacity-80">⊞</span>
             Dashboard
           </a>
           <a
             href="#"
-            className="flex items-center gap-[9px] px-[10px] py-2 rounded-[7px] text-xs font-medium text-[var(--g3)] hover:bg-[rgba(255,255,255,0.04)] hover:text-[var(--g1)] transition-all mb-[1px]"
+            className="flex items-center gap-[9px] px-[10px] py-2 rounded-[7px] text-xs font-medium text-[var(--g3)] hover:bg-[rgb(var(--white-rgb)/0.04)] hover:text-[var(--g1)] transition-all mb-[1px]"
           >
             <span className="text-sm opacity-80">📄</span>
             Resume Builder
           </a>
           <a
             href="#"
-            className="flex items-center gap-[9px] px-[10px] py-2 rounded-[7px] text-xs font-medium text-[var(--g3)] hover:bg-[rgba(255,255,255,0.04)] hover:text-[var(--g1)] transition-all mb-[1px]"
+            className="flex items-center gap-[9px] px-[10px] py-2 rounded-[7px] text-xs font-medium text-[var(--g3)] hover:bg-[rgb(var(--white-rgb)/0.04)] hover:text-[var(--g1)] transition-all mb-[1px]"
           >
             <span className="text-sm opacity-80">🎯</span>
             AI Tailor
@@ -79,14 +79,14 @@ export default function DashboardPage() {
           </div>
           <a
             href="#"
-            className="flex items-center gap-[9px] px-[10px] py-2 rounded-[7px] text-xs font-medium text-[var(--g3)] hover:bg-[rgba(255,255,255,0.04)] hover:text-[var(--g1)] transition-all mb-[1px]"
+            className="flex items-center gap-[9px] px-[10px] py-2 rounded-[7px] text-xs font-medium text-[var(--g3)] hover:bg-[rgb(var(--white-rgb)/0.04)] hover:text-[var(--g1)] transition-all mb-[1px]"
           >
             <span className="text-sm opacity-80">✉️</span>
             Cover Letters
           </a>
           <a
             href="#"
-            className="flex items-center gap-[9px] px-[10px] py-2 rounded-[7px] text-xs font-medium text-[var(--g3)] hover:bg-[rgba(255,255,255,0.04)] hover:text-[var(--g1)] transition-all mb-[1px]"
+            className="flex items-center gap-[9px] px-[10px] py-2 rounded-[7px] text-xs font-medium text-[var(--g3)] hover:bg-[rgb(var(--white-rgb)/0.04)] hover:text-[var(--g1)] transition-all mb-[1px]"
           >
             <span className="text-sm opacity-80">🎓</span>
             Scholarship Suite
@@ -98,14 +98,14 @@ export default function DashboardPage() {
           <div className="px-[10px] py-[9px] mb-2">
             <div className="flex justify-between text-[10px] mb-[5px]">
               <span className="text-[var(--g3)]">Credits remaining</span>
-              <span className="text-white font-semibold">142 / 200</span>
+              <span className="text-[var(--white)] font-semibold">142 / 200</span>
             </div>
-            <div className="h-[3px] bg-[rgba(255,255,255,0.07)] rounded-full overflow-hidden">
+            <div className="h-[3px] bg-[rgb(var(--white-rgb)/0.07)] rounded-full overflow-hidden">
               <div className="h-full w-[71%] bg-gradient-to-r from-[var(--blue)] to-[var(--cyan)] rounded-full"></div>
             </div>
           </div>
 
-          <div className="flex items-center gap-[9px] px-[10px] py-[9px] rounded-[7px] cursor-pointer hover:bg-[rgba(255,255,255,0.04)] transition-all">
+          <div className="flex items-center gap-[9px] px-[10px] py-[9px] rounded-[7px] cursor-pointer hover:bg-[rgb(var(--white-rgb)/0.04)] transition-all">
             <div className="w-[30px] h-[30px] rounded-full bg-gradient-to-br from-[var(--blue)] to-[var(--cyan)] flex items-center justify-center text-[10px] font-bold flex-shrink-0">
               {session.user?.name?.[0]?.toUpperCase() || "U"}
             </div>
@@ -130,16 +130,16 @@ export default function DashboardPage() {
             <div className="flex items-center gap-[5px] text-xs text-[var(--g4)]">
               <span>CareerForge</span>
               <span className="text-[var(--g5)]">›</span>
-              <span className="text-white font-semibold">Dashboard</span>
+              <span className="text-[var(--white)] font-semibold">Dashboard</span>
             </div>
           </div>
 
           <div className="flex items-center gap-[10px]">
-            <button className="w-8 h-8 rounded-[7px] bg-[rgba(255,255,255,0.04)] border border-[var(--border)] flex items-center justify-center text-[13px] text-[var(--g3)] relative">
+            <button className="w-8 h-8 rounded-[7px] bg-[rgb(var(--white-rgb)/0.04)] border border-[var(--border)] flex items-center justify-center text-[13px] text-[var(--g3)] relative">
               🔔
               <div className="absolute top-[5px] right-[5px] w-[5px] h-[5px] rounded-full bg-[var(--orange)] border-2 border-[var(--surface)]"></div>
             </button>
-            <button className="w-8 h-8 rounded-[7px] bg-[rgba(255,255,255,0.04)] border border-[var(--border)] flex items-center justify-center text-[13px] text-[var(--g3)]">
+            <button className="w-8 h-8 rounded-[7px] bg-[rgb(var(--white-rgb)/0.04)] border border-[var(--border)] flex items-center justify-center text-[13px] text-[var(--g3)]">
               ❓
             </button>
             <button
@@ -156,7 +156,7 @@ export default function DashboardPage() {
           {/* Welcome Banner */}
           <div className="bg-gradient-to-br from-[rgba(59,130,246,0.1)] to-[rgba(34,211,238,0.06)] border border-[rgba(59,130,246,0.2)] rounded-[13px] px-6 py-5 flex items-center justify-between gap-4 flex-wrap">
             <div>
-              <h2 className="font-[var(--font-d)] text-xl font-extrabold text-white tracking-[-0.03em]">
+              <h2 className="font-[var(--font-d)] text-xl font-extrabold text-[var(--white)] tracking-[-0.03em]">
                 Welcome back, {session.user?.name || "User"} 👋
               </h2>
               <p className="text-xs text-[var(--g3)] mt-1">
@@ -183,11 +183,11 @@ export default function DashboardPage() {
             ].map((stat, i) => (
               <div
                 key={i}
-                className="bg-[#131720] border border-[var(--border)] rounded-[14px] p-5 relative overflow-hidden transition-all duration-[400ms] hover:border-[var(--border2)] hover:translate-y-[-4px] hover:scale-[1.02] hover:shadow-[0_12px_40px_rgba(0,0,0,0.2)] cursor-pointer group"
+                className="bg-[var(--surface)] border border-[var(--border)] rounded-[14px] p-5 relative overflow-hidden transition-all duration-[400ms] hover:border-[var(--border2)] hover:translate-y-[-4px] hover:scale-[1.02] hover:shadow-[0_12px_40px_rgba(0,0,0,0.2)] cursor-pointer group"
                 style={{ transitionTimingFunction: "cubic-bezier(0.34, 1.56, 0.64, 1)" }}
               >
                 <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(59,130,246,0.08)_0%,transparent_70%)] opacity-0 transition-opacity duration-400 pointer-events-none group-hover:opacity-100"></div>
-                
+
                 <div className="flex justify-between items-start mb-[10px] relative z-10">
                   <div className={`w-[34px] h-[34px] rounded-[8px] flex items-center justify-center text-base bg-[rgba(59,130,246,0.15)]`}>
                     {stat.icon}
@@ -196,8 +196,8 @@ export default function DashboardPage() {
                     {stat.change}
                   </span>
                 </div>
-                
-                <div className="font-[var(--font-d)] text-[28px] font-extrabold leading-none text-white">
+
+                <div className="font-[var(--font-d)] text-[28px] font-extrabold leading-none text-[var(--white)]">
                   {stat.value}
                 </div>
                 <div className="text-[10px] text-[var(--g3)] mt-[3px] uppercase tracking-[0.07em]">
@@ -213,7 +213,7 @@ export default function DashboardPage() {
               🎉 Your account is active
             </h3>
             <p className="text-sm text-[var(--g3)] leading-relaxed mb-4">
-              You're logged in as <strong className="text-white">{session.user?.email}</strong>
+              You're logged in as <strong className="text-[var(--white)]">{session.user?.email}</strong>
             </p>
             <p className="text-xs text-[var(--g4)] leading-relaxed">
               This is a protected dashboard page. Only authenticated users can access this content.

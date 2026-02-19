@@ -77,7 +77,7 @@ export default function PricingPage() {
           <div className="text-[11px] font-semibold tracking-[0.1em] uppercase text-[var(--blue)] mb-[14px]">
             Simple Pricing
           </div>
-          <h1 className="font-[var(--font-d)] text-[clamp(38px,5.5vw,66px)] font-extrabold leading-tight tracking-[-0.03em] text-white mb-[14px]">
+          <h1 className="font-[var(--font-d)] text-[clamp(38px,5.5vw,66px)] font-extrabold leading-tight tracking-[-0.03em] text-[var(--white)] mb-[14px]">
             Start free.
             <br />
             <span className="bg-gradient-to-r from-[#3b82f6] to-[#22d3ee] bg-clip-text text-transparent">
@@ -92,11 +92,10 @@ export default function PricingPage() {
             {plans.map((plan, i) => (
               <div
                 key={i}
-                className={`bg-[var(--panel)] border rounded-[18px] p-8 relative transition-all duration-[400ms] overflow-hidden ${
-                  plan.featured
-                    ? "border-[var(--blue)] bg-[rgba(59,130,246,0.05)] shadow-[0_0_60px_rgba(59,130,246,0.15)] scale-105 hover:translate-y-[-8px] hover:scale-[1.07] hover:shadow-[0_20px_80px_rgba(59,130,246,0.3)]"
-                    : "border-[var(--border)] hover:translate-y-[-8px] hover:scale-[1.02] hover:border-[rgba(59,130,246,0.3)] hover:shadow-[0_20px_60px_rgba(0,0,0,0.3)]"
-                }`}
+                className={`bg-[var(--panel)] border rounded-[18px] p-8 relative transition-all duration-[400ms] overflow-hidden ${plan.featured
+                  ? "border-[var(--blue)] bg-[rgba(59,130,246,0.05)] shadow-[0_0_60px_rgba(59,130,246,0.15)] scale-105 hover:translate-y-[-8px] hover:scale-[1.07] hover:shadow-[0_20px_80px_rgba(59,130,246,0.3)]"
+                  : "border-[var(--border)] hover:translate-y-[-8px] hover:scale-[1.02] hover:border-[rgba(59,130,246,0.3)] hover:shadow-[0_20px_60px_rgba(0,0,0,0.3)]"
+                  }`}
                 style={{
                   transitionTimingFunction: "cubic-bezier(0.34, 1.56, 0.64, 1)",
                 }}
@@ -107,13 +106,13 @@ export default function PricingPage() {
                   </div>
                 )}
 
-                <div className="font-[var(--font-d)] text-[15px] font-bold text-white mb-[5px]">
+                <div className="font-[var(--font-d)] text-[15px] font-bold text-[var(--white)] mb-[5px]">
                   {plan.name}
                 </div>
                 <div className="text-xs text-[var(--g3)] mb-5">{plan.desc}</div>
 
                 <div className="flex items-baseline gap-1 mb-[5px]">
-                  <div className="font-[var(--font-d)] text-[40px] font-extrabold text-white">
+                  <div className="font-[var(--font-d)] text-[40px] font-extrabold text-[var(--white)]">
                     {plan.price}
                   </div>
                   {plan.price !== "Custom" && (
@@ -132,9 +131,8 @@ export default function PricingPage() {
                     className="text-xs text-[var(--g2)] mb-[9px] flex items-start gap-[9px]"
                   >
                     <span
-                      className={`flex-shrink-0 ${
-                        feature.enabled ? "text-[var(--green)]" : "text-[var(--g4)]"
-                      }`}
+                      className={`flex-shrink-0 ${feature.enabled ? "text-[var(--green)]" : "text-[var(--g4)]"
+                        }`}
                     >
                       {feature.enabled ? "✓" : "✗"}
                     </span>
@@ -143,8 +141,8 @@ export default function PricingPage() {
                         !feature.enabled
                           ? "text-[var(--g4)]"
                           : feature.bold
-                          ? "text-white font-bold"
-                          : ""
+                            ? "text-[var(--white)] font-bold"
+                            : ""
                       }
                     >
                       {feature.text}
@@ -154,11 +152,10 @@ export default function PricingPage() {
 
                 <Link
                   href={plan.href}
-                  className={`block w-full px-[11px] py-[11px] rounded-[9px] font-[var(--font-d)] font-bold text-[13px] text-center cursor-pointer border-none transition-all duration-200 mt-6 no-underline ${
-                    plan.featured
-                      ? "bg-gradient-to-br from-[var(--blue)] to-[var(--blue-dim)] text-white shadow-[0_4px_20px_rgba(59,130,246,0.35)]"
-                      : "bg-[rgba(255,255,255,0.05)] text-[var(--g2)] border border-[var(--border2)]"
-                  }`}
+                  className={`block w-full px-[11px] py-[11px] rounded-[9px] font-[var(--font-d)] font-bold text-[13px] text-center cursor-pointer border-none transition-all duration-200 mt-6 no-underline ${plan.featured
+                    ? "bg-gradient-to-br from-[var(--blue)] to-[var(--blue-dim)] text-white shadow-[0_4px_20px_rgba(59,130,246,0.35)]"
+                    : "bg-[rgb(var(--white-rgb)/0.05)] text-[var(--g2)] border border-[var(--border2)]"
+                    }`}
                 >
                   {plan.cta}
                 </Link>

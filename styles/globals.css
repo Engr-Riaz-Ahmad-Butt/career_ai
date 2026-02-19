@@ -5,6 +5,34 @@
 @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700;800;900&display=swap');
 
 :root {
+  /* Light Theme Variables */
+  --black: #ffffff;
+  --dark: #f3f4f6;
+  --panel: #ffffff;
+  --surface: #f9fafb;
+  --border: rgba(0, 0, 0, 0.08);
+  --border2: rgba(0, 0, 0, 0.12);
+  --blue: #3b82f6;
+  --blue-dim: #2563eb;
+  --cyan: #06b6d4;
+  --green: #10b981;
+  --orange: #f59e0b;
+  --purple: #8b5cf6;
+  --white: #111827;
+  --black-rgb: 255 255 255;
+  --blue-rgb: 59 130 246;
+  --white-rgb: 17 24 39;
+  --g1: #111827;
+  --g2: #374151;
+  --g3: #6b7280;
+  --g4: #9ca3af;
+  --g5: #f3f4f6;
+  --font-d: 'Space Grotesk', sans-serif;
+  --font-b: 'Inter', sans-serif;
+}
+
+.dark {
+  /* Dark Theme Variables */
   --black: #060810;
   --dark: #0d1117;
   --panel: #111827;
@@ -18,13 +46,14 @@
   --orange: #f59e0b;
   --purple: #a78bfa;
   --white: #ffffff;
+  --black-rgb: 6 8 16;
+  --blue-rgb: 59 130 246;
+  --white-rgb: 255 255 255;
   --g1: #f9fafb;
   --g2: #e5e7eb;
   --g3: #9ca3af;
   --g4: #4b5563;
   --g5: #1f2937;
-  --font-d: 'Space Grotesk', sans-serif;
-  --font-b: 'Inter', sans-serif;
 }
 
 * {
@@ -44,6 +73,11 @@ body {
   overflow-x: hidden;
   line-height: 1.6;
   font-size: 14px;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+nav {
+  transition: background-color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
 }
 
 body::before {
@@ -61,6 +95,7 @@ body::before {
     opacity: 0;
     transform: translateY(20px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -68,11 +103,13 @@ body::before {
 }
 
 @keyframes pulse {
+
   0%,
   100% {
     opacity: 1;
     transform: scale(1);
   }
+
   50% {
     opacity: 0.5;
     transform: scale(1.3);
@@ -80,10 +117,12 @@ body::before {
 }
 
 @keyframes float {
+
   0%,
   100% {
     transform: translateY(0);
   }
+
   50% {
     transform: translateY(-8px);
   }
@@ -93,6 +132,7 @@ body::before {
   from {
     transform: rotate(0deg);
   }
+
   to {
     transform: rotate(360deg);
   }
@@ -103,6 +143,7 @@ body::before {
     opacity: 0;
     transform: translate(-50%, 20px);
   }
+
   to {
     opacity: 1;
     transform: translate(-50%, 0);
@@ -110,10 +151,12 @@ body::before {
 }
 
 @keyframes blink {
+
   0%,
   100% {
     opacity: 1;
   }
+
   50% {
     opacity: 0;
   }

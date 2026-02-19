@@ -4,7 +4,7 @@ export default function CTA() {
     return (
         <div className="mx-[60px] mb-[90px] bg-gradient-to-br from-[rgba(59,130,246,0.12)] to-[rgba(34,211,238,0.08)] border border-[rgba(59,130,246,0.25)] rounded-[22px] px-10 py-[72px] text-center relative overflow-hidden">
             <div className="absolute top-[-50%] left-[-20%] w-[500px] h-[500px] bg-[radial-gradient(circle,rgba(59,130,246,0.12)_0%,transparent_60%)] pointer-events-none" />
-            <h2 className="font-[var(--font-d)] text-[clamp(26px,3.5vw,44px)] font-extrabold tracking-[-0.03em] text-white mb-[14px] relative z-[1]">
+            <h2 className="font-[var(--font-d)] text-[clamp(26px,3.5vw,44px)] font-extrabold tracking-[-0.03em] text-[var(--white)] mb-[14px] relative z-[1]">
                 Your next job starts today.
             </h2>
             <p className="text-[15px] text-[var(--g3)] mb-8 relative z-[1]">

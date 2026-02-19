@@ -10,7 +10,7 @@ export default function AboutPage() {
         {/* Hero Section */}
         <div className="px-[60px] py-20 max-w-[1100px] mx-auto relative">
           <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-[radial-gradient(ellipse,rgba(59,130,246,0.06)_0%,transparent_70%)] pointer-events-none" />
-          
+
           <div className="text-[11px] font-semibold tracking-[0.1em] uppercase text-[var(--blue)] mb-[14px]">
             About CareerForge AI
           </div>
@@ -31,7 +31,7 @@ export default function AboutPage() {
               { num: "$1.2B", label: "Market size" },
             ].map((stat, i) => (
               <div key={i}>
-                <div className="font-[var(--font-d)] text-[34px] font-extrabold text-white leading-none">
+                <div className="font-[var(--font-d)] text-[34px] font-extrabold text-[var(--white)] leading-none">
                   {stat.num}
                 </div>
                 <div className="text-xs text-[var(--g3)] mt-[3px]">{stat.label}</div>
@@ -46,7 +46,7 @@ export default function AboutPage() {
             <div className="text-[11px] font-semibold tracking-[0.1em] uppercase text-[var(--blue)] mb-[14px]">
               The Team
             </div>
-            <h2 className="font-[var(--font-d)] text-4xl font-extrabold text-white tracking-[-0.02em] max-w-[600px] leading-tight">
+            <h2 className="font-[var(--font-d)] text-4xl font-extrabold text-[var(--white)] tracking-[-0.02em] max-w-[600px] leading-tight">
               Built by people who've been there
             </h2>
           </div>
@@ -92,7 +92,7 @@ export default function AboutPage() {
                 >
                   {member.avatar}
                 </div>
-                <div className="font-[var(--font-d)] text-sm font-bold text-white mb-[3px]">
+                <div className="font-[var(--font-d)] text-sm font-bold text-[var(--white)] mb-[3px]">
                   {member.name}
                 </div>
                 <div className="text-[11px] text-[var(--blue)] font-semibold mb-[10px]">
@@ -105,7 +105,7 @@ export default function AboutPage() {
 
           <div className="mt-8 px-8 py-7 bg-[rgba(59,130,246,0.05)] border border-[rgba(59,130,246,0.15)] rounded-[14px] flex items-center justify-between gap-4 flex-wrap max-w-[1100px] mx-auto">
             <div>
-              <div className="font-[var(--font-d)] text-base font-bold text-white mb-1">
+              <div className="font-[var(--font-d)] text-base font-bold text-[var(--white)] mb-1">
                 We're hiring 🚀
               </div>
               <p className="text-[13px] text-[var(--g3)]">
@@ -121,7 +121,7 @@ export default function AboutPage() {
         {/* CTA */}
         <div className="mx-[60px] mb-20 bg-gradient-to-br from-[rgba(59,130,246,0.12)] to-[rgba(34,211,238,0.08)] border border-[rgba(59,130,246,0.25)] rounded-[22px] px-10 py-[72px] text-center relative overflow-hidden">
           <div className="absolute top-[-50%] left-[-20%] w-[500px] h-[500px] bg-[radial-gradient(circle,rgba(59,130,246,0.12)_0%,transparent_60%)] pointer-events-none" />
-          <h2 className="font-[var(--font-d)] text-[clamp(26px,3.5vw,44px)] font-extrabold tracking-[-0.03em] text-white mb-[14px] relative z-[1]">
+          <h2 className="font-[var(--font-d)] text-[clamp(26px,3.5vw,44px)] font-extrabold tracking-[-0.03em] text-[var(--white)] mb-[14px] relative z-[1]">
             Your story deserves to be heard.
           </h2>
           <p className="text-[15px] text-[var(--g3)] mb-8 relative z-[1]">
@@ -136,7 +136,7 @@ export default function AboutPage() {
             </Link>
             <Link
               href="/pricing"
-              className="px-[30px] py-[13px] rounded-[10px] font-[var(--font-b)] font-medium text-sm text-[var(--g2)] bg-[rgba(255,255,255,0.05)] border border-[var(--border2)] cursor-pointer transition-all duration-200 hover:bg-[rgba(255,255,255,0.1)] hover:text-white inline-block no-underline"
+              className="px-[30px] py-[13px] rounded-[10px] font-[var(--font-b)] font-medium text-sm text-[var(--g2)] bg-[rgb(var(--white-rgb)/0.05)] border border-[var(--border2)] cursor-pointer transition-all duration-200 hover:bg-[rgb(var(--white-rgb)/0.1)] hover:text-[var(--white)] inline-block no-underline"
             >
               View Pricing
             </Link>

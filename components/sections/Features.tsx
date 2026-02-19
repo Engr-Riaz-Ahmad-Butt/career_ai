@@ -67,7 +67,7 @@ function FeatureCard({ feature, index }: FeatureCardProps) {
         {feature.icon}
       </div>
 
-      <h3 className="font-[var(--font-d)] text-[15px] font-bold text-white mb-2">
+      <h3 className="font-[var(--font-d)] text-[15px] font-bold text-[var(--white)] mb-2">
         {feature.title}
       </h3>
       <p className="text-[13px] text-[var(--g3)] leading-relaxed">
@@ -83,7 +83,7 @@ export default function Features() {
       <div className="inline-block text-[11px] font-semibold tracking-[0.1em] uppercase text-[var(--blue)] mb-[14px]">
         Everything You Need
       </div>
-      <h2 className="font-[var(--font-d)] text-[clamp(30px,3.5vw,48px)] font-extrabold tracking-[-0.03em] text-white leading-tight max-w-[600px]">
+      <h2 className="font-[var(--font-d)] text-[clamp(30px,3.5vw,48px)] font-extrabold tracking-[-0.03em] text-[var(--white)] leading-tight max-w-[600px]">
         One platform.
         <br />
         Every career document.

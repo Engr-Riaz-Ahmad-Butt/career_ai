@@ -28,8 +28,8 @@ export default function Hero() {
         transition={{ duration: 0.7, delay: 0.1 }}
         className="font-[var(--font-d)] text-[clamp(48px,7vw,92px)] font-bold leading-[1.1] tracking-[-0.04em] max-w-[1000px]"
       >
-        <span className="block text-white mb-2">Build AI-Powered</span>
-        <span className="block text-white mb-3 min-h-[1.2em]">
+        <span className="block text-[var(--white)] mb-2">Build AI-Powered</span>
+        <span className="block text-[var(--white)] mb-3 min-h-[1.2em]">
           <Typewriter
             words={[
               "Resumes",
@@ -45,7 +45,7 @@ export default function Hero() {
             delayBetweenWords={2000}
           />
         </span>
-        <span className="block text-white relative">
+        <span className="block text-[var(--white)] relative">
           That Get You Hired
           <span className="absolute bottom-[-8px] left-1/2 -translate-x-1/2 w-[240px] h-1 bg-gradient-to-r from-[#60a5fa] via-[#22d3ee] to-[#10b981] rounded-[2px]" />
         </span>
