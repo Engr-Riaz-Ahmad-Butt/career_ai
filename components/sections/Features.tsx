@@ -67,7 +67,7 @@ function FeatureCard({ feature, index }: FeatureCardProps) {
         {feature.icon}
       </div>
 
-      <h3 className="font-[var(--font-d)] text-[15px] font-bold text-[var(--white)] mb-2">
+      <h3 className="font-[var(--font-d)] text-[15px] text-[var(--white)] mb-2">
         {feature.title}
       </h3>
       <p className="text-[13px] text-[var(--g3)] leading-relaxed">
@@ -79,24 +79,26 @@ function FeatureCard({ feature, index }: FeatureCardProps) {
 
 export default function Features() {
   return (
-    <section id="features" className="px-[60px] py-[90px]">
-      <div className="inline-block text-[11px] font-semibold tracking-[0.1em] uppercase text-[var(--blue)] mb-[14px]">
-        Everything You Need
-      </div>
-      <h2 className="font-[var(--font-d)] text-[clamp(30px,3.5vw,48px)] font-extrabold tracking-[-0.03em] text-[var(--white)] leading-tight max-w-[600px]">
-        One platform.
-        <br />
-        Every career document.
-      </h2>
-      <p className="mt-[14px] text-[15px] font-light text-[var(--g3)] max-w-[500px] leading-relaxed">
-        From ATS-optimized resumes to scholarship SOPs — build, tailor, and
-        perfect every document with AI guidance.
-      </p>
+    <section id="features" className="py-[60px] sm:py-[90px] w-full">
+      <div className="container mx-auto w-full max-w-6xl px-4 sm:px-8">
+        <div className="inline-block text-[11px] font-semibold tracking-[0.1em] uppercase text-[var(--blue)] mb-[14px]">
+          Everything You Need
+        </div>
+        <h2 className="font-[var(--font-d)] text-[clamp(24px,3.5vw,48px)] tracking-[-0.03em] text-[var(--white)] leading-tight max-w-[600px]">
+          One platform.
+          <br />
+          Every career document.
+        </h2>
+        <p className="mt-[14px] text-[15px] font-light text-[var(--g3)] max-w-[500px] leading-relaxed">
+          From ATS-optimized resumes to scholarship SOPs — build, tailor, and
+          perfect every document with AI guidance.
+        </p>
 
-      <div className="mt-14 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {FEATURES.map((feature, index) => (
-          <FeatureCard key={feature.title} feature={feature} index={index} />
-        ))}
+        <div className="mt-14 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {FEATURES.map((feature, index) => (
+            <FeatureCard key={feature.title} feature={feature} index={index} />
+          ))}
+        </div>
       </div>
     </section>
   );
