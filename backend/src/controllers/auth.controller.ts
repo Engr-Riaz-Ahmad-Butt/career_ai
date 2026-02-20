@@ -1,120 +1,92 @@
 import { Request, Response } from 'express';
-import { authService } from '../services/auth.service';
-import {
-  signupSchema,
-  loginSchema,
-  googleAuthSchema,
-  refreshTokenSchema,
-  forgotPasswordSchema,
-  resetPasswordSchema,
-} from '../utils/validation';
-import { ApiError } from '../middleware/error';
+import { AuthService } from '../services/auth.service';
+import { z } from 'zod';
 
-/**
- * @route   POST /api/auth/signup
- * @desc    Register a new user with email and password
- * @access  Public
- */
-export const signup = async (req: Request, res: Response) => {
-  const validatedData = signupSchema.parse(req.body);
-  const result = await authService.signup(validatedData);
+const authService = new AuthService();
 
-  res.status(201).json({
-    success: true,
-    message: 'Account created successfully',
-    data: result,
-  });
+// ── Validators ─────────────────────────────────────────────────────────────
+
+const registerSchema = z.object({
+  firstName: z.string().min(1),
+  lastName: z.string().min(1),
+  email: z.string().email(),
+  password: z.string().min(8),
+  referralCode: z.string().optional(),
+});
+
+const loginSchema = z.object({
+  email: z.string().email(),
+  password: z.string().min(1),
+});
+
+const googleSchema = z.object({ googleToken: z.string() });
+const refreshSchema = z.object({ refreshToken: z.string() });
+const forgotSchema = z.object({ email: z.string().email() });
+const resetSchema = z.object({ token: z.string(), newPassword: z.string().min(8) });
+const verifySchema = z.object({ token: z.string() });
+const resendSchema = z.object({ email: z.string().email() });
+
+// ── Handlers ───────────────────────────────────────────────────────────────
+
+/** POST /auth/register */
+export const register = async (req: Request, res: Response) => {
+  const data = registerSchema.parse(req.body);
+  const result = await authService.register(data);
+  res.status(201).json({ success: true, message: 'Account created. Please verify your email.', data: result });
 };
 
-/**
- * @route   POST /api/auth/login
- * @desc    Login with email and password
- * @access  Public
- */
+/** POST /auth/login */
 export const login = async (req: Request, res: Response) => {
-  const validatedData = loginSchema.parse(req.body);
-  const result = await authService.login(validatedData);
-
-  res.json({
-    success: true,
-    message: 'Login successful',
-    data: result,
-  });
+  const data = loginSchema.parse(req.body);
+  const result = await authService.login(data);
+  res.json({ success: true, message: 'Login successful', data: result });
 };
 
-/**
- * @route   POST /api/auth/google
- * @desc    Login/Signup with Google OAuth
- * @access  Public
- */
+/** POST /auth/google */
 export const googleAuth = async (req: Request, res: Response) => {
-  const validatedData = googleAuthSchema.parse(req.body);
-  const result = await authService.googleAuth(validatedData);
-
-  res.json({
-    success: true,
-    message: 'Google authentication successful',
-    data: result,
-  });
+  const { googleToken } = googleSchema.parse(req.body);
+  const result = await authService.googleAuth(googleToken);
+  res.json({ success: true, message: 'Google authentication successful', data: result });
 };
 
-/**
- * @route   POST /api/auth/refresh
- * @desc    Refresh access token
- * @access  Public
- */
+/** POST /auth/refresh */
 export const refreshAccessToken = async (req: Request, res: Response) => {
-  const validatedData = refreshTokenSchema.parse(req.body);
-  const result = await authService.refreshToken(validatedData.refreshToken);
-
-  res.json({
-    success: true,
-    message: 'Token refreshed successfully',
-    data: result,
-  });
+  const { refreshToken } = refreshSchema.parse(req.body);
+  const result = await authService.refreshTokens(refreshToken);
+  res.json({ success: true, message: 'Token refreshed', data: result });
 };
 
-/**
- * @route   POST /api/auth/logout
- * @desc    Logout user (invalidate refresh token)
- * @access  Private
- */
+/** POST /auth/logout */
 export const logout = async (req: Request, res: Response) => {
-  const validatedData = refreshTokenSchema.parse(req.body);
-  await authService.logout(validatedData.refreshToken);
-
-  res.json({
-    success: true,
-    message: 'Logged out successfully',
-  });
+  const { refreshToken } = refreshSchema.parse(req.body);
+  await authService.logout(refreshToken);
+  res.json({ success: true, message: 'Logged out successfully' });
 };
 
-/**
- * @route   POST /api/auth/forgot-password
- * @desc    Request password reset email
- * @access  Public
- */
+/** POST /auth/forgot-password */
 export const forgotPassword = async (req: Request, res: Response) => {
-  const validatedData = forgotPasswordSchema.parse(req.body);
-  await authService.forgotPassword(validatedData.email);
-
-  res.json({
-    success: true,
-    message: 'If an account with that email exists, a password reset link has been sent.',
-  });
+  const { email } = forgotSchema.parse(req.body);
+  await authService.forgotPassword(email);
+  res.json({ success: true, message: 'If that email exists, a reset link has been sent.' });
 };
 
-/**
- * @route   POST /api/auth/reset-password
- * @desc    Reset password using token
- * @access  Public
- */
+/** POST /auth/reset-password */
 export const resetPassword = async (req: Request, res: Response) => {
-  const validatedData = resetPasswordSchema.parse(req.body);
-  await authService.resetPassword(validatedData.token, validatedData.password);
+  const { token, newPassword } = resetSchema.parse(req.body);
+  await authService.resetPassword(token, newPassword);
+  res.json({ success: true, message: 'Password reset successfully' });
+};
 
-  res.json({
-    success: true,
-    message: 'Password has been reset successfully',
-  });
+/** POST /auth/verify-email */
+export const verifyEmail = async (req: Request, res: Response) => {
+  const { token } = verifySchema.parse(req.body);
+  const result = await authService.verifyEmail(token);
+  res.json({ success: true, message: result.message });
+};
+
+/** POST /auth/resend-verification */
+export const resendVerification = async (req: Request, res: Response) => {
+  const { email } = resendSchema.parse(req.body);
+  await authService.resendVerification(email);
+  res.json({ success: true, message: 'Verification email sent if account exists.' });
 };

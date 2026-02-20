@@ -1,100 +1,66 @@
 import { Request, Response, NextFunction } from 'express';
-import { verifyAccessToken, TokenPayload } from '../utils/jwt';
+import { verifyAccessToken } from '../utils/jwt';
 import prisma from '../config/database';
 
-
-
 /**
- * Middleware to authenticate JWT token
+ * Authenticate JWT bearer token and attach req.user.
  */
-export const authenticate = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
+export const authenticate = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const authHeader = req.headers.authorization;
-
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      return res.status(401).json({
-        success: false,
-        message: 'No token provided',
-      });
+      return res.status(401).json({ success: false, message: 'No token provided' });
     }
 
-    const token = authHeader.substring(7); // Remove 'Bearer ' prefix
-
-    // Verify token
+    const token = authHeader.substring(7);
     const decoded = verifyAccessToken(token);
 
-    // Check if user exists and is active
     const user = await prisma.user.findUnique({
       where: { id: decoded.userId },
-      select: {
-        id: true,
-        email: true,
-        plan: true,
-        isActive: true,
-      },
+      select: { id: true, email: true, plan: true, isActive: true, deletedAt: true },
     });
 
-    if (!user || !user.isActive) {
-      return res.status(401).json({
-        success: false,
-        message: 'User not found or inactive',
-      });
+    if (!user || !user.isActive || user.deletedAt) {
+      return res.status(401).json({ success: false, message: 'User not found or inactive' });
     }
 
-    // Attach user to request
-    req.user = {
-      userId: user.id,
-      email: user.email,
-      plan: user.plan,
-    };
-
+    req.user = { userId: user.id, email: user.email, plan: user.plan };
     next();
-  } catch (error) {
-    return res.status(401).json({
-      success: false,
-      message: 'Invalid or expired token',
-    });
+  } catch {
+    return res.status(401).json({ success: false, message: 'Invalid or expired token' });
   }
 };
 
 /**
- * Middleware to check if user has required plan
+ * Require a specific plan (or higher).
  */
 export const requirePlan = (allowedPlans: string[]) => {
   return (req: Request, res: Response, next: NextFunction) => {
-    if (!req.user) {
-      return res.status(401).json({
-        success: false,
-        message: 'Authentication required',
-      });
-    }
-
+    if (!req.user) return res.status(401).json({ success: false, message: 'Authentication required' });
     if (!allowedPlans.includes(req.user.plan)) {
-      return res.status(403).json({
-        success: false,
-        message: `This feature requires ${allowedPlans.join(' or ')} plan`,
-      });
+      return res.status(403).json({ success: false, message: `Requires ${allowedPlans.join(' or ')} plan` });
     }
-
     next();
   };
 };
 
 /**
- * Middleware to check if user has enough credits
+ * Require the user to be an admin (ENTERPRISE plan).
+ */
+export const requireAdmin = (req: Request, res: Response, next: NextFunction) => {
+  if (!req.user || req.user.plan !== 'ENTERPRISE') {
+    return res.status(403).json({ success: false, message: 'Admin access required' });
+  }
+  next();
+};
+
+/**
+ * Require the user to have at least `creditsNeeded` credits.
+ * Returns 402 (Payment Required) when credits are insufficient.
  */
 export const requireCredits = (creditsNeeded: number) => {
   return async (req: Request, res: Response, next: NextFunction) => {
-    if (!req.user) {
-      return res.status(401).json({
-        success: false,
-        message: 'Authentication required',
-      });
-    }
+    if (!req.user) return res.status(401).json({ success: false, message: 'Authentication required' });
 
     const user = await prisma.user.findUnique({
       where: { id: req.user.userId },
@@ -102,55 +68,32 @@ export const requireCredits = (creditsNeeded: number) => {
     });
 
     if (!user || user.credits < creditsNeeded) {
-      return res.status(403).json({
+      return res.status(402).json({
         success: false,
         message: 'Insufficient credits',
-        creditsNeeded,
-        creditsAvailable: user?.credits || 0,
+        error: { creditsNeeded, creditsAvailable: user?.credits ?? 0 },
       });
     }
-
     next();
   };
 };
 
 /**
- * Optional authentication - doesn't fail if no token
+ * Optional authentication — attaches req.user if token is valid, continues otherwise.
  */
-export const optionalAuth = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
+export const optionalAuth = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const authHeader = req.headers.authorization;
-
-    if (authHeader && authHeader.startsWith('Bearer ')) {
-      const token = authHeader.substring(7);
-      const decoded = verifyAccessToken(token);
-
+    if (authHeader?.startsWith('Bearer ')) {
+      const decoded = verifyAccessToken(authHeader.substring(7));
       const user = await prisma.user.findUnique({
         where: { id: decoded.userId },
-        select: {
-          id: true,
-          email: true,
-          plan: true,
-          isActive: true,
-        },
+        select: { id: true, email: true, plan: true, isActive: true },
       });
-
-      if (user && user.isActive) {
-        req.user = {
-          userId: user.id,
-          email: user.email,
-          plan: user.plan,
-        };
+      if (user?.isActive) {
+        req.user = { userId: user.id, email: user.email, plan: user.plan };
       }
     }
-
-    next();
-  } catch (error) {
-    // Token invalid but continue anyway
-    next();
-  }
+  } catch { /* ignore invalid tokens */ }
+  next();
 };

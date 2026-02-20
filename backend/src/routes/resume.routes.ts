@@ -1,78 +1,38 @@
 import { Router } from 'express';
 import {
-  createResume,
-  getResumes,
-  getResumeById,
-  updateResume,
-  deleteResume,
-  duplicateResume,
-  exportResume,
-  uploadResume,
+  listResumes, createResume, getResume, updateResume, deleteResume,
+  duplicateResume, generatePdf, listVersions, restoreVersion, uploadResume,
 } from '../controllers/resume.controller';
+import { tailorResume, getTailorHistory, getTailored, deleteTailored } from '../controllers/tailoring.controller';
+import { enhanceResume, scoreAts } from '../controllers/ai.controller';
 import { authenticate, requireCredits } from '../middleware/auth';
-import { upload } from '../middleware/upload';
-import { asyncHandler } from '../middleware/error';
+import { uploadResume as resumeUpload } from '../middleware/upload';
 
 const router = Router();
-
-// All routes require authentication
 router.use(authenticate);
 
-/**
- * @route   POST /api/resumes
- * @desc    Create new resume
- * @access  Private
- */
-router.post('/', requireCredits(1), asyncHandler(createResume));
+// Upload (before /:id routes)
+router.post('/upload', resumeUpload.single('file'), requireCredits(2), uploadResume);
 
-/**
- * @route   GET /api/resumes
- * @desc    Get all resumes
- * @access  Private
- */
-router.get('/', asyncHandler(getResumes));
+// Tailoring sub-routes
+router.post('/tailor', requireCredits(3), tailorResume);
+router.get('/tailor/history', getTailorHistory);
+router.get('/tailor/:id', getTailored);
+router.delete('/tailor/:id', deleteTailored);
 
-/**
- * @route   GET /api/resumes/:id
- * @desc    Get resume by ID
- * @access  Private
- */
-router.get('/:id', asyncHandler(getResumeById));
+// CRUD
+router.get('/', listResumes);
+router.post('/', requireCredits(1), createResume);
+router.get('/:id', getResume);
+router.put('/:id', updateResume);
+router.delete('/:id', deleteResume);
 
-/**
- * @route   PUT /api/resumes/:id
- * @desc    Update resume
- * @access  Private
- */
-router.put('/:id', asyncHandler(updateResume));
-
-/**
- * @route   DELETE /api/resumes/:id
- * @desc    Delete resume
- * @access  Private
- */
-router.delete('/:id', asyncHandler(deleteResume));
-
-/**
- * @route   POST /api/resumes/:id/duplicate
- * @desc    Duplicate resume
- * @access  Private
- */
-router.post('/:id/duplicate', asyncHandler(duplicateResume));
-
-/**
- * @route   GET /api/resumes/:id/export
- * @desc    Export resume (PDF/DOCX)
- * @access  Private
- */
-router.get('/:id/export', asyncHandler(exportResume));
-
-
-/**
- * @route   POST /api/resumes/upload
- * @desc    Upload resume file
- * @access  Private
- */
-router.post('/upload', upload.single('resume'), asyncHandler(uploadResume));
+// Actions on a specific resume
+router.post('/:id/duplicate', duplicateResume);
+router.post('/:id/pdf', generatePdf);
+router.get('/:id/versions', listVersions);
+router.post('/:id/restore/:versionId', restoreVersion);
+router.post('/:id/enhance', requireCredits(2), enhanceResume);
+router.post('/:id/ats-score', requireCredits(1), scoreAts);
 
 export default router;

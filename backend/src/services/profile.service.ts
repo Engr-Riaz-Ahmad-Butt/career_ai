@@ -1,6 +1,8 @@
 import prisma from '../config/database';
 import { ApiError } from '../middleware/error';
 
+// Legacy service — kept for any older routes still referencing it.
+// New code should use UserService in user.service.ts instead.
 export class ProfileService {
     async getUserProfile(userId: string) {
         const user = await prisma.user.findUnique({
@@ -8,12 +10,12 @@ export class ProfileService {
             select: {
                 id: true,
                 email: true,
-                name: true,
+                firstName: true,
+                lastName: true,
                 avatar: true,
                 plan: true,
                 credits: true,
                 phone: true,
-                location: true,
                 timezone: true,
                 emailVerified: true,
                 createdAt: true,
@@ -21,42 +23,35 @@ export class ProfileService {
             },
         });
 
-        if (!user) {
-            throw new ApiError(404, 'User not found');
-        }
-
+        if (!user) throw new ApiError(404, 'User not found');
         return user;
     }
 
     async updateProfile(userId: string, data: {
-        name?: string;
+        firstName?: string;
+        lastName?: string;
         phone?: string;
-        location?: string;
         timezone?: string;
-        avatar?: string
+        avatar?: string;
     }) {
-        const user = await prisma.user.update({
+        return prisma.user.update({
             where: { id: userId },
-            data: {
-                ...data,
-            },
+            data,
             select: {
                 id: true,
                 email: true,
-                name: true,
+                firstName: true,
+                lastName: true,
                 avatar: true,
                 plan: true,
                 credits: true,
                 phone: true,
-                location: true,
                 timezone: true,
                 emailVerified: true,
                 createdAt: true,
                 lastLoginAt: true,
             },
         });
-
-        return user;
     }
 }
 

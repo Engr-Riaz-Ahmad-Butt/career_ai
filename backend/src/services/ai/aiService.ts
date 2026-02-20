@@ -4,336 +4,335 @@ import ENHANCED_PROMPTS from './enhanced-prompts';
 import prisma from '../../config/database';
 
 // Use enhanced prompts for better results
-const USE_ENHANCED_PROMPTS = process.env.USE_ENHANCED_PROMPTS !== 'false'; // Default to true
+const USE_ENHANCED_PROMPTS = process.env.USE_ENHANCED_PROMPTS !== 'false';
 
 /**
- * AI Service for CareerForge
- * Handles all AI-powered generation and analysis
+ * AIService — class-based facade for all AI generation & analysis
+ * Integrates with Google Gemini via the existing config/gemini helpers.
  */
+export class AIService {
 
-interface ResumeGenerationInput {
-  name: string;
-  email: string;
-  phone?: string;
-  targetRole: string;
-  experience?: string;
-  education?: string;
-  skills?: string;
-  additionalInfo?: string;
-}
+  // ── Resume Enhancement ────────────────────────────────────────────────
 
-interface ResumeTailoringInput {
-  resume: any;
-  jobDescription: string;
-}
+  async enhanceResumeSection(userId: string, resumeId: string, section: string, targetRole?: string, industry?: string) {
+    const resume = await prisma.resume.findFirst({ where: { id: resumeId, userId } });
+    if (!resume) throw new Error('Resume not found');
 
-interface CoverLetterInput {
-  resumeData: any;
-  jobDescription?: string;
-  company?: string;
-  role?: string;
-  letterType: 'job_application' | 'networking' | 'inquiry' | 'referral';
-}
+    const prompt = `You are a professional resume writer. Enhance the "${section}" section of this resume.
+Target Role: ${targetRole || 'Not specified'}
+Industry: ${industry || 'Not specified'}
 
-interface SOPInput {
-  personalInfo: any;
-  targetProgram: string;
-  university: string;
-  background: string;
-  goals: string;
-  whyThisProgram: string;
-}
+Current resume data:
+${JSON.stringify(resume, null, 2)}
 
-/**
- * Generate resume from scratch using AI
- */
-export const generateResume = async (input: ResumeGenerationInput, userId: string) => {
-  try {
-    // Use enhanced prompts for better results
-    const promptTemplate = USE_ENHANCED_PROMPTS ? ENHANCED_PROMPTS : PROMPTS;
-    const prompt = promptTemplate.RESUME_GENERATE(input);
+Return JSON: { "enhanced": { ... section data }, "suggestions": ["improvement 1", ...] }`;
+
+    return generateStructuredContent<any>(prompt, MODELS.PRO);
+  }
+
+  async scoreATS(userId: string, resumeId: string, jobDescription: string, returnSuggestions = true) {
+    const resume = await prisma.resume.findFirst({ where: { id: resumeId, userId } });
+    if (!resume) throw new Error('Resume not found');
+
+    const P = USE_ENHANCED_PROMPTS ? ENHANCED_PROMPTS : PROMPTS;
+    return generateStructuredContent<any>(P.ATS_ANALYZE(resume, jobDescription), MODELS.FLASH);
+  }
+
+  async generateSuggestions(userId: string, resumeId: string, section: string, targetRole?: string) {
+    const resume = await prisma.resume.findFirst({ where: { id: resumeId, userId } });
+    if (!resume) throw new Error('Resume not found');
+
+    const prompt = `Provide actionable improvement suggestions for the "${section}" section of this resume.
+Target Role: ${targetRole || 'Not specified'}
+Resume: ${JSON.stringify(resume)}
+Return JSON: { "suggestions": [{ "type": string, "original": string, "suggested": string, "reason": string }] }`;
+
+    return generateStructuredContent<any>(prompt, MODELS.FLASH);
+  }
+
+  async tailorResume(input: {
+    resume: any;
+    jobDescription: string;
+    companyName?: string;
+    jobTitle?: string;
+    aggressiveness: 'subtle' | 'moderate' | 'aggressive';
+  }) {
+    const P = USE_ENHANCED_PROMPTS ? ENHANCED_PROMPTS : PROMPTS;
+    const prompt = P.RESUME_TAILOR(input.resume, input.jobDescription);
     const result = await generateStructuredContent<any>(prompt, MODELS.PRO);
 
-    // Log credit usage
-    await logCreditUsage(userId, 'resume_generate', 2);
-
-    return result;
-  } catch (error: any) {
-    throw new Error(`Resume generation failed: ${error.message}`);
+    return {
+      tailoredContent: result.tailoredResume || result,
+      extractedKeywords: result.extractedKeywords || [],
+      matchedKeywords: result.matchedKeywords || [],
+      missingKeywords: result.missingKeywords || [],
+      atsScore: result.atsScore || 0,
+      suggestions: result.suggestions || [],
+    };
   }
-};
 
-/**
- * Tailor existing resume for job description
- */
-export const tailorResume = async (input: ResumeTailoringInput, userId: string) => {
-  try {
-    const promptTemplate = USE_ENHANCED_PROMPTS ? ENHANCED_PROMPTS : PROMPTS;
-    const prompt = promptTemplate.RESUME_TAILOR(input.resume, input.jobDescription);
-    const result = await generateStructuredContent<any>(prompt, MODELS.PRO);
+  // ── Cover Letter ─────────────────────────────────────────────────────
 
-    // Log credit usage
-    await logCreditUsage(userId, 'resume_tailor', 2);
-
-    return result;
-  } catch (error: any) {
-    throw new Error(`Resume tailoring failed: ${error.message}`);
-  }
-};
-
-/**
- * Improve uploaded resume
- */
-export const improveResume = async (resumeText: string, userId: string) => {
-  try {
-    const prompt = PROMPTS.RESUME_IMPROVE(resumeText);
-    const result = await generateStructuredContent<any>(prompt, MODELS.PRO);
-
-    // Log credit usage
-    await logCreditUsage(userId, 'resume_improve', 1);
-
-    return result;
-  } catch (error: any) {
-    throw new Error(`Resume improvement failed: ${error.message}`);
-  }
-};
-
-/**
- * Generate cover letter
- */
-export const generateCoverLetter = async (input: CoverLetterInput, userId: string) => {
-  try {
-    const promptTemplate = USE_ENHANCED_PROMPTS ? ENHANCED_PROMPTS : PROMPTS;
-    const prompt = promptTemplate.COVER_LETTER(input);
-    const result = await generateStructuredContent<any>(prompt, MODELS.PRO);
-
-    // Log credit usage
-    await logCreditUsage(userId, 'cover_letter_generate', 1);
-
-    return result;
-  } catch (error: any) {
-    throw new Error(`Cover letter generation failed: ${error.message}`);
-  }
-};
-
-/**
- * Generate Statement of Purpose
- */
-export const generateSOP = async (input: SOPInput, userId: string) => {
-  try {
-    const prompt = PROMPTS.SOP_GENERATE(input);
-    const result = await generateStructuredContent<any>(prompt, MODELS.PRO);
-
-    // Log credit usage
-    await logCreditUsage(userId, 'sop_generate', 2);
-
-    return result;
-  } catch (error: any) {
-    throw new Error(`SOP generation failed: ${error.message}`);
-  }
-};
-
-/**
- * Analyze resume for ATS score
- */
-export const analyzeATS = async (resume: any, jobDescription?: string, userId?: string) => {
-  try {
-    const promptTemplate = USE_ENHANCED_PROMPTS ? ENHANCED_PROMPTS : PROMPTS;
-    const prompt = promptTemplate.ATS_ANALYZE(resume, jobDescription);
-    const result = await generateStructuredContent<any>(prompt, MODELS.FLASH);
-
-    if (userId) {
-      // Log credit usage (ATS is free but we track it)
-      await logCreditUsage(userId, 'ats_analyze', 0);
+  async generateCoverLetter(userId: string, data: {
+    type: string;
+    resumeId?: string;
+    jobDescription?: string;
+    companyName?: string;
+    jobTitle?: string;
+    hiringManagerName?: string;
+    tone?: string;
+    wordLimit?: number;
+    keyPoints?: string[];
+    customContext?: string;
+    language?: string;
+  }): Promise<string> {
+    let resumeData: any = null;
+    if (data.resumeId) {
+      resumeData = await prisma.resume.findFirst({ where: { id: data.resumeId, userId } });
     }
 
-    return result;
-  } catch (error: any) {
-    throw new Error(`ATS analysis failed: ${error.message}`);
+    const prompt = `You are an expert cover letter writer. Write a ${data.wordLimit || 350}-word ${data.type} cover letter.
+${resumeData ? `Candidate Info: ${JSON.stringify({ name: (resumeData.personalInfo as any)?.name, summary: resumeData.summary })}` : ''}
+Company: ${data.companyName || 'N/A'} | Role: ${data.jobTitle || 'N/A'}
+Tone: ${data.tone || 'professional'} | Language: ${data.language || 'en'}
+${data.hiringManagerName ? `Hiring Manager: ${data.hiringManagerName}` : ''}
+${data.jobDescription ? `Job Description: ${data.jobDescription.substring(0, 1000)}` : ''}
+${data.keyPoints ? `Key Points to Include: ${data.keyPoints.join(', ')}` : ''}
+${data.customContext || ''}
+
+Return JSON: { "content": "full cover letter text" }`;
+
+    const result = await generateStructuredContent<{ content: string }>(prompt, MODELS.PRO);
+    return result.content;
   }
-};
 
-/**
- * Generate LinkedIn bio
- */
-export const generateLinkedInBio = async (
-  resumeData: any,
-  tone: 'professional' | 'casual' | 'creative',
-  targetAudience: string,
-  userId: string
-) => {
-  try {
-    const prompt = PROMPTS.LINKEDIN_BIO({ resumeData, tone, targetAudience });
-    const result = await generateStructuredContent<any>(prompt, MODELS.FLASH);
+  // ── SOP ──────────────────────────────────────────────────────────────
 
-    // Log credit usage
-    await logCreditUsage(userId, 'linkedin_bio', 1);
-
-    return result;
-  } catch (error: any) {
-    throw new Error(`LinkedIn bio generation failed: ${error.message}`);
-  }
-};
-
-/**
- * Generate interview preparation questions
- */
-export const generateInterviewQuestions = async (
-  resumeData: any,
-  jobDescription: string,
-  userId: string
-) => {
-  try {
-    const promptTemplate = USE_ENHANCED_PROMPTS ? ENHANCED_PROMPTS : PROMPTS;
-    const prompt = promptTemplate.INTERVIEW_PREP(resumeData, jobDescription);
-    const result = await generateStructuredContent<any>(prompt, MODELS.PRO);
-
-    // Log credit usage
-    await logCreditUsage(userId, 'interview_prep', 1);
-
-    return result;
-  } catch (error: any) {
-    throw new Error(`Interview prep generation failed: ${error.message}`);
-  }
-};
-
-/**
- * Analyze communication skills
- */
-export const analyzeCommunication = async (writingSample: string, userId: string) => {
-  try {
-    const prompt = PROMPTS.COMMUNICATION_ANALYZE(writingSample);
-    const result = await generateStructuredContent<any>(prompt, MODELS.FLASH);
-
-    // Log credit usage
-    await logCreditUsage(userId, 'communication_analyze', 1);
-
-    return result;
-  } catch (error: any) {
-    throw new Error(`Communication analysis failed: ${error.message}`);
-  }
-};
-
-/**
- * Extract keywords from job description
- */
-export const extractKeywords = async (jobDescription: string, userId?: string) => {
-  try {
-    const prompt = PROMPTS.EXTRACT_KEYWORDS(jobDescription);
-    const result = await generateStructuredContent<any>(prompt, MODELS.FLASH);
-
-    if (userId) {
-      // Free operation, just track it
-      await logCreditUsage(userId, 'keyword_extract', 0);
-    }
-
-    return result;
-  } catch (error: any) {
-    throw new Error(`Keyword extraction failed: ${error.message}`);
-  }
-};
-
-/**
- * Generate motivation letter for scholarship
- */
-export const generateMotivationLetter = async (
-  data: {
-    personalInfo: any;
-    targetProgram: string;
+  async generateSOP(userId: string, data: {
     university: string;
-    background: string;
-    motivation: string;
-  },
-  userId: string
-) => {
-  try {
-    const prompt = `You are an expert scholarship application writer. Create a compelling motivation letter.
+    program: string;
+    country?: string;
+    resumeId?: string;
+    researchInterests?: string;
+    whyThisProgram?: string;
+    careerGoals: string;
+    achievements?: string[];
+    challenges?: string;
+    wordLimit?: number;
+    scholarshipName?: string;
+    language?: string;
+  }): Promise<string> {
+    const prompt = `Write a compelling Statement of Purpose (${data.wordLimit || 800} words) for:
+University: ${data.university} | Program: ${data.program} ${data.country ? `| Country: ${data.country}` : ''}
+Career Goals: ${data.careerGoals}
+${data.researchInterests ? `Research Interests: ${data.researchInterests}` : ''}
+${data.whyThisProgram ? `Why This Program: ${data.whyThisProgram}` : ''}
+${data.achievements ? `Achievements: ${data.achievements.join(', ')}` : ''}
+${data.challenges ? `Challenges Overcome: ${data.challenges}` : ''}
+${data.scholarshipName ? `For Scholarship: ${data.scholarshipName}` : ''}
+Language: ${data.language || 'en'}
 
-APPLICANT: ${data.personalInfo.name}
-PROGRAM: ${data.targetProgram}
-UNIVERSITY: ${data.university}
-BACKGROUND: ${data.background}
-MOTIVATION: ${data.motivation}
+Return JSON: { "content": "full SOP text" }`;
 
-Create a 500-700 word motivation letter that:
-1. Shows genuine passion for the field
-2. Demonstrates fit with the program
-3. Highlights relevant achievements
-4. Explains future impact and goals
-
-Return JSON: { "letter": "full letter", "wordCount": number }`;
-
-    const result = await generateStructuredContent<any>(prompt, MODELS.PRO);
-
-    // Log credit usage
-    await logCreditUsage(userId, 'motivation_letter', 2);
-
-    return result;
-  } catch (error: any) {
-    throw new Error(`Motivation letter generation failed: ${error.message}`);
+    const result = await generateStructuredContent<{ content: string }>(prompt, MODELS.PRO);
+    return result.content;
   }
-};
 
-/**
- * Log AI credit usage
- */
-const logCreditUsage = async (userId: string, action: string, credits: number) => {
-  try {
-    // Deduct credits from user
-    if (credits > 0) {
-      await prisma.user.update({
-        where: { id: userId },
-        data: {
-          credits: {
-            decrement: credits,
-          },
-        },
-      });
+  // ── Motivation Letter ─────────────────────────────────────────────────
+
+  async generateMotivationLetter(userId: string, data: {
+    university: string;
+    program: string;
+    resumeId?: string;
+    personalBackground?: string;
+    motivation: string;
+    careerGoals: string;
+    wordLimit?: number;
+  }): Promise<string> {
+    const prompt = `Write a compelling Motivation Letter (${data.wordLimit || 600} words) for:
+University: ${data.university} | Program: ${data.program}
+Motivation: ${data.motivation}
+Career Goals: ${data.careerGoals}
+${data.personalBackground ? `Background: ${data.personalBackground}` : ''}
+
+Return JSON: { "content": "full motivation letter text" }`;
+
+    const result = await generateStructuredContent<{ content: string }>(prompt, MODELS.PRO);
+    return result.content;
+  }
+
+  // ── Study Plan ────────────────────────────────────────────────────────
+
+  async generateStudyPlan(userId: string, data: {
+    university: string;
+    program: string;
+    duration: string;
+    currentQualification: string;
+    intendedCourses?: string[];
+    researchPlan?: string;
+    postStudyPlans?: string;
+    wordLimit?: number;
+  }): Promise<string> {
+    const prompt = `Write a detailed Study Plan (${data.wordLimit || 600} words) for:
+University: ${data.university} | Program: ${data.program} | Duration: ${data.duration}
+Current Qualification: ${data.currentQualification}
+${data.intendedCourses ? `Intended Courses: ${data.intendedCourses.join(', ')}` : ''}
+${data.researchPlan ? `Research Plan: ${data.researchPlan}` : ''}
+${data.postStudyPlans ? `Post-Study Plans: ${data.postStudyPlans}` : ''}
+
+Return JSON: { "content": "full study plan text" }`;
+
+    const result = await generateStructuredContent<{ content: string }>(prompt, MODELS.PRO);
+    return result.content;
+  }
+
+  // ── Financial Letter ──────────────────────────────────────────────────
+
+  async generateFinancialLetter(userId: string, data: {
+    scholarshipName: string;
+    university: string;
+    financialSituation: string;
+    supportingDetails?: string;
+    wordLimit?: number;
+  }): Promise<string> {
+    const prompt = `Write a Financial Need Letter (${data.wordLimit || 400} words) for:
+Scholarship: ${data.scholarshipName} | University: ${data.university}
+Financial Situation: ${data.financialSituation}
+${data.supportingDetails ? `Supporting Details: ${data.supportingDetails}` : ''}
+
+Return JSON: { "content": "full financial letter text" }`;
+
+    const result = await generateStructuredContent<{ content: string }>(prompt, MODELS.PRO);
+    return result.content;
+  }
+
+  // ── Bio ───────────────────────────────────────────────────────────────
+
+  async generateBio(userId: string, data: {
+    bioType: string;
+    resumeId?: string;
+    name?: string;
+    currentRole?: string;
+    company?: string;
+    yearsOfExperience?: number;
+    keySkills?: string[];
+    tone?: string;
+    wordLimit?: number;
+    includeCallToAction?: boolean;
+  }): Promise<string> {
+    let resumeData: any = null;
+    if (data.resumeId) {
+      resumeData = await prisma.resume.findFirst({ where: { id: data.resumeId, userId } });
     }
 
-    // Log the usage
-    await prisma.creditUsage.create({
-      data: {
-        userId,
-        action,
-        credits,
-      },
-    });
-  } catch (error) {
-    console.error('Failed to log credit usage:', error);
-  }
-};
+    const prompt = `Write a compelling ${data.bioType} bio${data.wordLimit ? ` (max ${data.wordLimit} words)` : ''}.
+Name: ${data.name || (resumeData?.personalInfo as any)?.name || 'Professional'}
+Role: ${data.currentRole} ${data.company ? `at ${data.company}` : ''}
+Experience: ${data.yearsOfExperience} years
+Skills: ${data.keySkills?.join(', ') || ''}
+Tone: ${data.tone || 'professional'}
+${data.includeCallToAction ? 'Include a call to action at the end.' : ''}
 
-/**
- * Check if user has enough credits
- */
-export const checkCredits = async (userId: string, required: number): Promise<boolean> => {
-  const user = await prisma.user.findUnique({
-    where: { id: userId },
-    select: { credits: true, plan: true },
-  });
+Return JSON: { "content": "bio text" }`;
 
-  if (!user) return false;
-
-  // Premium users have unlimited credits
-  if (user.plan === 'PRO' || user.plan === 'ENTERPRISE') {
-    return true;
+    const result = await generateStructuredContent<{ content: string }>(prompt, MODELS.FLASH);
+    return result.content;
   }
 
-  return user.credits >= required;
+  // ── Interview ─────────────────────────────────────────────────────────
+
+  async generateInterviewQuestions(userId: string, data: {
+    resumeId: string;
+    jobDescription?: string;
+    questionCount?: number;
+    categories?: string[];
+    difficulty?: string;
+    includeAnswerTips?: boolean;
+  }) {
+    const resume = await prisma.resume.findFirst({ where: { id: data.resumeId, userId } });
+
+    const prompt = `Generate ${data.questionCount || 10} interview questions.
+Categories: ${(data.categories || ['behavioral', 'technical', 'situational']).join(', ')}
+Difficulty: ${data.difficulty || 'mid'}
+${data.jobDescription ? `Job Description: ${data.jobDescription.substring(0, 800)}` : ''}
+${resume ? `Candidate Background: ${JSON.stringify({ summary: resume.summary, experience: resume.experience?.slice(0, 2) })}` : ''}
+
+Return JSON: { "questions": [{ "id": "q1", "category": string, "question": string, "difficulty": string, "answerTip": string }] }`;
+
+    return generateStructuredContent<any>(prompt, MODELS.PRO);
+  }
+
+  async generateInterviewFeedback(questionId: string, question: string, userAnswer: string) {
+    const prompt = `Evaluate this interview answer:
+Question: ${question}
+Answer: ${userAnswer}
+
+Return JSON: { "score": 0-10, "feedback": string, "strengths": [string], "improvements": [string], "suggestedAnswer": string }`;
+
+    return generateStructuredContent<any>(prompt, MODELS.PRO);
+  }
+
+  // ── Communication Analyzer ────────────────────────────────────────────
+
+  async analyzeCommunication(userId: string, data: {
+    text: string;
+    context?: string;
+    targetAudience?: string;
+  }) {
+    const prompt = `Analyze this professional communication sample.
+Context: ${data.context || 'general'}
+Target Audience: ${data.targetAudience || 'general'}
+Text: ${data.text.substring(0, 3000)}
+
+Return JSON: {
+  "overallScore": 0-100,
+  "clarity": 0-100,
+  "grammar": 0-100,
+  "tone": 0-100,
+  "professionalism": 0-100,
+  "suggestions": [{ "type": string, "issue": string, "fix": string }],
+  "highlights": [{ "text": string, "type": "strength"|"weakness", "comment": string }]
+}`;
+
+    return generateStructuredContent<any>(prompt, MODELS.FLASH);
+  }
+
+  // ── Keywords ──────────────────────────────────────────────────────────
+
+  async extractKeywords(text: string, maxKeywords = 30, includeWeights = false) {
+    const prompt = `Extract the top ${maxKeywords} professional keywords from this text.
+Text: ${text.substring(0, 3000)}
+
+Return JSON: { "keywords": [string], ${includeWeights ? '"weights": { "keyword": number }' : ''} }`;
+
+    return generateStructuredContent<any>(prompt, MODELS.FLASH);
+  }
+
+  // ── Grammar & Text ────────────────────────────────────────────────────
+
+  async fixGrammar(text: string, mode: string = 'grammar_only') {
+    const prompt = `Fix grammar and style in this text. Mode: ${mode}.
+Text: ${text}
+
+Return JSON: { "original": string, "corrected": string, "changes": [{ "original": string, "corrected": string, "reason": string }] }`;
+
+    return generateStructuredContent<any>(prompt, MODELS.FLASH);
+  }
+
+  async improveText(text: string, tone?: string, context?: string) {
+    const prompt = `Improve this text.
+Tone: ${tone || 'professional'} | Context: ${context || 'general'}
+Text: ${text}
+
+Return JSON: { "improved": string, "changes": [{ "description": string }] }`;
+
+    return generateStructuredContent<any>(prompt, MODELS.FLASH);
+  }
+}
+
+// Keep backward compatibility with existing functional exports
+export {
+  generateContent,
 };
 
-export default {
-  generateResume,
-  tailorResume,
-  improveResume,
-  generateCoverLetter,
-  generateSOP,
-  analyzeATS,
-  generateLinkedInBio,
-  generateInterviewQuestions,
-  analyzeCommunication,
-  extractKeywords,
-  generateMotivationLetter,
-  checkCredits,
-};
+export default new AIService();

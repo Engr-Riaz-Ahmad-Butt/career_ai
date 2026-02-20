@@ -1,100 +1,40 @@
 import { Router } from 'express';
+import { authenticate, requireCredits } from '../middleware/auth';
+import { enhanceResume, scoreAts, getSuggestions, extractKeywords, fixGrammar, improveText } from '../controllers/ai.controller';
 import {
-  generateResume,
-  tailorResume,
-  improveResume,
-  analyzeATS,
-  generateCoverLetter,
-  generateSOP,
-  generateLinkedInBio,
-  generateInterviewPrep,
-  analyzeCommunication,
-  extractKeywords,
-  getCredits,
-} from '../controllers/ai.controller';
-import { authenticate } from '../middleware/auth';
-import { asyncHandler } from '../middleware/error';
+  generateCoverLetter, generateSOP, generateMotivationLetter,
+  generateStudyPlan, generateFinancialLetter, generateBio,
+} from '../controllers/document.controller';
+import { tailorResume } from '../controllers/tailoring.controller';
+import { generateSession, submitFeedback } from '../controllers/interview.controller';
+import { analyzeCommunicationAI } from '../controllers/communication.controller';
 
 const router = Router();
-
-// All routes require authentication
 router.use(authenticate);
 
-/**
- * @route   POST /api/ai/generate-resume
- * @desc    Generate resume from scratch (costs 2 credits)
- * @access  Private
- */
-router.post('/generate-resume', asyncHandler(generateResume));
+// ── Resume AI ─────────────────────────────────────────────────────────────
+router.post('/resume/enhance', requireCredits(2), enhanceResume);           // route via req.body.resumeId
+router.post('/resume/tailor', requireCredits(3), tailorResume);
+router.post('/resume/ats-score', requireCredits(1), scoreAts);
+router.post('/resume/suggestions', getSuggestions);
 
-/**
- * @route   POST /api/ai/tailor-resume
- * @desc    Tailor resume for job (costs 2 credits)
- * @access  Private
- */
-router.post('/tailor-resume', asyncHandler(tailorResume));
+// ── Document Generators (aliases at /ai/* per spec) ──────────────────────
+router.post('/cover-letter/generate', requireCredits(2), generateCoverLetter);
+router.post('/sop/generate', requireCredits(3), generateSOP);
+router.post('/motivation-letter/generate', requireCredits(2), generateMotivationLetter);
+router.post('/bio/generate', requireCredits(1), generateBio);
+router.post('/study-plan/generate', requireCredits(2), generateStudyPlan);
 
-/**
- * @route   POST /api/ai/improve-resume
- * @desc    Get improvement suggestions (costs 1 credit)
- * @access  Private
- */
-router.post('/improve-resume', asyncHandler(improveResume));
+// ── Interview ─────────────────────────────────────────────────────────────
+router.post('/interview/generate', requireCredits(2), generateSession);
+router.post('/interview/feedback', requireCredits(1), submitFeedback);
 
-/**
- * @route   POST /api/ai/analyze-ats
- * @desc    Calculate ATS score (free)
- * @access  Private
- */
-router.post('/analyze-ats', asyncHandler(analyzeATS));
+// ── Analysis ─────────────────────────────────────────────────────────────
+router.post('/communication/analyze', requireCredits(1), analyzeCommunicationAI);
 
-/**
- * @route   POST /api/ai/generate-cover-letter
- * @desc    Generate cover letter (costs 1 credit)
- * @access  Private
- */
-router.post('/generate-cover-letter', asyncHandler(generateCoverLetter));
-
-/**
- * @route   POST /api/ai/generate-sop
- * @desc    Generate Statement of Purpose (costs 2 credits)
- * @access  Private
- */
-router.post('/generate-sop', asyncHandler(generateSOP));
-
-/**
- * @route   POST /api/ai/generate-linkedin-bio
- * @desc    Generate LinkedIn bio (costs 1 credit)
- * @access  Private
- */
-router.post('/generate-linkedin-bio', asyncHandler(generateLinkedInBio));
-
-/**
- * @route   POST /api/ai/interview-prep
- * @desc    Generate interview questions (costs 1 credit)
- * @access  Private
- */
-router.post('/interview-prep', asyncHandler(generateInterviewPrep));
-
-/**
- * @route   POST /api/ai/analyze-communication
- * @desc    Analyze writing sample (costs 1 credit)
- * @access  Private
- */
-router.post('/analyze-communication', asyncHandler(analyzeCommunication));
-
-/**
- * @route   POST /api/ai/extract-keywords
- * @desc    Extract keywords from JD (free)
- * @access  Private
- */
-router.post('/extract-keywords', asyncHandler(extractKeywords));
-
-/**
- * @route   GET /api/ai/credits
- * @desc    Get remaining AI credits
- * @access  Private
- */
-router.get('/credits', asyncHandler(getCredits));
+// ── Utilities ─────────────────────────────────────────────────────────────
+router.post('/keywords/extract', extractKeywords);
+router.post('/grammar/fix', fixGrammar);
+router.post('/text/improve', improveText);
 
 export default router;

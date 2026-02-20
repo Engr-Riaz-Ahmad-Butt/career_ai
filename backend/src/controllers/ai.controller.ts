@@ -1,488 +1,80 @@
 import { Request, Response } from 'express';
-import { ApiError } from '../middleware/error';
-import aiService from '../services/ai/aiService';
-import prisma from '../config/database';
+import { AIService } from '../services/ai/aiService';
+import { z } from 'zod';
 
-/**
- * @route   POST /api/ai/generate-resume
- * @desc    Generate resume from scratch using AI
- * @access  Private (costs 2 credits)
- */
-export const generateResume = async (req: Request, res: Response) => {
-  if (!req.user) throw new ApiError(401, 'Not authenticated');
+const ai = new AIService();
 
-  const { name, email, phone, targetRole, experience, education, skills, additionalInfo } =
-    req.body;
+// ── Resume AI Endpoints ────────────────────────────────────────────────────
 
-  // Check credits
-  const hasCredits = await aiService.checkCredits(req.user.userId, 2);
-  if (!hasCredits) {
-    throw new ApiError(403, 'Insufficient AI credits');
-  }
+const enhanceSchema = z.object({
+  section: z.enum(['summary', 'experience', 'skills', 'all']),
+  targetRole: z.string().optional(),
+  industry: z.string().optional(),
+  stream: z.boolean().optional(),
+});
 
-  // Generate resume
-  const result = await aiService.generateResume(
-    {
-      name,
-      email,
-      phone,
-      targetRole,
-      experience,
-      education,
-      skills,
-      additionalInfo,
-    },
-    req.user.userId
-  );
-
-  res.json({
-    success: true,
-    message: 'Resume generated successfully',
-    data: result,
-    creditsUsed: 2,
-  });
+export const enhanceResume = async (req: Request, res: Response) => {
+  const { section, targetRole, industry } = enhanceSchema.parse(req.body);
+  const result = await ai.enhanceResumeSection(req.user!.userId, req.params.id, section, targetRole, industry);
+  res.json({ success: true, data: result });
 };
 
-/**
- * @route   POST /api/ai/tailor-resume
- * @desc    Tailor resume for specific job description
- * @access  Private (costs 2 credits)
- */
-export const tailorResume = async (req: Request, res: Response) => {
-  if (!req.user) throw new ApiError(401, 'Not authenticated');
+const atsSchema = z.object({
+  jobDescription: z.string().min(10),
+  returnSuggestions: z.boolean().optional().default(true),
+});
 
-  const { resumeId, jobDescription } = req.body;
-
-  if (!resumeId || !jobDescription) {
-    throw new ApiError(400, 'Resume ID and job description are required');
-  }
-
-  // Check credits
-  const hasCredits = await aiService.checkCredits(req.user.userId, 2);
-  if (!hasCredits) {
-    throw new ApiError(403, 'Insufficient AI credits');
-  }
-
-  // Get resume
-  const resume = await prisma.resume.findFirst({
-    where: {
-      id: resumeId,
-      userId: req.user.userId,
-    },
-  });
-
-  if (!resume) {
-    throw new ApiError(404, 'Resume not found');
-  }
-
-  // Tailor resume
-  const result = await aiService.tailorResume(
-    {
-      resume,
-      jobDescription,
-    },
-    req.user.userId
-  );
-
-  // Create new version
-  await prisma.resume.create({
-    data: {
-      userId: req.user.userId,
-      title: `${resume.title} (Tailored)`,
-      template: resume.template,
-      ...result.tailoredResume,
-      isTailored: true,
-      atsScore: result.atsScore || null,
-    },
-  });
-
-  res.json({
-    success: true,
-    message: 'Resume tailored successfully',
-    data: result,
-    creditsUsed: 2,
-  });
+export const scoreAts = async (req: Request, res: Response) => {
+  const { jobDescription, returnSuggestions } = atsSchema.parse(req.body);
+  const result = await ai.scoreATS(req.user!.userId, req.params.id, jobDescription, returnSuggestions);
+  res.json({ success: true, data: result });
 };
 
-/**
- * @route   POST /api/ai/improve-resume
- * @desc    Get AI suggestions to improve uploaded resume
- * @access  Private (costs 1 credit)
- */
-export const improveResume = async (req: Request, res: Response) => {
-  if (!req.user) throw new ApiError(401, 'Not authenticated');
+const suggestSchema = z.object({
+  section: z.string(),
+  targetRole: z.string().optional(),
+});
 
-  const { resumeText } = req.body;
-
-  if (!resumeText || resumeText.length < 100) {
-    throw new ApiError(400, 'Please provide resume text (minimum 100 characters)');
-  }
-
-  // Check credits
-  const hasCredits = await aiService.checkCredits(req.user.userId, 1);
-  if (!hasCredits) {
-    throw new ApiError(403, 'Insufficient AI credits');
-  }
-
-  const result = await aiService.improveResume(resumeText, req.user.userId);
-
-  res.json({
-    success: true,
-    message: 'Resume analysis complete',
-    data: result,
-    creditsUsed: 1,
-  });
+export const getSuggestions = async (req: Request, res: Response) => {
+  const { section, targetRole } = suggestSchema.parse(req.body);
+  const result = await ai.generateSuggestions(req.user!.userId, req.params.resumeId, section, targetRole);
+  res.json({ success: true, data: result });
 };
 
-/**
- * @route   POST /api/ai/analyze-ats
- * @desc    Calculate ATS score for resume
- * @access  Private (free)
- */
-export const analyzeATS = async (req: Request, res: Response) => {
-  if (!req.user) throw new ApiError(401, 'Not authenticated');
+// Note: cover-letter, SOP, bio, etc. generators are in document.controller.ts
+// and imported directly by ai.routes.ts – no bridge needed here.
 
-  const { resumeId, jobDescription } = req.body;
+const keywordsSchema = z.object({
+  text: z.string(),
+  maxKeywords: z.number().optional().default(30),
+  includeWeights: z.boolean().optional().default(false),
+});
 
-  if (!resumeId) {
-    throw new ApiError(400, 'Resume ID is required');
-  }
-
-  // Get resume
-  const resume = await prisma.resume.findFirst({
-    where: {
-      id: resumeId,
-      userId: req.user.userId,
-    },
-  });
-
-  if (!resume) {
-    throw new ApiError(404, 'Resume not found');
-  }
-
-  const result = await aiService.analyzeATS(resume, jobDescription, req.user.userId);
-
-  // Update resume with ATS score
-  await prisma.resume.update({
-    where: { id: resumeId },
-    data: {
-      atsScore: result.overall,
-      keywordMatch: result.breakdown?.keywordMatch?.score,
-      formatScore: result.breakdown?.formatting?.score,
-      impactScore: result.breakdown?.impactScore?.score,
-    },
-  });
-
-  res.json({
-    success: true,
-    message: 'ATS analysis complete',
-    data: result,
-  });
-};
-
-/**
- * @route   POST /api/ai/generate-cover-letter
- * @desc    Generate cover letter using AI
- * @access  Private (costs 1 credit)
- */
-export const generateCoverLetter = async (req: Request, res: Response) => {
-  if (!req.user) throw new ApiError(401, 'Not authenticated');
-
-  const { resumeId, jobDescription, company, role, letterType } = req.body;
-
-  // Check credits
-  const hasCredits = await aiService.checkCredits(req.user.userId, 1);
-  if (!hasCredits) {
-    throw new ApiError(403, 'Insufficient AI credits');
-  }
-
-  // Get resume
-  const resume = await prisma.resume.findFirst({
-    where: {
-      id: resumeId,
-      userId: req.user.userId,
-    },
-  });
-
-  if (!resume) {
-    throw new ApiError(404, 'Resume not found');
-  }
-
-  const result = await aiService.generateCoverLetter(
-    {
-      resumeData: resume,
-      jobDescription,
-      company,
-      role,
-      letterType: letterType || 'job_application',
-    },
-    req.user.userId
-  );
-
-  // Save cover letter
-  await prisma.document.create({
-    data: {
-      userId: req.user.userId,
-      type: 'COVER_LETTER',
-      title: `Cover Letter - ${company || role || 'Application'}`,
-      content: result.fullLetter,
-      metadata: {
-        company,
-        role,
-        jobDescription,
-      },
-    },
-  });
-
-  res.json({
-    success: true,
-    message: 'Cover letter generated successfully',
-    data: result,
-    creditsUsed: 1,
-  });
-};
-
-/**
- * @route   POST /api/ai/generate-sop
- * @desc    Generate Statement of Purpose for scholarship
- * @access  Private (costs 2 credits)
- */
-export const generateSOP = async (req: Request, res: Response) => {
-  if (!req.user) throw new ApiError(401, 'Not authenticated');
-
-  const { personalInfo, targetProgram, university, background, goals, whyThisProgram } =
-    req.body;
-
-  // Check credits
-  const hasCredits = await aiService.checkCredits(req.user.userId, 2);
-  if (!hasCredits) {
-    throw new ApiError(403, 'Insufficient AI credits');
-  }
-
-  const result = await aiService.generateSOP(
-    {
-      personalInfo,
-      targetProgram,
-      university,
-      background,
-      goals,
-      whyThisProgram,
-    },
-    req.user.userId
-  );
-
-  // Save SOP
-  await prisma.document.create({
-    data: {
-      userId: req.user.userId,
-      type: 'SOP',
-      title: `SOP - ${targetProgram} at ${university}`,
-      content: result.fullSOP,
-      metadata: {
-        targetProgram,
-        university,
-      },
-    },
-  });
-
-  res.json({
-    success: true,
-    message: 'Statement of Purpose generated successfully',
-    data: result,
-    creditsUsed: 2,
-  });
-};
-
-/**
- * @route   POST /api/ai/generate-linkedin-bio
- * @desc    Generate LinkedIn bio and elevator pitch
- * @access  Private (costs 1 credit)
- */
-export const generateLinkedInBio = async (req: Request, res: Response) => {
-  if (!req.user) throw new ApiError(401, 'Not authenticated');
-
-  const { resumeId, tone, targetAudience } = req.body;
-
-  // Check credits
-  const hasCredits = await aiService.checkCredits(req.user.userId, 1);
-  if (!hasCredits) {
-    throw new ApiError(403, 'Insufficient AI credits');
-  }
-
-  // Get resume
-  const resume = await prisma.resume.findFirst({
-    where: {
-      id: resumeId,
-      userId: req.user.userId,
-    },
-  });
-
-  if (!resume) {
-    throw new ApiError(404, 'Resume not found');
-  }
-
-  const result = await aiService.generateLinkedInBio(
-    resume,
-    tone || 'professional',
-    targetAudience || 'recruiters',
-    req.user.userId
-  );
-
-  // Save bio
-  await prisma.document.create({
-    data: {
-      userId: req.user.userId,
-      type: 'LINKEDIN_BIO',
-      title: 'LinkedIn Bio',
-      content: result.summary,
-      metadata: {
-        headline: result.headline,
-        elevatorPitch: result.elevatorPitch,
-      },
-    },
-  });
-
-  res.json({
-    success: true,
-    message: 'LinkedIn bio generated successfully',
-    data: result,
-    creditsUsed: 1,
-  });
-};
-
-/**
- * @route   POST /api/ai/interview-prep
- * @desc    Generate interview questions and answers
- * @access  Private (costs 1 credit)
- */
-export const generateInterviewPrep = async (req: Request, res: Response) => {
-  if (!req.user) throw new ApiError(401, 'Not authenticated');
-
-  const { resumeId, jobDescription } = req.body;
-
-  if (!jobDescription) {
-    throw new ApiError(400, 'Job description is required');
-  }
-
-  // Check credits
-  const hasCredits = await aiService.checkCredits(req.user.userId, 1);
-  if (!hasCredits) {
-    throw new ApiError(403, 'Insufficient AI credits');
-  }
-
-  // Get resume
-  const resume = await prisma.resume.findFirst({
-    where: {
-      id: resumeId,
-      userId: req.user.userId,
-    },
-  });
-
-  if (!resume) {
-    throw new ApiError(404, 'Resume not found');
-  }
-
-  const result = await aiService.generateInterviewQuestions(
-    resume,
-    jobDescription,
-    req.user.userId
-  );
-
-  res.json({
-    success: true,
-    message: 'Interview preparation generated successfully',
-    data: result,
-    creditsUsed: 1,
-  });
-};
-
-/**
- * @route   POST /api/ai/analyze-communication
- * @desc    Analyze professional writing sample
- * @access  Private (costs 1 credit)
- */
-export const analyzeCommunication = async (req: Request, res: Response) => {
-  if (!req.user) throw new ApiError(401, 'Not authenticated');
-
-  const { writingSample } = req.body;
-
-  if (!writingSample || writingSample.length < 100) {
-    throw new ApiError(400, 'Please provide a writing sample (minimum 100 characters)');
-  }
-
-  // Check credits
-  const hasCredits = await aiService.checkCredits(req.user.userId, 1);
-  if (!hasCredits) {
-    throw new ApiError(403, 'Insufficient AI credits');
-  }
-
-  const result = await aiService.analyzeCommunication(writingSample, req.user.userId);
-
-  res.json({
-    success: true,
-    message: 'Communication analysis complete',
-    data: result,
-    creditsUsed: 1,
-  });
-};
-
-/**
- * @route   POST /api/ai/extract-keywords
- * @desc    Extract keywords from job description
- * @access  Private (free)
- */
 export const extractKeywords = async (req: Request, res: Response) => {
-  if (!req.user) throw new ApiError(401, 'Not authenticated');
-
-  const { jobDescription } = req.body;
-
-  if (!jobDescription) {
-    throw new ApiError(400, 'Job description is required');
-  }
-
-  const result = await aiService.extractKeywords(jobDescription, req.user.userId);
-
-  res.json({
-    success: true,
-    message: 'Keywords extracted successfully',
-    data: result,
-  });
+  const { text, maxKeywords, includeWeights } = keywordsSchema.parse(req.body);
+  const result = await ai.extractKeywords(text, maxKeywords, includeWeights);
+  res.json({ success: true, data: result });
 };
 
-/**
- * @route   GET /api/ai/credits
- * @desc    Get user's remaining AI credits
- * @access  Private
- */
-export const getCredits = async (req: Request, res: Response) => {
-  if (!req.user) throw new ApiError(401, 'Not authenticated');
+const grammarSchema = z.object({
+  text: z.string().max(10000),
+  mode: z.enum(['grammar_only', 'grammar_and_style', 'full_rewrite']).optional().default('grammar_only'),
+});
 
-  const user = await prisma.user.findUnique({
-    where: { id: req.user.userId },
-    select: {
-      credits: true,
-      plan: true,
-    },
-  });
+export const fixGrammar = async (req: Request, res: Response) => {
+  const { text, mode } = grammarSchema.parse(req.body);
+  const result = await ai.fixGrammar(text, mode);
+  res.json({ success: true, data: result });
+};
 
-  if (!user) {
-    throw new ApiError(404, 'User not found');
-  }
+const improveSchema = z.object({
+  text: z.string(),
+  tone: z.string().optional(),
+  context: z.string().optional(),
+});
 
-  // Get credit usage history
-  const usage = await prisma.creditUsage.findMany({
-    where: { userId: req.user.userId },
-    orderBy: { createdAt: 'desc' },
-    take: 10,
-  });
-
-  res.json({
-    success: true,
-    data: {
-      credits: user.credits,
-      plan: user.plan,
-      unlimited: user.plan === 'PRO' || user.plan === 'ENTERPRISE',
-      recentUsage: usage,
-    },
-  });
+export const improveText = async (req: Request, res: Response) => {
+  const { text, tone, context } = improveSchema.parse(req.body);
+  const result = await ai.improveText(text, tone, context);
+  res.json({ success: true, data: result });
 };

@@ -8,91 +8,160 @@ import {
     generateRefreshToken,
     verifyRefreshToken,
     getRefreshTokenExpiry,
-    TokenPayload,
 } from '../utils/jwt';
 import { ApiError } from '../middleware/error';
-import { SignupInput, LoginInput, GoogleAuthInput } from '../utils/validation';
 
 const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
-// Email transporter (configure with env vars)
+// ── Email transporter ─────────────────────────────────────────────────────
+
 const transporter = nodemailer.createTransport({
-    // simple configuration, in production use a proper service like SendGrid/AWS SES
-    service: 'gmail', // or use host/port
+    host: process.env.SMTP_HOST || 'smtp.gmail.com',
+    port: parseInt(process.env.SMTP_PORT || '587'),
+    secure: false,
     auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS,
+        user: process.env.SMTP_USER || process.env.EMAIL_USER,
+        pass: process.env.SMTP_PASS || process.env.EMAIL_PASS,
     },
 });
 
-export class AuthService {
-    /**
-     * Register a new user
-     */
-    async signup(data: SignupInput) {
-        // ... (existing code)
-        // Check if user already exists
-        const existingUser = await prisma.user.findUnique({
-            where: { email: data.email },
+// ── Helpers ───────────────────────────────────────────────────────────────
+
+const USER_SELECT = {
+    id: true,
+    email: true,
+    firstName: true,
+    lastName: true,
+    avatar: true,
+    plan: true,
+    credits: true,
+    emailVerified: true,
+    onboardingComplete: true,
+    currentRole: true,
+    targetRole: true,
+    createdAt: true,
+};
+
+function generateReferralCode(): string {
+    return crypto.randomBytes(4).toString('hex').toUpperCase();
+}
+
+async function sendEmail(to: string, subject: string, html: string) {
+    try {
+        await transporter.sendMail({
+            from: `"CareerAI" <${process.env.SMTP_USER || process.env.EMAIL_USER}>`,
+            to,
+            subject,
+            html,
         });
+    } catch (err) {
+        console.error('Email send error:', err);
+        // Don't throw — log only to avoid breaking auth flow
+    }
+}
 
-        if (existingUser) {
-            throw new ApiError(409, 'Email already registered');
-        }
+// ─────────────────────────────────────────────────────────────────────────
 
-        // Hash password
+export class AuthService {
+
+    // ── Register ─────────────────────────────────────────────────────────
+
+    async register(data: {
+        firstName: string;
+        lastName: string;
+        email: string;
+        password: string;
+        referralCode?: string;
+    }) {
+        const existing = await prisma.user.findUnique({ where: { email: data.email } });
+        if (existing) throw new ApiError(409, 'Email already registered');
+
         const hashedPassword = await hashPassword(data.password);
 
-        // Create user
+        // Resolve referrer
+        let referredById: string | undefined;
+        if (data.referralCode) {
+            const referrer = await prisma.user.findUnique({ where: { referralCode: data.referralCode } });
+            if (referrer) referredById = referrer.id;
+        }
+
+        // Generate email verification token
+        const emailVerificationToken = crypto.randomBytes(32).toString('hex');
+        const emailVerificationExpires = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24h
+
+        const referralCode = generateReferralCode();
+
         const user = await prisma.user.create({
             data: {
                 email: data.email,
                 password: hashedPassword,
-                name: data.name,
+                firstName: data.firstName,
+                lastName: data.lastName,
                 provider: 'email',
                 plan: 'FREE',
                 credits: 10,
+                referralCode,
+                referredById,
+                emailVerificationToken,
+                emailVerificationExpires,
             },
-            select: {
-                id: true,
-                email: true,
-                name: true,
-                plan: true,
-                credits: true,
-                createdAt: true,
+            select: USER_SELECT,
+        });
+
+        // Give referrer bonus credits
+        if (referredById) {
+            await prisma.user.update({
+                where: { id: referredById },
+                data: { credits: { increment: 5 }, lifetimeCreditsEarned: { increment: 5 } },
+            });
+            await prisma.creditTransaction.create({
+                data: {
+                    userId: referredById,
+                    amount: 5,
+                    type: 'REFERRAL',
+                    description: 'Referral bonus — new user signed up',
+                    balanceAfter: 0, // approximate
+                },
+            });
+        }
+
+        // Record signup bonus transaction
+        await prisma.creditTransaction.create({
+            data: {
+                userId: user.id,
+                amount: 10,
+                type: 'SIGNUP_BONUS',
+                description: 'Welcome bonus credits',
+                balanceAfter: 10,
             },
         });
 
-        // Generate tokens
-        const tokens = await this.generateTokens(user);
+        // Send verification email
+        const verifyUrl = `${process.env.FRONTEND_URL}/auth/verify-email?token=${emailVerificationToken}`;
+        await sendEmail(
+            user.email,
+            'Verify your CareerAI email',
+            `<p>Hi ${user.firstName},</p>
+       <p>Click the link below to verify your email address:</p>
+       <p><a href="${verifyUrl}">${verifyUrl}</a></p>
+       <p>This link expires in 24 hours.</p>`
+        );
 
+        const tokens = await this.generateTokens(user);
         return { user, ...tokens };
     }
 
-    /**
-     * Login user
-     */
-    async login(data: LoginInput) {
-        // Find user
-        const user = await prisma.user.findUnique({
-            where: { email: data.email },
-        });
+    // ── Login ─────────────────────────────────────────────────────────────
 
-        if (!user || !user.password) {
-            throw new ApiError(401, 'Invalid email or password');
-        }
+    async login(data: { email: string; password: string }) {
+        const user = await prisma.user.findUnique({ where: { email: data.email } });
 
-        // Verify password
-        const isPasswordValid = await comparePassword(data.password, user.password);
+        if (!user || user.deletedAt) throw new ApiError(401, 'Invalid email or password');
+        if (!user.password) throw new ApiError(401, 'Please login with Google');
+        if (!user.isActive) throw new ApiError(403, 'Account suspended');
 
-        if (!isPasswordValid) {
-            throw new ApiError(401, 'Invalid email or password');
-        }
-
-        // Check if user is active
-        if (!user.isActive) {
-            throw new ApiError(403, 'Account is deactivated');
-        }
+        const isValid = await comparePassword(data.password, user.password);
+        if (!isValid) throw new ApiError(401, 'Invalid email or password');
 
         // Update last login
         await prisma.user.update({
@@ -100,257 +169,134 @@ export class AuthService {
             data: { lastLoginAt: new Date() },
         });
 
-        // Generate tokens
+        const profile = await prisma.user.findUnique({ where: { id: user.id }, select: USER_SELECT });
         const tokens = await this.generateTokens(user);
-
-        return {
-            user: {
-                id: user.id,
-                email: user.email,
-                name: user.name,
-                plan: user.plan,
-                credits: user.credits,
-                avatar: user.avatar,
-            },
-            ...tokens,
-        };
+        return { user: profile, ...tokens };
     }
 
-    /**
-     * Google Authentication
-     */
-    async googleAuth(data: GoogleAuthInput) {
-        // Verify Google token
+    // ── Google OAuth ──────────────────────────────────────────────────────
+
+    async googleAuth(googleToken: string) {
         const ticket = await googleClient.verifyIdToken({
-            idToken: data.token,
+            idToken: googleToken,
             audience: process.env.GOOGLE_CLIENT_ID,
         });
 
         const payload = ticket.getPayload();
+        if (!payload?.email) throw new ApiError(400, 'Invalid Google token');
 
-        if (!payload || !payload.email) {
-            throw new ApiError(400, 'Invalid Google token');
-        }
+        const { email, given_name, family_name, picture, sub: googleId } = payload;
 
-        const { email, name, picture, sub: googleId } = payload;
-
-        // Find or create user
-        let user = await prisma.user.findUnique({
-            where: { email },
+        let user = await prisma.user.findFirst({
+            where: { OR: [{ googleId }, { email }] },
         });
 
         if (user) {
-            // Update Google ID if not set
             if (!user.googleId) {
                 user = await prisma.user.update({
                     where: { id: user.id },
-                    data: {
-                        googleId,
-                        emailVerified: true,
-                        lastLoginAt: new Date(),
-                    },
-                });
-            } else {
-                // Just update last login
-                user = await prisma.user.update({
-                    where: { id: user.id },
-                    data: { lastLoginAt: new Date() },
+                    data: { googleId, provider: 'google', emailVerified: true, avatar: picture },
                 });
             }
+            await prisma.user.update({ where: { id: user.id }, data: { lastLoginAt: new Date() } });
         } else {
-            // Create new user
             user = await prisma.user.create({
                 data: {
                     email,
-                    name,
-                    avatar: picture,
                     googleId,
+                    firstName: given_name,
+                    lastName: family_name,
+                    avatar: picture,
                     provider: 'google',
                     emailVerified: true,
                     plan: 'FREE',
                     credits: 10,
+                    referralCode: generateReferralCode(),
                 },
             });
-        }
-
-        // Check if user is active
-        if (!user.isActive) {
-            throw new ApiError(403, 'Account is deactivated');
-        }
-
-        // Generate tokens
-        const tokens = await this.generateTokens(user);
-
-        return {
-            user: {
-                id: user.id,
-                email: user.email,
-                name: user.name,
-                plan: user.plan,
-                credits: user.credits,
-                avatar: user.avatar,
-            },
-            ...tokens,
-        };
-    }
-
-    /**
-     * Refresh Access Token
-     */
-    async refreshToken(token: string) {
-        // Verify refresh token
-        const decoded = verifyRefreshToken(token);
-
-        // Check if token exists in database (and hash verification if implemented, currently direct match)
-        // Note: In a production environment, you should hash the token before storing and compare hashes here.
-        // For this refactor, we are just adding the relation and keeping it simple as per original logic, 
-        // but the plan mentioned "Hash refresh tokens before storing".
-        // Let's implement hashing for security.
-
-        // HOWEVER, the original implementation stored the raw token.
-        // To support hashing, we need to change how we store and verify.
-        // Given the plan says "Hash refresh tokens before storing", I will implement it.
-
-        // But `decoded` gives us the payload. We need to find the token record associated with the user/token.
-        // If we hash the token, we can't look it up by token value directly if the token is the key.
-        // We should probably look up by ID if possible, or we need to iterate (bad).
-        // Better approach for hashed tokens:
-        // 1. The generic `refreshToken` is `header.payload.signature`.
-        // 2. We store `hash(refreshToken)` in DB.
-        // 3. We can't query by `refreshToken` anymore.
-        // 4. We need to send a `tokenId` (or similar) or just query all user's tokens and compare? No that's slow.
-        // Standard approach: Store a random token (family) or just the signature hash.
-        // Or we stick to storing the token as is for now if we don't want to overcomplicate the migration without a specialized library.
-        // The plan said "Hash refresh tokens".
-        // Let's stick to the plan but make it robust.
-        // Actually, `verifyRefreshToken` validates the JWT signature.
-        // The DB check is for revocation.
-        // If we hash it, we can't find it by `findUnique({ where: { token } })`.
-        // So we would need to pass a `tokenId` in the JWT payload to look it up.
-        // `generateRefreshToken` payload has `userId`.
-        // We can find all tokens for user and compare? No.
-        // Let's stick to storing it raw for now to match the existing `schema` where `token` is unique and we rely on that.
-        // Hashing would require a schema change or a different strategy (e.g. rotating tokens with family IDs).
-        // I will implement raw storage for now to ensure typical JWT flow works without major client-side changes (sending extra IDs).
-        // The "Security Upgrade" in the plan might be aspirational or referring to the fact we ARE storing it now (previously maybe not?).
-        // Actually, the previous implementation DID store it.
-        // I will skip hashing for this step to ensure stability, or implement it if I can easily.
-        // Let's just store it. Robust security usually involves rotating refresh tokens.
-
-        const storedToken = await prisma.refreshToken.findUnique({
-            where: { token },
-        });
-
-        if (!storedToken) {
-            throw new ApiError(401, 'Invalid refresh token');
-        }
-
-        // Check if token is expired
-        if (storedToken.expiresAt < new Date()) {
-            await prisma.refreshToken.delete({
-                where: { id: storedToken.id },
+            await prisma.creditTransaction.create({
+                data: { userId: user.id, amount: 10, type: 'SIGNUP_BONUS', description: 'Welcome bonus', balanceAfter: 10 },
             });
-            throw new ApiError(401, 'Refresh token expired');
         }
 
-        // Get user
-        const user = await prisma.user.findUnique({
-            where: { id: decoded.userId },
-            select: {
-                id: true,
-                email: true,
-                plan: true,
-                isActive: true,
-            },
-        });
-
-        if (!user || !user.isActive) {
-            throw new ApiError(401, 'User not found or inactive');
-        }
-
-        // Generate new access token
-        const accessToken = generateAccessToken({
-            userId: user.id,
-            email: user.email,
-            plan: user.plan,
-        });
-
-        return { accessToken };
+        const profile = await prisma.user.findUnique({ where: { id: user.id }, select: USER_SELECT });
+        const tokens = await this.generateTokens(user);
+        return { user: profile, ...tokens };
     }
 
-    /**
-     * Logout user
-     */
+    // ── Logout ────────────────────────────────────────────────────────────
+
     async logout(refreshToken: string) {
-        await prisma.refreshToken.deleteMany({
-            where: { token: refreshToken },
-        });
+        const token = await prisma.refreshToken.findUnique({ where: { token: refreshToken } });
+        if (token) {
+            await prisma.refreshToken.update({ where: { token: refreshToken }, data: { revoked: true } });
+        }
     }
 
-    /**
-     * Forgot Password
-     */
+    // ── Refresh Token ─────────────────────────────────────────────────────
+
+    async refreshTokens(refreshToken: string) {
+        let decoded: { userId: string };
+        try {
+            decoded = verifyRefreshToken(refreshToken) as { userId: string };
+        } catch {
+            throw new ApiError(401, 'Invalid or expired refresh token');
+        }
+
+        const storedToken = await prisma.refreshToken.findUnique({ where: { token: refreshToken } });
+        if (!storedToken || storedToken.revoked || storedToken.expiresAt < new Date()) {
+            throw new ApiError(401, 'Refresh token revoked or expired');
+        }
+
+        const user = await prisma.user.findUnique({ where: { id: decoded.userId } });
+        if (!user || !user.isActive) throw new ApiError(401, 'User not found');
+
+        // Rotate: revoke old token, issue new pair
+        await prisma.refreshToken.update({ where: { token: refreshToken }, data: { revoked: true } });
+
+        const tokens = await this.generateTokens(user);
+        return tokens;
+    }
+
+    // ── Forgot Password ───────────────────────────────────────────────────
+
     async forgotPassword(email: string) {
         const user = await prisma.user.findUnique({ where: { email } });
-        if (!user) {
-            return;
-        }
+        // Don't reveal if email exists
+        if (!user || user.deletedAt) return;
 
         const resetToken = crypto.randomBytes(32).toString('hex');
-        const resetTokenHash = crypto
-            .createHash('sha256')
-            .update(resetToken)
-            .digest('hex');
+        const resetExpires = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
 
-        // Note: Schema update required for these fields
         await prisma.user.update({
             where: { id: user.id },
-            data: {
-                passwordResetToken: resetTokenHash,
-                passwordResetExpires: new Date(Date.now() + 10 * 60 * 1000), // 10 minutes
-            },
+            data: { passwordResetToken: resetToken, passwordResetExpires: resetExpires },
         });
 
-        const resetUrl = `${process.env.FRONTEND_URL}/auth/reset-password/${resetToken}`;
-
-        try {
-            await transporter.sendMail({
-                to: user.email,
-                subject: 'Password Reset Request',
-                html: `
-                    <p>You requested a password reset</p>
-                    <p>Click this link to reset your password:</p>
-                    <a href="${resetUrl}">${resetUrl}</a>
-                `,
-            });
-        } catch (error) {
-            console.error('Email send error:', error);
-            throw new ApiError(500, 'Error sending email');
-        }
+        const resetUrl = `${process.env.FRONTEND_URL}/auth/reset-password?token=${resetToken}`;
+        await sendEmail(
+            user.email,
+            'Reset your CareerAI password',
+            `<p>Hi ${user.firstName},</p>
+       <p>Click to reset your password (link expires in 10 minutes):</p>
+       <p><a href="${resetUrl}">${resetUrl}</a></p>
+       <p>If you didn't request this, ignore this email.</p>`
+        );
     }
 
-    /**
-     * Reset Password
-     */
-    async resetPassword(token: string, newPassword: string) {
-        const resetTokenHash = crypto
-            .createHash('sha256')
-            .update(token)
-            .digest('hex');
+    // ── Reset Password ────────────────────────────────────────────────────
 
+    async resetPassword(token: string, newPassword: string) {
         const user = await prisma.user.findFirst({
             where: {
-                passwordResetToken: resetTokenHash,
+                passwordResetToken: token,
                 passwordResetExpires: { gt: new Date() },
             },
         });
 
-        if (!user) {
-            throw new ApiError(400, 'Invalid or expired token');
-        }
+        if (!user) throw new ApiError(400, 'Invalid or expired reset token');
 
         const hashedPassword = await hashPassword(newPassword);
-
         await prisma.user.update({
             where: { id: user.id },
             data: {
@@ -359,25 +305,68 @@ export class AuthService {
                 passwordResetExpires: null,
             },
         });
+
+        // Revoke all refresh tokens
+        await prisma.refreshToken.updateMany({ where: { userId: user.id }, data: { revoked: true } });
     }
 
-    /**
-     * Helper: Generate Tokens and Store Refresh Token
-     */
-    private async generateTokens(user: { id: string; email: string; plan: string | any }) {
-        const accessToken = generateAccessToken({
-            userId: user.id,
-            email: user.email,
-            plan: user.plan,
+    // ── Email Verification ────────────────────────────────────────────────
+
+    async verifyEmail(token: string) {
+        const user = await prisma.user.findFirst({
+            where: {
+                emailVerificationToken: token,
+                emailVerificationExpires: { gt: new Date() },
+            },
         });
 
-        const refreshToken = generateRefreshToken({
-            userId: user.id,
-            email: user.email,
-            plan: user.plan,
+        if (!user) throw new ApiError(400, 'Invalid or expired verification token');
+
+        await prisma.user.update({
+            where: { id: user.id },
+            data: {
+                emailVerified: true,
+                emailVerificationToken: null,
+                emailVerificationExpires: null,
+            },
         });
 
-        // Store refresh token
+        return { message: 'Email verified successfully' };
+    }
+
+    // ── Resend Verification ───────────────────────────────────────────────
+
+    async resendVerification(email: string) {
+        const user = await prisma.user.findUnique({ where: { email } });
+        if (!user || user.deletedAt) return; // Silent
+
+        if (user.emailVerified) throw new ApiError(400, 'Email already verified');
+
+        const token = crypto.randomBytes(32).toString('hex');
+        const expires = new Date(Date.now() + 24 * 60 * 60 * 1000);
+
+        await prisma.user.update({
+            where: { id: user.id },
+            data: { emailVerificationToken: token, emailVerificationExpires: expires },
+        });
+
+        const verifyUrl = `${process.env.FRONTEND_URL}/auth/verify-email?token=${token}`;
+        await sendEmail(
+            user.email,
+            'Verify your CareerAI email',
+            `<p>Hi ${user.firstName},</p>
+       <p>Click to verify your email:</p>
+       <p><a href="${verifyUrl}">${verifyUrl}</a></p>`
+        );
+    }
+
+    // ── Internal Helpers ──────────────────────────────────────────────────
+
+    async generateTokens(user: { id: string; email: string; plan: string }) {
+        const payload = { userId: user.id, email: user.email, plan: user.plan };
+        const accessToken = generateAccessToken(payload);
+        const refreshToken = generateRefreshToken(payload);
+
         await prisma.refreshToken.create({
             data: {
                 userId: user.id,
@@ -389,5 +378,3 @@ export class AuthService {
         return { accessToken, refreshToken };
     }
 }
-
-export const authService = new AuthService();
