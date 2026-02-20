@@ -56,7 +56,7 @@ export default function Navbar() {
           Sign in
         </Link>
         <Link
-          href="/auth/signup"
+          href="/auth/register"
           className="px-[26px] py-[10px] rounded-[10px] text-sm font-semibold text-white bg-gradient-to-br from-[#3b82f6] to-[#2563eb] border-none cursor-pointer transition-all duration-300 shadow-[0_4px_16px_rgba(59,130,246,0.4)] relative overflow-hidden hover:translate-y-[-3px] hover:shadow-[0_8px_28px_rgba(59,130,246,0.6)] before:content-[''] before:absolute before:inset-0 before:bg-gradient-to-br before:from-[#60a5fa] before:to-[#3b82f6] before:opacity-0 before:transition-opacity before:duration-300 hover:before:opacity-100"
         >
           Get Started Free
@@ -118,7 +118,7 @@ export default function Navbar() {
               Sign in
             </Link>
             <Link
-              href="/auth/signup"
+              href="/auth/register"
               className="px-4 py-2 rounded-lg text-sm font-semibold text-center text-white bg-gradient-to-br from-[#3b82f6] to-[#2563eb]"
               onClick={() => setMobileMenuOpen(false)}
             >
