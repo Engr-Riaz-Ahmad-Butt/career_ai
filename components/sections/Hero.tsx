@@ -66,7 +66,7 @@ export default function Hero() {
         className="mt-8 sm:mt-10 flex gap-3 sm:gap-[14px] items-center flex-wrap justify-center w-full"
       >
         <Link
-          href="/auth/signup"
+          href="/auth/register"
           className="px-6 sm:px-[30px] py-3 sm:py-[13px] rounded-[10px] font-[var(--font-d)] text-sm text-white bg-gradient-to-br from-[var(--blue)] to-[var(--blue-dim)] border-none cursor-pointer transition-all duration-[250ms] shadow-[0_0_40px_rgba(59,130,246,0.4)] inline-block hover:translate-y-[-2px] hover:shadow-[0_6px_50px_rgba(59,130,246,0.6)]"
         >
           Start for Free — No Credit Card

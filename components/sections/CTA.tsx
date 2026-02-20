@@ -15,7 +15,7 @@ export default function CTA() {
                     </p>
                     <div className="flex gap-3 justify-center flex-wrap relative z-[1]">
                         <Link
-                            href="/auth/signup"
+                            href="/auth/register"
                             className="px-[30px] py-[13px] rounded-[10px] font-[var(--font-d)] text-sm text-white bg-gradient-to-br from-[var(--blue)] to-[var(--blue-dim)] border-none cursor-pointer transition-all duration-[250ms] shadow-[0_0_40px_rgba(59,130,246,0.4)] inline-block hover:translate-y-[-2px] hover:shadow-[0_6px_50px_rgba(59,130,246,0.6)]"
                         >
                             Create Your Free Resume →
