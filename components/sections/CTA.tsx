@@ -20,9 +20,12 @@ export default function CTA() {
                         >
                             Create Your Free Resume →
                         </Link>
-                        <button className="px-[30px] py-[13px] rounded-[10px] font-[var(--font-b)] text-sm text-[var(--g2)] bg-[rgba(255,255,255,0.05)] border border-[var(--border2)] cursor-pointer transition-all duration-200 hover:bg-[rgba(255,255,255,0.1)] hover:text-white">
+                        <Link
+                            href="/features"
+                            className="px-[30px] py-[13px] rounded-[10px] font-[var(--font-b)] text-sm text-[var(--g2)] bg-[rgba(255,255,255,0.05)] border border-[var(--border2)] cursor-pointer transition-all duration-200 hover:bg-[rgba(255,255,255,0.1)] hover:text-white"
+                        >
                             See All Features
-                        </button>
+                        </Link>
                     </div>
                 </div>
             </div>
