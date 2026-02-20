@@ -5,6 +5,8 @@ import {
   loginSchema,
   googleAuthSchema,
   refreshTokenSchema,
+  forgotPasswordSchema,
+  resetPasswordSchema,
 } from '../utils/validation';
 import { ApiError } from '../middleware/error';
 
@@ -88,19 +90,31 @@ export const logout = async (req: Request, res: Response) => {
 };
 
 /**
- * @route   GET /api/auth/me
- * @desc    Get current user
- * @access  Private
+ * @route   POST /api/auth/forgot-password
+ * @desc    Request password reset email
+ * @access  Public
  */
-export const getCurrentUser = async (req: Request, res: Response) => {
-  if (!req.user) {
-    throw new ApiError(401, 'Not authenticated');
-  }
-
-  const user = await authService.getUserProfile(req.user.userId);
+export const forgotPassword = async (req: Request, res: Response) => {
+  const validatedData = forgotPasswordSchema.parse(req.body);
+  await authService.forgotPassword(validatedData.email);
 
   res.json({
     success: true,
-    data: { user },
+    message: 'If an account with that email exists, a password reset link has been sent.',
+  });
+};
+
+/**
+ * @route   POST /api/auth/reset-password
+ * @desc    Reset password using token
+ * @access  Public
+ */
+export const resetPassword = async (req: Request, res: Response) => {
+  const validatedData = resetPasswordSchema.parse(req.body);
+  await authService.resetPassword(validatedData.token, validatedData.password);
+
+  res.json({
+    success: true,
+    message: 'Password has been reset successfully',
   });
 };

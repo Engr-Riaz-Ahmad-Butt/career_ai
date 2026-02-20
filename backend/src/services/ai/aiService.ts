@@ -316,7 +316,7 @@ export const checkCredits = async (userId: string, required: number): Promise<bo
   if (!user) return false;
 
   // Premium users have unlimited credits
-  if (user.plan === 'PREMIUM' || user.plan === 'ENTERPRISE') {
+  if (user.plan === 'PRO' || user.plan === 'ENTERPRISE') {
     return true;
   }
 

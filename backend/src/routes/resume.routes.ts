@@ -7,8 +7,10 @@ import {
   deleteResume,
   duplicateResume,
   exportResume,
+  uploadResume,
 } from '../controllers/resume.controller';
 import { authenticate, requireCredits } from '../middleware/auth';
+import { upload } from '../middleware/upload';
 import { asyncHandler } from '../middleware/error';
 
 const router = Router();
@@ -64,5 +66,13 @@ router.post('/:id/duplicate', asyncHandler(duplicateResume));
  * @access  Private
  */
 router.get('/:id/export', asyncHandler(exportResume));
+
+
+/**
+ * @route   POST /api/resumes/upload
+ * @desc    Upload resume file
+ * @access  Private
+ */
+router.post('/upload', upload.single('resume'), asyncHandler(uploadResume));
 
 export default router;

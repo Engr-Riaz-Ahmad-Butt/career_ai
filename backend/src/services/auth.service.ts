@@ -1,5 +1,7 @@
 import prisma from '../config/database';
 import { OAuth2Client } from 'google-auth-library';
+import crypto from 'crypto';
+import nodemailer from 'nodemailer';
 import { hashPassword, comparePassword } from '../utils/password';
 import {
     generateAccessToken,
@@ -13,11 +15,22 @@ import { SignupInput, LoginInput, GoogleAuthInput } from '../utils/validation';
 
 const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
+// Email transporter (configure with env vars)
+const transporter = nodemailer.createTransport({
+    // simple configuration, in production use a proper service like SendGrid/AWS SES
+    service: 'gmail', // or use host/port
+    auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS,
+    },
+});
+
 export class AuthService {
     /**
      * Register a new user
      */
     async signup(data: SignupInput) {
+        // ... (existing code)
         // Check if user already exists
         const existingUser = await prisma.user.findUnique({
             where: { email: data.email },
@@ -275,32 +288,77 @@ export class AuthService {
     }
 
     /**
-     * Get user profile
+     * Forgot Password
      */
-    async getUserProfile(userId: string) {
-        const user = await prisma.user.findUnique({
-            where: { id: userId },
-            select: {
-                id: true,
-                email: true,
-                name: true,
-                avatar: true,
-                plan: true,
-                credits: true,
-                phone: true,
-                location: true,
-                timezone: true,
-                emailVerified: true,
-                createdAt: true,
-                lastLoginAt: true,
+    async forgotPassword(email: string) {
+        const user = await prisma.user.findUnique({ where: { email } });
+        if (!user) {
+            return;
+        }
+
+        const resetToken = crypto.randomBytes(32).toString('hex');
+        const resetTokenHash = crypto
+            .createHash('sha256')
+            .update(resetToken)
+            .digest('hex');
+
+        // Note: Schema update required for these fields
+        await prisma.user.update({
+            where: { id: user.id },
+            data: {
+                passwordResetToken: resetTokenHash,
+                passwordResetExpires: new Date(Date.now() + 10 * 60 * 1000), // 10 minutes
+            },
+        });
+
+        const resetUrl = `${process.env.FRONTEND_URL}/auth/reset-password/${resetToken}`;
+
+        try {
+            await transporter.sendMail({
+                to: user.email,
+                subject: 'Password Reset Request',
+                html: `
+                    <p>You requested a password reset</p>
+                    <p>Click this link to reset your password:</p>
+                    <a href="${resetUrl}">${resetUrl}</a>
+                `,
+            });
+        } catch (error) {
+            console.error('Email send error:', error);
+            throw new ApiError(500, 'Error sending email');
+        }
+    }
+
+    /**
+     * Reset Password
+     */
+    async resetPassword(token: string, newPassword: string) {
+        const resetTokenHash = crypto
+            .createHash('sha256')
+            .update(token)
+            .digest('hex');
+
+        const user = await prisma.user.findFirst({
+            where: {
+                passwordResetToken: resetTokenHash,
+                passwordResetExpires: { gt: new Date() },
             },
         });
 
         if (!user) {
-            throw new ApiError(404, 'User not found');
+            throw new ApiError(400, 'Invalid or expired token');
         }
 
-        return user;
+        const hashedPassword = await hashPassword(newPassword);
+
+        await prisma.user.update({
+            where: { id: user.id },
+            data: {
+                password: hashedPassword,
+                passwordResetToken: null,
+                passwordResetExpires: null,
+            },
+        });
     }
 
     /**

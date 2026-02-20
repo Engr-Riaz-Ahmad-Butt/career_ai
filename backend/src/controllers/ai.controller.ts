@@ -481,7 +481,7 @@ export const getCredits = async (req: Request, res: Response) => {
     data: {
       credits: user.credits,
       plan: user.plan,
-      unlimited: user.plan === 'PREMIUM' || user.plan === 'ENTERPRISE',
+      unlimited: user.plan === 'PRO' || user.plan === 'ENTERPRISE',
       recentUsage: usage,
     },
   });

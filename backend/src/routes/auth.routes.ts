@@ -5,7 +5,8 @@ import {
   googleAuth,
   refreshAccessToken,
   logout,
-  getCurrentUser,
+  forgotPassword,
+  resetPassword,
 } from '../controllers/auth.controller';
 import { authenticate } from '../middleware/auth';
 import { asyncHandler } from '../middleware/error';
@@ -48,10 +49,17 @@ router.post('/refresh', asyncHandler(refreshAccessToken));
 router.post('/logout', asyncHandler(logout));
 
 /**
- * @route   GET /api/auth/me
- * @desc    Get current user profile
- * @access  Private
+ * @route   POST /api/auth/forgot-password
+ * @desc    Request password reset
+ * @access  Public
  */
-router.get('/me', authenticate, asyncHandler(getCurrentUser));
+router.post('/forgot-password', asyncHandler(forgotPassword));
+
+/**
+ * @route   POST /api/auth/reset-password
+ * @desc    Reset password
+ * @access  Public
+ */
+router.post('/reset-password', asyncHandler(resetPassword));
 
 export default router;

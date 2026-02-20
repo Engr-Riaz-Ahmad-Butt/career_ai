@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import prisma from '../config/database';
+import { resumeService } from '../services/resume.service';
 import { ApiError } from '../middleware/error';
 import {
   createResumeSchema,
@@ -16,34 +16,14 @@ export const createResume = async (req: Request, res: Response) => {
   if (!req.user) throw new ApiError(401, 'Not authenticated');
 
   const validatedData = createResumeSchema.parse(req.body);
-
-  const resume = await prisma.resume.create({
-    data: {
-      userId: req.user.userId,
-      title: validatedData.title,
-      template: validatedData.template || 'modern',
-      personalInfo: validatedData.personalInfo || {},
-      summary: validatedData.summary || {},
-      experience: validatedData.experience || [],
-      education: validatedData.education || [],
-      skills: validatedData.skills || [],
-    },
-  });
-
-  // Deduct credits
-  await prisma.user.update({
-    where: { id: req.user.userId },
-    data: { credits: { decrement: 1 } },
-  });
-
-  // Log credit usage
-  await prisma.creditUsage.create({
-    data: {
-      userId: req.user.userId,
-      action: 'resume_create',
-      credits: 1,
-      metadata: { resumeId: resume.id },
-    },
+  const resume = await resumeService.createResume(req.user.userId, {
+    title: validatedData.title,
+    template: validatedData.template || 'modern',
+    personalInfo: validatedData.personalInfo || {},
+    summary: validatedData.summary || {},
+    experience: validatedData.experience || [],
+    education: validatedData.education || [],
+    skills: validatedData.skills || [],
   });
 
   res.status(201).json({
@@ -62,32 +42,14 @@ export const getResumes = async (req: Request, res: Response) => {
   if (!req.user) throw new ApiError(401, 'Not authenticated');
 
   const { page, limit, sortBy, sortOrder } = paginationSchema.parse(req.query);
-  
   const skip = (Number(page) - 1) * Number(limit);
 
-  const [resumes, total] = await Promise.all([
-    prisma.resume.findMany({
-      where: { userId: req.user.userId },
-      skip,
-      take: Number(limit),
-      orderBy: sortBy
-        ? { [sortBy]: sortOrder }
-        : { createdAt: 'desc' },
-      select: {
-        id: true,
-        title: true,
-        template: true,
-        atsScore: true,
-        isTailored: true,
-        isPublished: true,
-        createdAt: true,
-        updatedAt: true,
-      },
-    }),
-    prisma.resume.count({
-      where: { userId: req.user.userId },
-    }),
-  ]);
+  const { resumes, total } = await resumeService.getResumes(req.user.userId, {
+    skip,
+    take: Number(limit),
+    sortBy,
+    sortOrder: sortOrder as any,
+  });
 
   res.json({
     success: true,
@@ -111,16 +73,7 @@ export const getResumes = async (req: Request, res: Response) => {
 export const getResumeById = async (req: Request, res: Response) => {
   if (!req.user) throw new ApiError(401, 'Not authenticated');
 
-  const resume = await prisma.resume.findFirst({
-    where: {
-      id: req.params.id,
-      userId: req.user.userId,
-    },
-  });
-
-  if (!resume) {
-    throw new ApiError(404, 'Resume not found');
-  }
+  const resume = await resumeService.getResumeById(req.user.userId, req.params.id);
 
   res.json({
     success: true,
@@ -137,23 +90,7 @@ export const updateResume = async (req: Request, res: Response) => {
   if (!req.user) throw new ApiError(401, 'Not authenticated');
 
   const validatedData = updateResumeSchema.parse(req.body);
-
-  // Check if resume exists and belongs to user
-  const existingResume = await prisma.resume.findFirst({
-    where: {
-      id: req.params.id,
-      userId: req.user.userId,
-    },
-  });
-
-  if (!existingResume) {
-    throw new ApiError(404, 'Resume not found');
-  }
-
-  const resume = await prisma.resume.update({
-    where: { id: req.params.id },
-    data: validatedData,
-  });
+  const resume = await resumeService.updateResume(req.user.userId, req.params.id, validatedData);
 
   res.json({
     success: true,
@@ -170,20 +107,7 @@ export const updateResume = async (req: Request, res: Response) => {
 export const deleteResume = async (req: Request, res: Response) => {
   if (!req.user) throw new ApiError(401, 'Not authenticated');
 
-  const resume = await prisma.resume.findFirst({
-    where: {
-      id: req.params.id,
-      userId: req.user.userId,
-    },
-  });
-
-  if (!resume) {
-    throw new ApiError(404, 'Resume not found');
-  }
-
-  await prisma.resume.delete({
-    where: { id: req.params.id },
-  });
+  await resumeService.deleteResume(req.user.userId, req.params.id);
 
   res.json({
     success: true,
@@ -199,37 +123,33 @@ export const deleteResume = async (req: Request, res: Response) => {
 export const duplicateResume = async (req: Request, res: Response) => {
   if (!req.user) throw new ApiError(401, 'Not authenticated');
 
-  const original = await prisma.resume.findFirst({
-    where: {
-      id: req.params.id,
-      userId: req.user.userId,
-    },
-  });
-
-  if (!original) {
-    throw new ApiError(404, 'Resume not found');
-  }
-
-  const duplicate = await prisma.resume.create({
-    data: {
-      userId: req.user.userId,
-      title: `${original.title} (Copy)`,
-      template: original.template,
-      personalInfo: original.personalInfo,
-      summary: original.summary,
-      experience: original.experience,
-      education: original.education,
-      skills: original.skills,
-      certifications: original.certifications,
-      projects: original.projects,
-      languages: original.languages,
-    },
-  });
+  const duplicate = await resumeService.duplicateResume(req.user.userId, req.params.id);
 
   res.status(201).json({
     success: true,
     message: 'Resume duplicated successfully',
     data: { resume: duplicate },
+  });
+};
+
+/**
+ * @route   POST /api/resumes/upload
+ * @desc    Upload an existing resume (PDF/DOCX)
+ * @access  Private
+ */
+export const uploadResume = async (req: Request, res: Response) => {
+  if (!req.user) throw new ApiError(401, 'Not authenticated');
+
+  if (!req.file) {
+    throw new ApiError(400, 'No file uploaded');
+  }
+
+  const result = await resumeService.uploadResume(req.user.userId, req.file);
+
+  res.status(201).json({
+    success: true,
+    message: 'Resume uploaded successfully',
+    data: result,
   });
 };
 
@@ -241,21 +161,10 @@ export const duplicateResume = async (req: Request, res: Response) => {
 export const exportResume = async (req: Request, res: Response) => {
   if (!req.user) throw new ApiError(401, 'Not authenticated');
 
-  const resume = await prisma.resume.findFirst({
-    where: {
-      id: req.params.id,
-      userId: req.user.userId,
-    },
-  });
-
-  if (!resume) {
-    throw new ApiError(404, 'Resume not found');
-  }
-
+  const resume = await resumeService.getResumeById(req.user.userId, req.params.id);
   const format = req.query.format || 'pdf';
 
-  // TODO: Implement actual PDF/DOCX generation
-  // For now, return the resume data
+  // TODO: Implement actual PDF/DOCX generation logic in ResumeService
 
   res.json({
     success: true,
