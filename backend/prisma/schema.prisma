@@ -1,0 +1,225 @@
+// This is your Prisma schema file
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// User model with authentication
+model User {
+  id            String    @id @default(uuid())
+  email         String    @unique
+  password      String?   // Null for OAuth users
+  name          String?
+  avatar        String?
+  emailVerified Boolean   @default(false)
+  
+  // OAuth fields
+  googleId      String?   @unique
+  provider      String?   // 'email' | 'google'
+  
+  // Subscription
+  plan          Plan      @default(FREE)
+  credits       Int       @default(10)
+  stripeCustomerId String?
+  
+  // Profile
+  phone         String?
+  location      String?
+  timezone      String?
+  
+  // Status
+  isActive      Boolean   @default(true)
+  lastLoginAt   DateTime?
+  
+  // Timestamps
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  
+  // Relations
+  resumes       Resume[]
+  documents     Document[]
+  jobs          Job[]
+  creditUsages  CreditUsage[]
+  refreshTokens RefreshToken[]
+  
+  @@index([email])
+  @@index([googleId])
+}
+
+enum Plan {
+  FREE
+  PRO
+  TEAM
+  ENTERPRISE
+}
+
+// Resume model
+model Resume {
+  id            String    @id @default(uuid())
+  userId        String
+  title         String
+  template      String    @default("modern")
+  
+  // ATS Score
+  atsScore      Int?
+  keywordMatch  Int?
+  formatScore   Int?
+  impactScore   Int?
+  
+  // Content (JSON)
+  personalInfo  Json?
+  summary       Json?
+  experience    Json[]
+  education     Json[]
+  skills        Json[]
+  certifications Json[]
+  projects      Json[]
+  languages     Json[]
+  
+  // Metadata
+  isTailored    Boolean   @default(false)
+  jobId         String?
+  version       Int       @default(1)
+  
+  // Status
+  isPublished   Boolean   @default(false)
+  
+  // Timestamps
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  
+  // Relations
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  job           Job?      @relation(fields: [jobId], references: [id])
+  
+  @@index([userId])
+  @@index([jobId])
+}
+
+// Document model (cover letters, SOPs, etc.)
+model Document {
+  id            String       @id @default(uuid())
+  userId        String
+  type          DocumentType
+  title         String
+  content       String       @db.Text
+  
+  // Metadata
+  jobTitle      String?
+  company       String?
+  targetSchool  String?
+  wordCount     Int?
+  
+  // Status
+  isPublished   Boolean      @default(false)
+  
+  // Timestamps
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+  
+  // Relations
+  user          User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@index([userId])
+  @@index([type])
+}
+
+enum DocumentType {
+  COVER_LETTER
+  SOP
+  MOTIVATION_LETTER
+  RESIGNATION_LETTER
+  LINKEDIN_BIO
+  PORTFOLIO
+  STUDY_PLAN
+  FINANCIAL_LETTER
+}
+
+// Job application tracker
+model Job {
+  id            String       @id @default(uuid())
+  userId        String
+  
+  // Job details
+  title         String
+  company       String
+  location      String?
+  url           String?
+  description   String?      @db.Text
+  
+  // Extracted data
+  keywords      String[]
+  requirements  Json?
+  
+  // Application status
+  status        JobStatus    @default(WISHLIST)
+  appliedAt     DateTime?
+  
+  // Dates
+  deadline      DateTime?
+  interviewDate DateTime?
+  offerDate     DateTime?
+  rejectedAt    DateTime?
+  
+  // Notes
+  notes         String?      @db.Text
+  salary        String?
+  
+  // Timestamps
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+  
+  // Relations
+  user          User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  resumes       Resume[]
+  
+  @@index([userId])
+  @@index([status])
+}
+
+enum JobStatus {
+  WISHLIST
+  APPLIED
+  INTERVIEW
+  OFFER
+  ACCEPTED
+  REJECTED
+}
+
+// Credit usage tracking
+model CreditUsage {
+  id            String       @id @default(uuid())
+  userId        String
+  action        String       // 'resume_build', 'tailor', 'cover_letter', etc.
+  credits       Int          // Credits consumed
+  metadata      Json?
+  
+  createdAt     DateTime     @default(now())
+
+  // Relations
+  user          User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@index([userId])
+  @@index([createdAt])
+}
+
+// Refresh tokens for JWT
+model RefreshToken {
+  id            String       @id @default(uuid())
+  userId        String
+  token         String       @unique
+  expiresAt     DateTime
+  
+  createdAt     DateTime     @default(now())
+
+  // Relations
+  user          User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@index([userId])
+  @@index([token])
+}
