@@ -1,189 +1,266 @@
 "use client";
 
 import Link from "next/link";
-import { motion } from "framer-motion";
+import { motion, useScroll, useTransform } from "framer-motion";
+import { Sparkles, ArrowRight, Play, FileText, CheckCircle2, TrendingUp, ShieldCheck } from "lucide-react";
+import { useRef } from "react";
 import Typewriter from "../ui/Typewriter";
-import { HERO_AVATARS, SITE_CONFIG } from "@/constants";
+import { SITE_CONFIG } from "@/constants";
 
 export default function Hero() {
+  const containerRef = useRef(null);
+  const { scrollYProgress } = useScroll({
+    target: containerRef,
+    offset: ["start start", "end start"],
+  });
+
+  const y = useTransform(scrollYProgress, [0, 1], [0, 50]);
+  const opacity = 1; // Keep fully clear
+  const scale = useTransform(scrollYProgress, [0, 0.5], [1, 1]); // Remove scale reduction
+
   return (
-    <section className="min-h-screen flex flex-col items-center justify-center px-6 md:px-[60px] pt-[100px] pb-10 relative overflow-hidden text-center w-full">
-      {/* Background gradients (static for faster paint) */}
-      <div className="absolute top-[-10%] left-1/2 -translate-x-1/2 w-[90vw] max-w-[900px] h-[60vw] max-h-[600px] bg-[radial-gradient(ellipse,rgba(59,130,246,0.12)_0%,transparent_70%)] pointer-events-none will-change-auto" />
-      <div className="absolute bottom-0 left-[5vw] w-[50vw] max-w-[500px] h-[40vw] max-h-[400px] bg-[radial-gradient(ellipse,rgba(34,211,238,0.06)_0%,transparent_70%)] pointer-events-none will-change-auto" />
-      <div className="container mx-auto w-full max-w-6xl flex flex-col items-center">
-
-        {/* <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-        className="inline-flex items-center gap-2 px-4 py-[6px] rounded-full bg-[rgba(59,130,246,0.1)] border border-[rgba(59,130,246,0.3)] text-xs font-medium text-[var(--cyan)] mb-6"
-      >
-        <div className="w-[6px] h-[6px] rounded-full bg-[var(--cyan)] animate-pulse" />
-        Powered by Gemini AI & Claude Sonnet
-      </motion.div> */}
-
-        <h1
-          className="font-[var(--font-d)] text-[clamp(28px,6vw,48px)] leading-[1.1] tracking-[-0.04em] max-w-full sm:max-w-[700px] md:max-w-[900px] mx-auto px-2 sm:px-0"
-          style={{ transition: 'none' }}
-        >
-          <span className="block text-[var(--white)] mb-2">Build AI-Powered</span>
-          <span className="block text-[var(--white)] mb-3 min-h-[1.2em]">
-            <Typewriter
-              words={[
-                "Resumes",
-                "Cover Letters",
-                "CVs",
-                "SOPs",
-                "Scholarships",
-                "LinkedIn Bios",
-                "Portfolios",
-              ]}
-              typingSpeed={120}
-              deletingSpeed={80}
-              delayBetweenWords={2000}
-            />
-          </span>
-          <span className="block text-[var(--white)] relative">
-            That Get You Hired
-            <span className="absolute bottom-[-8px] left-1/2 -translate-x-1/2 w-[120px] sm:w-[180px] h-1 bg-gradient-to-r from-[#60a5fa] via-[#22d3ee] to-[#10b981] rounded-[2px]" />
-          </span>
-        </h1>
-
-        <motion.p
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.7, delay: 0.2 }}
-          className="mt-6 sm:mt-8 text-[clamp(15px,3vw,19px)] font-normal text-[rgba(156,163,175,0.9)] max-w-full sm:max-w-[580px] leading-relaxed tracking-[-0.01em] mx-auto px-2 sm:px-0"
-        >
-          {SITE_CONFIG.description}
-        </motion.p>
-
+    <section
+      ref={containerRef}
+      className="relative min-h-screen flex flex-col items-center justify-center pt-24 pb-20 overflow-hidden bg-[var(--black)]"
+    >
+      {/* ─── Modern Background Layer ─── */}
+      <div className="absolute inset-0 z-0 pointer-events-none">
+        {/* Animated Mesh Gradients */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.7, delay: 0.3 }}
-          className="mt-8 sm:mt-10 flex gap-3 sm:gap-[14px] items-center flex-wrap justify-center w-full"
-        >
-          <Link
-            href="/auth/register"
-            className="px-6 sm:px-[30px] py-3 sm:py-[13px] rounded-[10px] font-[var(--font-d)] text-sm text-white bg-gradient-to-br from-[var(--blue)] to-[var(--blue-dim)] border-none cursor-pointer transition-all duration-[250ms] shadow-[0_0_40px_rgba(59,130,246,0.4)] inline-block hover:translate-y-[-2px] hover:shadow-[0_6px_50px_rgba(59,130,246,0.6)]"
-          >
-            Start for Free — No Credit Card
-          </Link>
-          <button className="px-6 sm:px-[30px] py-3 sm:py-[13px] rounded-[10px] font-[var(--font-b)] text-sm text-[var(--g2)] bg-[rgba(255,255,255,0.05)] border border-[var(--border2)] cursor-pointer transition-all duration-200 hover:bg-[rgba(255,255,255,0.1)] hover:text-white">
-            Watch 2-min Demo →
-          </button>
-        </motion.div>
-
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.7, delay: 0.4 }}
-          className="mt-10 flex items-center gap-3 sm:gap-5 flex-wrap justify-center w-full"
-        >
-          <div className="flex">
-            {HERO_AVATARS.map((avatar, i) => (
-              <div
-                key={i}
-                className="w-7 h-7 sm:w-8 sm:h-8 rounded-full border-2 border-[var(--dark)] -ml-2 first:ml-0 flex items-center justify-center text-[10px] font-bold"
-                style={{ background: avatar.gradient }}
-              >
-                {avatar.initial}
-              </div>
-            ))}
-          </div>
-          <div className="text-xs text-[var(--g3)]">
-            <strong className="text-white">{SITE_CONFIG.stats.resumesThisMonth}</strong> resumes this month
-          </div>
-          <div className="w-[1px] h-5 bg-[var(--border2)] hidden sm:block" />
-          <div className="text-[var(--orange)] text-xs">★★★★★</div>
-          <div className="text-xs text-[var(--g3)]">
-            <strong className="text-white">{SITE_CONFIG.stats.rating}</strong> / 5.0
-          </div>
-        </motion.div>
-
-        {/* Product Preview */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.7, delay: 0.5 }}
-          className="mt-12 w-full max-w-full sm:max-w-3xl md:max-w-5xl relative px-2 sm:px-0 mx-auto"
-          style={{
-            animation: "float 4s ease-in-out 1.2s infinite",
+          animate={{
+            scale: [1, 1.2, 1],
+            x: [0, 50, 0],
+            y: [0, -30, 0],
           }}
-        >
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[80%] h-[60%] bg-[radial-gradient(ellipse,rgba(59,130,246,0.15)_0%,transparent_70%)] pointer-events-none z-0" />
-          <div className="relative z-[1] bg-[var(--panel)] border border-[var(--border2)] rounded-[14px] overflow-hidden shadow-[0_40px_100px_rgba(0,0,0,0.6),0_0_0_1px_rgba(255,255,255,0.04)]">
-            {/* Browser bar */}
-            <div className="bg-[rgba(255,255,255,0.03)] border-b border-[var(--border)] px-3 sm:px-[18px] py-2 sm:py-[10px] flex items-center gap-2 sm:gap-[7px]">
-              <div className="w-2.5 h-2.5 sm:w-[10px] sm:h-[10px] rounded-full bg-[#ff5f57]" />
-              <div className="w-2.5 h-2.5 sm:w-[10px] sm:h-[10px] rounded-full bg-[#ffbd2e]" />
-              <div className="w-2.5 h-2.5 sm:w-[10px] sm:h-[10px] rounded-full bg-[#28c840]" />
-              <div className="flex-1 ml-2 sm:ml-[10px] bg-[rgba(255,255,255,0.05)] border border-[var(--border)] rounded-[5px] px-2 sm:px-3 py-1 text-[10px] sm:text-[11px] text-[var(--g3)] max-w-[180px] sm:max-w-[280px] text-center truncate">
-                app.careerforge.ai/dashboard
-              </div>
+          transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
+          className="absolute top-[-20%] left-[-10%] w-[60%] h-[60%] bg-blue-600/10 dark:bg-blue-600/20 rounded-full blur-[140px] opacity-60"
+        />
+        <motion.div
+          animate={{
+            scale: [1.2, 1, 1.2],
+            x: [0, -60, 0],
+            y: [0, 40, 0],
+          }}
+          transition={{ duration: 15, repeat: Infinity, ease: "linear" }}
+          className="absolute bottom-[-10%] right-[-5%] w-[50%] h-[50%] bg-purple-600/10 dark:bg-purple-600/15 rounded-full blur-[120px] opacity-50"
+        />
+        <div className="absolute top-[20%] left-[30%] w-[30%] h-[30%] bg-emerald-500/5 dark:bg-emerald-500/10 rounded-full blur-[100px] opacity-40" />
+
+        {/* Noise Overlay & Grid */}
+        <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-[0.08] dark:opacity-[0.15] brightness-75 contrast-125" />
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,var(--border)_1px,transparent_1px),linear-gradient(to_bottom,var(--border)_1px,transparent_1px)] bg-[size:40px_40px] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_50%,#000_70%,transparent_100%)]" />
+      </div>
+
+      <div className="container relative z-10 px-6 md:px-[60px] mx-auto w-full max-w-7xl">
+        <div className="flex flex-col items-center text-center">
+
+          {/* ─── Premium Badge ─── */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+            className="group mb-8"
+          >
+            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[rgb(var(--black-rgb)/0.04)] border border-[var(--border2)] backdrop-blur-xl transition-all duration-300 hover:bg-[rgb(var(--black-rgb)/0.08)]">
+              <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-blue-500"></span>
+              </span>
+              <span className="text-[11px] font-bold tracking-[0.08em] uppercase text-[var(--blue)]">
+                Next-Gen Career Intelligence
+              </span>
+              <ArrowRight className="h-3 w-3 text-blue-400 transition-transform group-hover:translate-x-1" />
             </div>
+          </motion.div>
 
-            {/* Dashboard preview content */}
-            <div className="grid grid-cols-1 sm:grid-cols-[180px_1fr] h-[220px] sm:h-[380px]">
-              {/* Sidebar */}
-              <div className="bg-[rgba(0,0,0,0.3)] border-r border-[var(--border)] p-2 sm:p-4 flex flex-col gap-[3px] min-w-0">
-                <div className="font-[var(--font-d)] text-[11px] sm:text-[13px] text-[var(--blue)] px-2 pb-2 sm:pb-[14px] mb-[3px] border-b border-[var(--border)]">
-                  CareerForge
-                </div>
-                <div className="px-2 sm:px-[10px] py-1.5 sm:py-[7px] rounded-[5px] text-[10px] sm:text-[11px] flex items-center gap-1.5 sm:gap-[7px] text-[var(--blue)] bg-[rgba(59,130,246,0.15)]">
-                  <span>⊞</span> Dashboard
-                </div>
-                <div className="px-2 sm:px-[10px] py-1.5 sm:py-[7px] rounded-[5px] text-[10px] sm:text-[11px] flex items-center gap-1.5 sm:gap-[7px] text-[var(--g3)] hover:bg-[rgba(255,255,255,0.04)] hover:text-[var(--g2)] transition-all cursor-pointer">
-                  <span>📄</span> Resume Builder
-                </div>
-                <div className="px-2 sm:px-[10px] py-1.5 sm:py-[7px] rounded-[5px] text-[10px] sm:text-[11px] flex items-center gap-1.5 sm:gap-[7px] text-[var(--g3)] hover:bg-[rgba(255,255,255,0.04)] hover:text-[var(--g2)] transition-all cursor-pointer">
-                  <span>🎯</span> AI Tailor
-                </div>
+          {/* ─── Headline Architecture ─── */}
+          <motion.h1
+            style={{ y: useTransform(scrollYProgress, [0, 0.5], [0, -50]) }}
+            className="text-[clamp(2.5rem,8vw,6rem)] font-bold tracking-[-0.04em] leading-[0.95] mb-10 max-w-5xl mx-auto"
+          >
+            <span className="block text-[var(--white)]">Your Career,</span>
+            <span className="relative inline-block text-transparent bg-clip-text bg-gradient-to-br from-[var(--white)] via-[var(--g2)] to-[var(--g4)]">
+              Redefined by AI.
+              <motion.div
+                initial={{ width: 0 }}
+                animate={{ width: "100%" }}
+                transition={{ delay: 0.8, duration: 1, ease: "circOut" }}
+                className="absolute -bottom-2 left-0 h-[6px] bg-gradient-to-r from-blue-600 via-cyan-400 to-transparent rounded-full opacity-60"
+              />
+            </span>
+          </motion.h1>
+
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.3, duration: 0.8 }}
+            className="font-[var(--font-d)] text-xl md:text-2xl text-[var(--g3)] mb-12 max-w-2xl mx-auto leading-tight"
+          >
+            The industry standard for building <br className="hidden md:block" />
+            <span className="text-[var(--white)] font-medium">
+              <Typewriter
+                words={["ATS-Proof Resumes", "Impactful SOPs", "Viral Portfolios", "Winning Scholarships"]}
+                typingSpeed={100}
+                deletingSpeed={50}
+                delayBetweenWords={2500}
+              />
+            </span>
+          </motion.div>
+
+          {/* ─── Action Center ─── */}
+          <div className="flex flex-col sm:flex-row gap-6 items-center justify-center mb-20 w-full sm:w-auto">
+            <Link href="/auth/register" className="w-full sm:w-auto overflow-hidden rounded-2xl group relative">
+              <motion.div
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                className="relative z-10 px-10 py-5 bg-[var(--blue)] text-white font-bold text-lg flex items-center justify-center gap-2 transition-transform hover:shadow-[0_20px_40px_rgba(59,130,246,0.2)]"
+              >
+                Launch Your Future
+                <ArrowRight className="h-5 w-5 transition-transform group-hover:translate-x-1" />
+              </motion.div>
+              <div className="absolute inset-0 z-0 bg-blue-500 blur-2xl opacity-0 group-hover:opacity-40 transition-opacity duration-500" />
+            </Link>
+
+            <button className="flex items-center gap-3 px-8 py-5 rounded-2xl bg-[rgb(var(--white-rgb)/0.03)] border border-[var(--border2)] text-[var(--white)] font-semibold transition-all hover:bg-[rgb(var(--white-rgb)/0.06)] hover:translate-y-[-2px] backdrop-blur-md">
+              <div className="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center">
+                <Play className="h-4 w-4 fill-white ml-0.5" />
               </div>
-
-              {/* Main content */}
-              <div className="p-2 sm:p-[18px] flex flex-col gap-2 sm:gap-3 overflow-hidden min-w-0">
-                <div>
-                  <div className="font-[var(--font-d)] text-xs sm:text-sm text-white">
-                    Welcome back, Alex 👋
-                  </div>
-                  <div className="text-[9px] sm:text-[10px] text-[var(--g3)] mt-1 sm:mt-[2px]">
-                    Your resume score improved by 18 points this week
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-1 sm:gap-2">
-                  {[
-                    { label: "ATS Score", value: "87", change: "↑ +18 this week", color: "var(--green)" },
-                    { label: "Resumes", value: "4", change: "2 tailored", color: "var(--blue)" },
-                    { label: "Docs Made", value: "11", change: "3 cover letters", color: "var(--purple)" },
-                    { label: "Credits Left", value: "142", change: "Pro plan", color: "var(--orange)" },
-                  ].map((stat, i) => (
-                    <div
-                      key={i}
-                      className="bg-[rgba(255,255,255,0.03)] border border-[var(--border)] rounded-[9px] p-2 sm:p-[10px] min-w-0"
-                    >
-                      <div className="text-[8px] sm:text-[9px] text-[var(--g3)] uppercase tracking-[0.08em]">
-                        {stat.label}
-                      </div>
-                      <div
-                        className="font-[var(--font-d)] text-base sm:text-xl mt-1 sm:mt-[3px]"
-                        style={{ color: stat.color }}
-                      >
-                        {stat.value}
-                      </div>
-                      <div className="text-[8px] sm:text-[9px] text-[var(--green)] mt-1 sm:mt-[2px]">
-                        {stat.change}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
+              See the Forge in Action
+            </button>
           </div>
-        </motion.div>
+
+          {/* ─── Social Proof / Metrics ─── */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 1, duration: 1 }}
+            className="flex flex-wrap items-center justify-center gap-8 md:gap-16 py-8 px-12 rounded-[2rem] bg-[rgb(var(--white-rgb)/0.02)] border border-[var(--border)] backdrop-blur-3xl"
+          >
+            <div className="flex flex-col items-center md:items-start gap-1">
+              <div className="flex items-center gap-2 text-[var(--white)] font-bold text-xl uppercase tracking-tighter">
+                <CheckCircle2 className="h-5 w-5 text-emerald-500" />
+                92% Success
+              </div>
+              <span className="text-[10px] text-[var(--g4)] font-bold uppercase tracking-widest">ATS Pass Rate</span>
+            </div>
+
+            <div className="w-[1px] h-10 bg-[var(--border2)] hidden md:block" />
+
+            <div className="flex flex-col items-center md:items-start gap-1">
+              <div className="flex items-center gap-2 text-[var(--white)] font-bold text-xl uppercase tracking-tighter">
+                <TrendingUp className="h-5 w-5 text-blue-500" />
+                12k+ Hired
+              </div>
+              <span className="text-[10px] text-[var(--g4)] font-bold uppercase tracking-widest">Professionals Global</span>
+            </div>
+
+            <div className="w-[1px] h-10 bg-[var(--border2)] hidden md:block" />
+
+            <div className="flex flex-col items-center md:items-start gap-1">
+              <div className="flex items-center gap-2 text-[var(--white)] font-bold text-xl uppercase tracking-tighter">
+                <ShieldCheck className="h-5 w-5 text-purple-500" />
+                AES-256
+              </div>
+              <span className="text-[10px] text-[var(--g4)] font-bold uppercase tracking-widest">Encrypted Data</span>
+            </div>
+          </motion.div>
+
+          {/* ─── Document in Motion (Interactive Visual) ─── */}
+          <motion.div
+            style={{ opacity, scale, y }}
+            className="mt-24 w-full relative"
+          >
+            {/* Main Preview Container */}
+            <div className="relative mx-auto w-full max-w-5xl rounded-[2.5rem] border border-[var(--border2)] bg-[var(--panel)]/50 backdrop-blur-md overflow-hidden shadow-2xl">
+              {/* Animated Floating Assets inside visual */}
+              <motion.div
+                animate={{ y: [0, -15, 0] }}
+                transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+                className="absolute top-10 right-10 z-20 p-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 backdrop-blur-xl shadow-lg"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-lg bg-emerald-500 flex items-center justify-center text-white">
+                    <TrendingUp className="h-5 w-5" />
+                  </div>
+                  <div>
+                    <div className="text-[10px] text-emerald-500 font-bold uppercase tracking-widest">ATS Score</div>
+                    <div className="text-xl font-bold text-emerald-600 dark:text-emerald-400">98 / 100</div>
+                  </div>
+                </div>
+              </motion.div>
+
+              <motion.div
+                animate={{ y: [0, 15, 0] }}
+                transition={{ duration: 5, repeat: Infinity, ease: "easeInOut", delay: 1 }}
+                className="absolute bottom-20 left-10 z-20 p-4 rounded-2xl bg-blue-500/10 border border-blue-500/20 backdrop-blur-xl shadow-lg"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-lg bg-blue-500 flex items-center justify-center text-white">
+                    <FileText className="h-5 w-5" />
+                  </div>
+                  <div>
+                    <div className="text-[10px] text-blue-500 font-bold uppercase tracking-widest">Sync Active</div>
+                    <div className="text-sm font-bold text-blue-600 dark:text-blue-400">Real-time Optimization</div>
+                  </div>
+                </div>
+              </motion.div>
+
+              {/* Browser Header */}
+              <div className="h-12 bg-[rgb(var(--black-rgb)/0.05)] border-b border-[var(--border)] flex items-center px-6 gap-2">
+                <div className="flex gap-1.5">
+                  <div className="w-3 h-3 rounded-full bg-slate-300 dark:bg-slate-800" />
+                  <div className="w-3 h-3 rounded-full bg-slate-300 dark:bg-slate-800" />
+                  <div className="w-3 h-3 rounded-full bg-slate-300 dark:bg-slate-800" />
+                </div>
+                <div className="ml-4 h-6 px-4 rounded-md bg-[rgb(var(--black-rgb)/0.05)] text-[10px] text-[var(--g4)] flex items-center">
+                  app.careerforge.ai/builder/editor-mode
+                </div>
+              </div>
+
+              {/* Visual Content (Skeleton UI representation of 'Forge') */}
+              <div className="p-8 md:p-16 grid grid-cols-1 md:grid-cols-2 gap-12">
+                <div className="space-y-6">
+                  <div className="h-4 w-24 bg-blue-500/20 rounded-full" />
+                  <div className="h-12 w-full bg-[rgb(var(--black-rgb)/0.03)] border border-[var(--border)] rounded-xl" />
+                  <div className="space-y-3">
+                    <div className="h-4 w-full bg-[rgb(var(--black-rgb)/0.02)] rounded-md" />
+                    <div className="h-4 w-[90%] bg-[rgb(var(--black-rgb)/0.02)] rounded-md" />
+                    <div className="h-4 w-[95%] bg-[rgb(var(--black-rgb)/0.02)] rounded-md" />
+                  </div>
+                  <div className="pt-6 grid grid-cols-2 gap-4">
+                    <div className="h-20 bg-[rgb(var(--black-rgb)/0.02)] rounded-2xl border border-[var(--border)]" />
+                    <div className="h-20 bg-[rgb(var(--black-rgb)/0.02)] rounded-2xl border border-[var(--border)]" />
+                  </div>
+                </div>
+
+                <div className="hidden md:block relative bg-[rgb(var(--black-rgb)/0.01)] rounded-2xl border border-[var(--border)] p-8 min-h-[300px]">
+                  <div className="absolute inset-0 bg-gradient-to-br from-blue-600/5 to-transparent pointer-events-none" />
+                  <div className="flex flex-col gap-4 h-full">
+                    <div className="flex justify-between items-center">
+                      <div className="h-4 w-32 bg-[var(--g5)] rounded-full" />
+                      <Sparkles className="h-5 w-5 text-blue-500" />
+                    </div>
+                    <div className="flex-1 flex flex-col justify-center items-center text-center">
+                      <motion.div
+                        animate={{ rotate: 360 }}
+                        transition={{ duration: 10, repeat: Infinity, ease: "linear" }}
+                        className="w-24 h-24 rounded-full border-4 border-dashed border-blue-600/30 flex items-center justify-center mb-4"
+                      >
+                        <Sparkles className="h-8 w-8 text-blue-600" />
+                      </motion.div>
+                      <div className="text-[var(--white)] font-bold mb-1">AI Recommendation Engine</div>
+                      <div className="text-[11px] text-[var(--g4)]">Injecting 14 keywords for Google Cloud Architect role</div>
+                    </div>
+                    <div className="mt-auto h-10 w-full bg-blue-600 rounded-xl" />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Background Glow for visual */}
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[90%] h-[90%] bg-blue-600/10 blur-[160px] pointer-events-none -z-10" />
+          </motion.div>
+        </div>
       </div>
     </section>
   );
