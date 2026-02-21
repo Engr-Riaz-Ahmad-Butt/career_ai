@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { profileApi } from '@/lib/api/profile';
+import { userApi } from '@/lib/api/user';
 import { useAuthStore } from '@/store/authStore';
 
 export const useProfile = () => {
@@ -9,7 +9,7 @@ export const useProfile = () => {
     const meQuery = useQuery({
         queryKey: ['profile', 'me'],
         queryFn: async () => {
-            const data = await profileApi.getMe();
+            const data = await userApi.getMe();
             if (data?.data?.user) {
                 setUser(data.data.user);
             }
@@ -19,7 +19,7 @@ export const useProfile = () => {
     });
 
     const updateProfileMutation = useMutation({
-        mutationFn: profileApi.updateProfile,
+        mutationFn: userApi.updateMe,
         onSuccess: (data) => {
             setUser(data.data.user);
             queryClient.invalidateQueries({ queryKey: ['profile', 'me'] });

@@ -6,7 +6,9 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { AnalyticsSection } from '@/components/dashboard/analytics-section';
 import { StatsCard } from '@/components/common/stats-card';
-import { mockStats, mockResumes } from '@/lib/mock-data';
+import { useQuery } from '@tanstack/react-query';
+import { dashboardApi } from '@/lib/api/dashboard';
+import { resumeApi } from '@/lib/api/resume';
 import { useJobTrackerStore } from '@/store/jobTrackerStore';
 import {
   BarChart3,
@@ -17,6 +19,7 @@ import {
   Plus,
   Briefcase,
   CheckCircle2,
+  Loader2,
 } from 'lucide-react';
 
 const containerVariants = {
@@ -41,6 +44,27 @@ const itemVariants = {
 
 export default function DashboardPage() {
   const jobStats = useJobTrackerStore((state) => state.stats);
+
+  const { data: statsData, isLoading: statsLoading } = useQuery({
+    queryKey: ['dashboard', 'stats'],
+    queryFn: dashboardApi.getStats,
+  });
+
+  const { data: resumesData, isLoading: resumesLoading } = useQuery({
+    queryKey: ['resumes', 'recent'],
+    queryFn: () => resumeApi.getResumes({ limit: 5 }),
+  });
+
+  const stats = statsData?.data || {};
+  const resumes = resumesData?.data?.resumes || [];
+
+  if (statsLoading || resumesLoading) {
+    return (
+      <div className="flex h-[60vh] items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-indigo-600" />
+      </div>
+    );
+  }
 
   return (
     <motion.div
@@ -88,8 +112,8 @@ export default function DashboardPage() {
           <StatsCard
             icon={BarChart3}
             label="Avg Resume Score"
-            value="91/100"
-            change={9}
+            value={`${stats.atsScoreAverage || 0}/100`}
+            change={stats.scoreChange || 0}
             changeLabel="from last week"
             trend="up"
           />
@@ -108,7 +132,7 @@ export default function DashboardPage() {
 
       {/* Advanced Analytics Section */}
       <motion.div variants={itemVariants} className="mb-8">
-        <AnalyticsSection />
+        <AnalyticsSection metrics={stats} />
       </motion.div>
 
       {/* Quick Actions */}
@@ -159,35 +183,43 @@ export default function DashboardPage() {
         </div>
 
         <div className="space-y-4">
-          {mockResumes.map((resume) => (
-            <motion.div
-              key={resume.id}
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.3 }}
-              className="flex items-center justify-between p-4 rounded-lg border border-slate-200 dark:border-slate-800 hover:border-indigo-200 dark:hover:border-indigo-800 transition-colors"
-            >
-              <div className="flex-1">
-                <h3 className="font-medium text-slate-900 dark:text-white">
-                  {resume.title}
-                </h3>
-                <p className="text-sm text-slate-600 dark:text-slate-400">
-                  Last modified {resume.lastModified.toLocaleDateString()}
-                </p>
-              </div>
-              <div className="flex items-center gap-4">
-                <div className="text-center">
-                  <div className="text-lg font-bold text-slate-900 dark:text-white">
-                    {resume.atsScore}%
-                  </div>
-                  <div className="text-xs text-slate-500">ATS Score</div>
+          {resumes.length > 0 ? (
+            resumes.map((resume: any) => (
+              <motion.div
+                key={resume.id}
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.3 }}
+                className="flex items-center justify-between p-4 rounded-lg border border-slate-200 dark:border-slate-800 hover:border-indigo-200 dark:hover:border-indigo-800 transition-colors"
+              >
+                <div className="flex-1">
+                  <h3 className="font-medium text-slate-900 dark:text-white">
+                    {resume.title}
+                  </h3>
+                  <p className="text-sm text-slate-600 dark:text-slate-400">
+                    Last modified {new Date(resume.updatedAt).toLocaleDateString()}
+                  </p>
                 </div>
-                <Button variant="ghost" size="sm">
-                  Edit
-                </Button>
-              </div>
-            </motion.div>
-          ))}
+                <div className="flex items-center gap-4">
+                  <div className="text-center">
+                    <div className="text-lg font-bold text-slate-900 dark:text-white">
+                      {resume.atsScore || 0}%
+                    </div>
+                    <div className="text-xs text-slate-500">ATS Score</div>
+                  </div>
+                  <Link href={`/resume-builder?id=${resume.id}`}>
+                    <Button variant="ghost" size="sm">
+                      Edit
+                    </Button>
+                  </Link>
+                </div>
+              </motion.div>
+            ))
+          ) : (
+            <div className="text-center py-8 text-slate-500">
+              No resumes found. Start by creating one!
+            </div>
+          )}
         </div>
       </motion.div>
     </motion.div>

@@ -4,13 +4,58 @@ import { useState } from 'react';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { pricingTiers } from '@/lib/mock-data';
-import { Check } from 'lucide-react';
+import { useQuery } from '@tanstack/react-query';
+import { billingApi } from '@/lib/api/billing';
+import { Check, Loader2 } from 'lucide-react';
 import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
 
 export default function PricingPage() {
   const [isAnnual, setIsAnnual] = useState(false);
+
+  const { data: plansData, isLoading } = useQuery({
+    queryKey: ['billing', 'plans'],
+    queryFn: billingApi.getPlans,
+  });
+
+  const plans = plansData?.data?.plans || [
+    {
+      name: 'Free',
+      price: 0,
+      period: 'forever',
+      description: 'Perfect for getting started',
+      features: ['1 Resume', '5 AI Tailors/month', 'Basic ATS Check', 'Interview Q&A'],
+      cta: 'Get Started',
+      highlighted: false,
+    },
+    {
+      name: 'Pro Monthly',
+      price: 9.99,
+      period: 'month',
+      description: 'For active job seekers',
+      features: ['Unlimited Resumes', 'Unlimited AI Tailors', 'Advanced ATS Analysis', 'Cover Letter Generator', 'Interview Video Practice', 'Priority Support'],
+      cta: 'Upgrade Now',
+      highlighted: true,
+    },
+    {
+      name: 'Pro Annual',
+      price: 99,
+      period: 'year',
+      description: 'Save 2 months with annual plan',
+      features: ['Everything in Pro Monthly', '2 months free', 'Custom Resume Templates', 'Team Collaboration', 'Advanced Analytics', '24/7 Support'],
+      cta: 'Upgrade Now',
+      highlighted: false,
+    },
+    {
+      name: 'Team',
+      price: 0,
+      period: '',
+      description: 'For organizations',
+      features: ['Everything in Pro Annual', 'Unlimited Users', 'Team Dashboard', 'Compliance Reports', 'Dedicated Account Manager'],
+      cta: 'Contact Sales',
+      highlighted: false,
+    },
+  ];
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -31,6 +76,14 @@ export default function PricingPage() {
       transition: { duration: 0.5 },
     },
   };
+
+  if (isLoading) {
+    return (
+      <div className="flex h-screen items-center justify-center bg-slate-50 dark:bg-slate-950">
+        <Loader2 className="h-12 w-12 animate-spin text-indigo-600" />
+      </div>
+    );
+  }
 
   return (
     <>
@@ -88,15 +141,14 @@ export default function PricingPage() {
               initial="hidden"
               animate="visible"
             >
-              {pricingTiers.map((tier, index) => (
+              {plans.map((tier: any, index: number) => (
                 <motion.div
                   key={index}
                   variants={itemVariants}
-                  className={`rounded-lg border transition-all ${
-                    tier.highlighted
+                  className={`rounded-lg border transition-all ${tier.highlighted
                       ? 'border-indigo-600 dark:border-indigo-500 shadow-xl scale-105 md:scale-100 lg:scale-105'
                       : 'border-slate-200 dark:border-slate-800'
-                  } overflow-hidden`}
+                    } overflow-hidden flex flex-col`}
                 >
                   {/* Header */}
                   <div className={`p-6 ${tier.highlighted ? 'bg-gradient-to-br from-indigo-600 to-purple-600 text-white' : 'bg-slate-50 dark:bg-slate-900'}`}>
@@ -115,11 +167,11 @@ export default function PricingPage() {
                   <div className={`p-6 border-b ${tier.highlighted ? 'border-indigo-500/20' : 'border-slate-200 dark:border-slate-800'}`}>
                     <div className="mb-4">
                       <span className="text-4xl font-bold text-slate-900 dark:text-white">
-                        ${isAnnual && tier.price > 0 ? Math.floor(tier.price * 12 * 0.83) : tier.price}
+                        ${isAnnual && tier.price > 0 && tier.name !== 'Team' ? Math.floor(tier.price * 12 * 0.83) : tier.price}
                       </span>
                       {tier.price > 0 && (
                         <span className={`text-sm ml-2 ${tier.highlighted ? 'text-indigo-100' : 'text-slate-600 dark:text-slate-400'}`}>
-                          /{isAnnual && tier.price > 0 ? 'year' : 'month'}
+                          /{isAnnual && tier.price > 0 && tier.name !== 'Team' ? 'year' : 'month'}
                         </span>
                       )}
                     </div>
@@ -132,7 +184,7 @@ export default function PricingPage() {
 
                   {/* Features */}
                   <div className="p-6 space-y-4 flex-1">
-                    {tier.features.map((feature, featureIndex) => (
+                    {tier.features.map((feature: string, featureIndex: number) => (
                       <div key={featureIndex} className="flex items-start gap-3">
                         <Check className={`h-5 w-5 flex-shrink-0 mt-0.5 ${tier.highlighted ? 'text-indigo-200' : 'text-emerald-500'}`} />
                         <span className={`text-sm ${tier.highlighted ? 'text-indigo-100' : 'text-slate-600 dark:text-slate-400'}`}>
@@ -146,13 +198,12 @@ export default function PricingPage() {
                   <div className="p-6 border-t">
                     <Link href={tier.name === 'Team' ? '#contact-sales' : '/register'}>
                       <Button
-                        className={`w-full ${
-                          tier.highlighted
+                        className={`w-full ${tier.highlighted
                             ? 'bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white'
                             : 'bg-slate-900 dark:bg-white text-white dark:text-slate-900 hover:bg-slate-800 dark:hover:bg-slate-100'
-                        }`}
+                          }`}
                       >
-                        {tier.cta}
+                        {tier.cta || 'Get Started'}
                       </Button>
                     </Link>
                   </div>
