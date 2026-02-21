@@ -3,7 +3,7 @@ import Link from "next/link";
 export default function CTA() {
     return (
         <section className="py-[60px] sm:py-[90px] w-full">
-            <div className="container mx-auto w-full max-w-4xl px-4 sm:px-8 mb-[60px] sm:mb-[90px]">
+            <div className="container mx-auto w-full max-w-4xl px-6 md:px-[60px] mb-[60px] sm:mb-[90px]">
                 <div className="relative bg-gradient-to-br from-[rgba(59,130,246,0.12)] to-[rgba(34,211,238,0.08)] border border-[rgba(59,130,246,0.25)] rounded-[22px] px-4 sm:px-10 py-[48px] sm:py-[72px] text-center overflow-hidden">
                     <div className="absolute top-[-50%] left-[-20%] w-[300px] sm:w-[500px] h-[300px] sm:h-[500px] bg-[radial-gradient(circle,rgba(59,130,246,0.12)_0%,transparent_60%)] pointer-events-none" />
                     <h2 className="font-[var(--font-d)] text-[clamp(20px,3.5vw,44px)] tracking-[-0.03em] text-[var(--white)] mb-[14px] relative z-[1]">

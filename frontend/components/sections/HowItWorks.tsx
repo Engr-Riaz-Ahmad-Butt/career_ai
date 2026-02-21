@@ -4,7 +4,7 @@ import { cn } from "@/lib/utils";
 export default function HowItWorks() {
     return (
         <section id="how-it-works" className="py-[60px] sm:py-[90px] w-full text-center">
-            <div className="container mx-auto w-full max-w-6xl px-4 sm:px-8">
+            <div className="container mx-auto w-full max-w-6xl px-6 md:px-[60px]">
                 <div className="inline-block text-[11px] font-semibold tracking-[0.1em] uppercase text-[var(--blue)] mb-[14px]">
                     Simple Process
                 </div>

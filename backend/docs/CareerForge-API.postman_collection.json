@@ -50,8 +50,12 @@
         "header": [],
         "url": {
           "raw": "{{baseUrl}}/health",
-          "host": ["{{baseUrl}}"],
-          "path": ["health"]
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "health"
+          ]
         },
         "description": "Check if API is running"
       }
@@ -90,8 +94,14 @@
             },
             "url": {
               "raw": "{{baseUrl}}/api/auth/signup",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "auth", "signup"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "signup"
+              ]
             }
           }
         },
@@ -126,8 +136,14 @@
             },
             "url": {
               "raw": "{{baseUrl}}/api/auth/login",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "auth", "login"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "login"
+              ]
             }
           }
         },
@@ -161,8 +177,14 @@
             },
             "url": {
               "raw": "{{baseUrl}}/api/auth/google",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "auth", "google"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "google"
+              ]
             }
           }
         },
@@ -195,8 +217,14 @@
             },
             "url": {
               "raw": "{{baseUrl}}/api/auth/refresh",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "auth", "refresh"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "refresh"
+              ]
             }
           }
         },
@@ -217,8 +245,14 @@
             "header": [],
             "url": {
               "raw": "{{baseUrl}}/api/auth/me",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "auth", "me"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "me"
+              ]
             }
           }
         },
@@ -238,8 +272,14 @@
             },
             "url": {
               "raw": "{{baseUrl}}/api/auth/logout",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "auth", "logout"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "logout"
+              ]
             }
           }
         }
@@ -287,8 +327,13 @@
             },
             "url": {
               "raw": "{{baseUrl}}/api/resumes",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "resumes"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "resumes"
+              ]
             }
           }
         },
@@ -309,8 +354,13 @@
             "header": [],
             "url": {
               "raw": "{{baseUrl}}/api/resumes?page=1&limit=10",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "resumes"],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "resumes"
+              ],
               "query": [
                 {
                   "key": "page",
@@ -341,8 +391,14 @@
             "header": [],
             "url": {
               "raw": "{{baseUrl}}/api/resumes/{{resumeId}}",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "resumes", "{{resumeId}}"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "resumes",
+                "{{resumeId}}"
+              ]
             }
           }
         },
@@ -372,8 +428,14 @@
             },
             "url": {
               "raw": "{{baseUrl}}/api/resumes/{{resumeId}}",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "resumes", "{{resumeId}}"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "resumes",
+                "{{resumeId}}"
+              ]
             }
           }
         },
@@ -394,8 +456,15 @@
             "header": [],
             "url": {
               "raw": "{{baseUrl}}/api/resumes/{{resumeId}}/duplicate",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "resumes", "{{resumeId}}", "duplicate"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "resumes",
+                "{{resumeId}}",
+                "duplicate"
+              ]
             }
           }
         },
@@ -416,8 +485,15 @@
             "header": [],
             "url": {
               "raw": "{{baseUrl}}/api/resumes/{{resumeId}}/export?format=pdf",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "resumes", "{{resumeId}}", "export"],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "resumes",
+                "{{resumeId}}",
+                "export"
+              ],
               "query": [
                 {
                   "key": "format",
@@ -444,8 +520,184 @@
             "header": [],
             "url": {
               "raw": "{{baseUrl}}/api/resumes/{{resumeId}}",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "resumes", "{{resumeId}}"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "resumes",
+                "{{resumeId}}"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "AI Services",
+      "item": [
+        {
+          "name": "Enhance Resume Section",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"section\": \"summary\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/ai/resume/{{resumeId}}/enhance",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "ai",
+                "resume",
+                "{{resumeId}}",
+                "enhance"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Tailor Resume for Job",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"jobDescription\": \"Seeking a React developer with 3 years experience...\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/ai/resume/{{resumeId}}/tailor",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "ai",
+                "resume",
+                "{{resumeId}}",
+                "tailor"
+              ]
+            }
+          }
+        },
+        {
+          "name": "ATS Score Analysis",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"jobDescription\": \"Seeking a React developer with 3 years experience...\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/ai/resume/{{resumeId}}/ats-score",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "ai",
+                "resume",
+                "{{resumeId}}",
+                "ats-score"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Interview Prep",
+      "item": [
+        {
+          "name": "Generate Interview Session",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"resumeId\": \"{{resumeId}}\",\n  \"jobDescription\": \"Software Engineer Role\",\n  \"questionCount\": 5\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/interview/sessions",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "interview",
+                "sessions"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get My Sessions",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/interview/sessions",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "interview",
+                "sessions"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Billing & Credits",
+      "item": [
+        {
+          "name": "Get Billing Plans",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/billing/plans",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "billing",
+                "plans"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Credit Transactions",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/credits/history",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "credits",
+                "history"
+              ]
             }
           }
         }

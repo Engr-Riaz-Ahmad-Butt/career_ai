@@ -1,3 +1,4 @@
+import { jest, describe, it, expect, beforeEach } from '@jest/globals';
 import { DeepMockProxy, mockDeep } from 'jest-mock-extended';
 import { PrismaClient } from '@prisma/client';
 import { AuthService } from '../src/services/auth.service';
@@ -13,15 +14,15 @@ const prismaMock = prisma as unknown as DeepMockProxy<PrismaClient>;
 
 // Mock password utils
 jest.mock('../src/utils/password', () => ({
-    hashPassword: jest.fn().mockResolvedValue('hashed_password'),
-    comparePassword: jest.fn().mockResolvedValue(true),
+    hashPassword: jest.fn<any>().mockResolvedValue('hashed_password'),
+    comparePassword: jest.fn<any>().mockResolvedValue(true),
 }));
 
 // Mock JWT utils
 jest.mock('../src/utils/jwt', () => ({
-    generateAccessToken: jest.fn().mockReturnValue('access_token'),
-    generateRefreshToken: jest.fn().mockReturnValue('refresh_token'),
-    getRefreshTokenExpiry: jest.fn().mockReturnValue(new Date()),
+    generateAccessToken: jest.fn<any>().mockReturnValue('access_token'),
+    generateRefreshToken: jest.fn<any>().mockReturnValue('refresh_token'),
+    getRefreshTokenExpiry: jest.fn<any>().mockReturnValue(new Date()),
 }));
 
 import { hashPassword, comparePassword } from '../src/utils/password';
@@ -38,27 +39,28 @@ describe('AuthService', () => {
     const testUser = {
         email: 'test@example.com',
         password: 'Password123!',
-        name: 'Test User'
+        firstName: 'Test',
+        lastName: 'User'
     };
 
-    describe('signup', () => {
+    describe('register', () => {
         it('should create a new user', async () => {
             // Setup mock
             prismaMock.user.findUnique.mockResolvedValue(null);
             prismaMock.user.create.mockResolvedValue({
                 id: 'user-id',
                 email: testUser.email,
-                name: testUser.name,
+                firstName: testUser.firstName,
+                lastName: testUser.lastName,
                 plan: 'FREE',
                 credits: 10,
                 createdAt: new Date(),
-                // Add other required fields if any, or cast as any if types are annoying
             } as any);
 
-            // We need to mock create for refreshToken too as generateTokens calls it
+            prismaMock.creditTransaction.create.mockResolvedValue({} as any);
             prismaMock.refreshToken.create.mockResolvedValue({} as any);
 
-            const result = await authService.signup(testUser);
+            const result = await authService.register(testUser);
 
             expect(result).toHaveProperty('user');
             expect(result.user.email).toBe(testUser.email);
@@ -69,7 +71,7 @@ describe('AuthService', () => {
         it('should throw error if user already exists', async () => {
             prismaMock.user.findUnique.mockResolvedValue({ id: 'existing' } as any);
 
-            await expect(authService.signup(testUser)).rejects.toHaveProperty('statusCode', 409);
+            await expect(authService.register(testUser)).rejects.toHaveProperty('statusCode', 409);
         });
     });
 
@@ -79,12 +81,14 @@ describe('AuthService', () => {
                 id: 'user-id',
                 email: testUser.email,
                 password: 'hashed_password',
+                firstName: testUser.firstName,
+                lastName: testUser.lastName,
                 isActive: true,
                 plan: 'FREE',
                 credits: 10,
             } as any);
 
-            (comparePassword as jest.Mock).mockResolvedValue(true);
+            (comparePassword as any).mockResolvedValue(true);
             prismaMock.refreshToken.create.mockResolvedValue({} as any);
             prismaMock.user.update.mockResolvedValue({} as any);
 
@@ -92,7 +96,7 @@ describe('AuthService', () => {
 
             expect(result).toHaveProperty('accessToken');
             expect(result).toHaveProperty('refreshToken');
-            expect(result.user.email).toBe(testUser.email);
+            expect(result.user?.email).toBe(testUser.email);
         });
 
         it('should throw error with invalid credentials', async () => {
@@ -103,7 +107,7 @@ describe('AuthService', () => {
                 isActive: true,
             } as any);
 
-            (comparePassword as jest.Mock).mockResolvedValue(false);
+            (comparePassword as any).mockResolvedValue(false);
 
             await expect(authService.login({ email: testUser.email, password: 'WrongPassword' }))
                 .rejects.toHaveProperty('statusCode', 401);

@@ -80,7 +80,7 @@ function FeatureCard({ feature, index }: FeatureCardProps) {
 export default function Features() {
   return (
     <section id="features" className="py-[60px] sm:py-[90px] w-full">
-      <div className="container mx-auto w-full max-w-6xl px-4 sm:px-8">
+      <div className="container mx-auto w-full max-w-6xl px-6 md:px-[60px]">
         <div className="inline-block text-[11px] font-semibold tracking-[0.1em] uppercase text-[var(--blue)] mb-[14px]">
           Everything You Need
         </div>

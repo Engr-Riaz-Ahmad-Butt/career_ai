@@ -3,7 +3,7 @@ import Link from "next/link";
 export default function Footer() {
   return (
     <>
-      <footer className="px-[60px] py-[60px] border-t border-[var(--border)] grid grid-cols-1 md:grid-cols-[2fr_1fr_1fr_1fr] gap-11 max-w-[1200px] mx-auto">
+      <footer className="px-6 md:px-[60px] py-[60px] border-t border-[var(--border)] grid grid-cols-1 md:grid-cols-[2fr_1fr_1fr_1fr] gap-11 w-full mx-auto">
         <div>
           <div className="font-[var(--font-d)] font-extrabold text-lg bg-gradient-to-r from-[var(--blue)] to-[var(--cyan)] bg-clip-text text-transparent mb-[10px]">
             CareerForge AI
@@ -111,7 +111,7 @@ export default function Footer() {
         </div>
       </footer>
 
-      <div className="px-[60px] py-[18px] border-t border-[var(--border)] flex justify-between items-center text-[11px] text-[var(--g4)] max-w-[1200px] mx-auto">
+      <div className="px-6 md:px-[60px] py-[18px] border-t border-[var(--border)] flex justify-between items-center text-[11px] text-[var(--g4)] w-full mx-auto">
         <div>© 2025 CareerForge AI. All rights reserved.</div>
         <div>
           <Link href="#" className="text-[var(--g4)] no-underline ml-4">

@@ -11,7 +11,7 @@ export default function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const navLinks = [
-    { name: "Features", href: "/#features" },
+    { name: "Features", href: "/features" },
     { name: "How It Works", href: "/#how-it-works" },
     { name: "Reviews", href: "/#testimonials" },
     { name: "Pricing", href: "/pricing" },
@@ -19,7 +19,7 @@ export default function Navbar() {
   ];
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-[100] flex items-center justify-between px-[60px] py-4 bg-[rgb(var(--black-rgb)/0.8)] backdrop-blur-[24px] backdrop-saturate-[180%] border-b border-[var(--border)] shadow-[0_4px_24px_rgba(0,0,0,0.06)] dark:shadow-[0_4px_24px_rgba(0,0,0,0.12)] transition-all duration-300">
+    <nav className="fixed top-0 left-0 right-0 z-[100] flex items-center justify-between px-6 md:px-[60px] py-4 bg-[rgb(var(--black-rgb)/0.8)] backdrop-blur-[24px] backdrop-saturate-[180%] border-b border-[var(--border)] shadow-[0_4px_24px_rgba(0,0,0,0.06)] dark:shadow-[0_4px_24px_rgba(0,0,0,0.12)] transition-all duration-300">
       <div className="absolute inset-0 bg-gradient-to-br from-[rgba(59,130,246,0.03)] to-[rgba(34,211,238,0.02)] pointer-events-none" />
 
       <Link
