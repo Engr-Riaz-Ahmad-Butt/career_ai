@@ -211,6 +211,7 @@ model Resume {
   certifications Json[]
   projects      Json[]
   languages     Json[]
+  styling       Json?        // { font, colors, spacing, etc. }
 
   // Versioning
   version       Int       @default(1)

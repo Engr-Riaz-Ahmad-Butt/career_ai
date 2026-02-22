@@ -2,6 +2,7 @@ import { Router } from 'express';
 import {
   listResumes, createResume, getResume, updateResume, deleteResume,
   duplicateResume, generatePdf, listVersions, restoreVersion, uploadResume,
+  extractResume, optimizeResume,
 } from '../controllers/resume.controller';
 import { tailorResume, getTailorHistory, getTailored, deleteTailored } from '../controllers/tailoring.controller';
 import { enhanceResume, scoreAts } from '../controllers/ai.controller';
@@ -34,5 +35,9 @@ router.get('/:id/versions', listVersions);
 router.post('/:id/restore/:versionId', restoreVersion);
 router.post('/:id/enhance', requireCredits(2), enhanceResume);
 router.post('/:id/ats-score', requireCredits(1), scoreAts);
+router.post('/:id/optimize', requireCredits(3), optimizeResume);
+
+// Multi-step & Extraction
+router.post('/extract', resumeUpload.single('file'), requireCredits(2), extractResume);
 
 export default router;

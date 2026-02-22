@@ -28,7 +28,7 @@ const previewMap: Record<string, React.ComponentType<any>> = {
   'gradient-modern': GradientModernPreview,
 };
 
-export function TemplateRenderer({ resume, zoom = 100 }: TemplateRendererProps) {
+export function TemplateRenderer({ resume, zoom = 1 }: TemplateRendererProps) {
   const PreviewComponent = previewMap[resume.template.id];
 
   if (!PreviewComponent) {
@@ -41,7 +41,7 @@ export function TemplateRenderer({ resume, zoom = 100 }: TemplateRendererProps) 
 
   return (
     <div
-      style={{ transform: `scale(${zoom / 100})` }}
+      style={{ transform: `scale(${zoom})` }}
       className="origin-top flex justify-center w-full"
     >
       <PreviewComponent

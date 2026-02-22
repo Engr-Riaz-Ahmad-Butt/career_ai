@@ -12,39 +12,96 @@ export interface ResumeData {
     location: string;
     linkedin?: string;
     portfolio?: string;
+    photoUrl?: string;
   };
   summary: string;
   experience: Array<{
     id: string;
     company: string;
     position: string;
+    location?: string;
     startDate: string;
     endDate: string;
     description: string;
+    achievements?: string[];
   }>;
   education: Array<{
     id: string;
     school: string;
     degree: string;
-    field: string;
-    year: string;
+    field?: string;
+    year?: string;
+    startDate?: string;
+    endDate?: string;
+    location?: string;
   }>;
-  skills: string[];
+  skills: {
+    technical: string[];
+    soft: string[];
+  };
+  projects: Array<{
+    id: string;
+    name: string;
+    description: string;
+    technologies: string[];
+    url?: string;
+  }>;
   certifications: Array<{
     id: string;
     name: string;
     issuer: string;
     date: string;
   }>;
+  languages: Array<{
+    id: string;
+    name: string;
+    level: string;
+  }>;
+  interests: string[];
   createdAt: Date;
   updatedAt: Date;
+  styling: {
+    spacing: {
+      fontSize: number;
+      lineHeight: number;
+      sideMargin: number;
+      topBottomMargin: number;
+      entrySpacing: number;
+    };
+    colors: {
+      primary: string;
+      accent: string;
+      applyToName: boolean;
+      applyToTitle: boolean;
+      applyToIcons: boolean;
+      applyToBubbles: boolean;
+    };
+    typography: {
+      fontFamily: string;
+      category: 'Serif' | 'Sans' | 'Mono';
+    };
+    headingStyle: {
+      style: string;
+      capitalization: 'capitalize' | 'uppercase';
+      size: 'S' | 'M' | 'L' | 'XL';
+      icons: 'none' | 'outline' | 'filled';
+    };
+    personalDetails: {
+      align: 'left' | 'center' | 'right';
+      arrangement: 'horizontal' | 'vertical';
+      iconStyle: string;
+    };
+    entryLayout: {
+      style: string;
+    };
+  };
   atsScore?: number;
 }
 
 interface DocumentState {
   resumes: ResumeData[];
   currentResume: ResumeData | null;
-  
+
   createResume: (name: string, template: ResumeTemplate) => void;
   updateResume: (resume: ResumeData) => void;
   setCurrentResume: (resume: ResumeData | null) => void;
@@ -53,8 +110,13 @@ interface DocumentState {
   removeExperience: (id: string) => void;
   updateContact: (contact: ResumeData['contact']) => void;
   updateSummary: (summary: string) => void;
-  updateSkills: (skills: string[]) => void;
+  updateSkills: (skills: { technical: string[]; soft: string[] }) => void;
+  addEducation: (education: ResumeData['education'][0]) => void;
+  removeEducation: (id: string) => void;
   updateTemplate: (template: ResumeTemplate) => void;
+  updateStyling: (styling: any) => void;
+  setFullResume: (resume: Partial<ResumeData>) => void;
+  createResumeWithData: (name: string, template: ResumeTemplate, data: Partial<ResumeData>) => void;
   getResumeById: (id: string) => ResumeData | undefined;
 }
 
@@ -78,10 +140,48 @@ export const useDocumentStore = create<DocumentState>((set, get) => ({
       summary: '',
       experience: [],
       education: [],
-      skills: [],
+      skills: { technical: [], soft: [] },
+      projects: [],
       certifications: [],
+      languages: [],
+      interests: [],
       createdAt: new Date(),
       updatedAt: new Date(),
+      styling: {
+        spacing: {
+          fontSize: 10,
+          lineHeight: 1.2,
+          sideMargin: 15,
+          topBottomMargin: 15,
+          entrySpacing: 5,
+        },
+        colors: {
+          primary: '#000000',
+          accent: '#4f46e5',
+          applyToName: true,
+          applyToTitle: true,
+          applyToIcons: true,
+          applyToBubbles: true,
+        },
+        typography: {
+          fontFamily: 'Inter',
+          category: 'Sans',
+        },
+        headingStyle: {
+          style: 'line-under',
+          capitalization: 'uppercase',
+          size: 'L',
+          icons: 'filled',
+        },
+        personalDetails: {
+          align: 'left',
+          arrangement: 'horizontal',
+          iconStyle: 'classic',
+        },
+        entryLayout: {
+          style: 'default',
+        },
+      },
       atsScore: 0,
     };
     set((state) => ({
@@ -138,6 +238,36 @@ export const useDocumentStore = create<DocumentState>((set, get) => ({
     });
   },
 
+  addEducation: (education: ResumeData['education'][0]) => {
+    set((state) => {
+      if (!state.currentResume) return state;
+      const updated = {
+        ...state.currentResume,
+        education: [...state.currentResume.education, education],
+        updatedAt: new Date(),
+      };
+      return {
+        currentResume: updated,
+        resumes: state.resumes.map((r) => (r.id === updated.id ? updated : r)),
+      };
+    });
+  },
+
+  removeEducation: (id: string) => {
+    set((state) => {
+      if (!state.currentResume) return state;
+      const updated = {
+        ...state.currentResume,
+        education: state.currentResume.education.filter((e) => e.id !== id),
+        updatedAt: new Date(),
+      };
+      return {
+        currentResume: updated,
+        resumes: state.resumes.map((r) => (r.id === updated.id ? updated : r)),
+      };
+    });
+  },
+
   updateContact: (contact: ResumeData['contact']) => {
     set((state) => {
       if (!state.currentResume) return state;
@@ -168,7 +298,7 @@ export const useDocumentStore = create<DocumentState>((set, get) => ({
     });
   },
 
-  updateSkills: (skills: string[]) => {
+  updateSkills: (skills: { technical: string[]; soft: string[] }) => {
     set((state) => {
       if (!state.currentResume) return state;
       const updated = {
@@ -196,6 +326,111 @@ export const useDocumentStore = create<DocumentState>((set, get) => ({
         resumes: state.resumes.map((r) => (r.id === updated.id ? updated : r)),
       };
     });
+  },
+
+  updateStyling: (styling: any) => {
+    set((state) => {
+      if (!state.currentResume) return state;
+      const updated = {
+        ...state.currentResume,
+        styling: { ...state.currentResume.styling, ...styling },
+        updatedAt: new Date(),
+      };
+      return {
+        currentResume: updated,
+        resumes: state.resumes.map((r) => (r.id === updated.id ? updated : r)),
+      };
+    });
+  },
+
+  setFullResume: (data: Partial<ResumeData>) => {
+    set((state) => {
+      if (!state.currentResume) return state;
+      const updated = {
+        ...state.currentResume,
+        ...data,
+        updatedAt: new Date(),
+      };
+      return {
+        currentResume: updated,
+        resumes: state.resumes.map((r) => (r.id === updated.id ? updated : r)),
+      };
+    });
+  },
+
+  createResumeWithData: (name: string, template: ResumeTemplate, data: Partial<ResumeData>) => {
+    const baseResume: ResumeData = {
+      id: Math.random().toString(36).substr(2, 9),
+      name,
+      template,
+      contact: {
+        fullName: '',
+        email: '',
+        phone: '',
+        location: '',
+        linkedin: '',
+        portfolio: '',
+      },
+      summary: '',
+      experience: [],
+      education: [],
+      skills: { technical: [], soft: [] },
+      projects: [],
+      certifications: [],
+      languages: [],
+      interests: [],
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      styling: {
+        spacing: {
+          fontSize: 10,
+          lineHeight: 1.2,
+          sideMargin: 15,
+          topBottomMargin: 15,
+          entrySpacing: 5,
+        },
+        colors: {
+          primary: '#000000',
+          accent: '#4f46e5',
+          applyToName: true,
+          applyToTitle: true,
+          applyToIcons: true,
+          applyToBubbles: true,
+        },
+        typography: {
+          fontFamily: 'Inter',
+          category: 'Sans',
+        },
+        headingStyle: {
+          style: 'line-under',
+          capitalization: 'uppercase',
+          size: 'L',
+          icons: 'filled',
+        },
+        personalDetails: {
+          align: 'left',
+          arrangement: 'horizontal',
+          iconStyle: 'classic',
+        },
+        entryLayout: {
+          style: 'default',
+        },
+      },
+      atsScore: 0,
+    };
+
+    const newResume: ResumeData = {
+      ...baseResume,
+      ...data,
+      id: baseResume.id, // keep generated id
+      name,
+      template,
+    };
+
+    set((state) => ({
+      resumes: [...state.resumes, newResume],
+      currentResume: newResume,
+    }));
   },
 
   getResumeById: (id: string) => {

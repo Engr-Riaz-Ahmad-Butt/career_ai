@@ -71,6 +71,90 @@ Return JSON: { "suggestions": [{ "type": string, "original": string, "suggested"
     };
   }
 
+  // ── Resume Extraction & Optimization ──────────────────────────────────
+
+  async extractResumeData(text: string) {
+    const prompt = `Extract all professional information from this raw resume text and convert it into a structured JSON format.
+Make sure to clean up any parsing errors and present the data clearly.
+
+Raw text:
+${text.substring(0, 10000)}
+
+Return JSON in this EXACT structure:
+{
+  "personalInfo": {
+    "name": "Full Name",
+    "email": "Email Address",
+    "phone": "Phone Number",
+    "location": "City, Country"
+  },
+  "summary": "Professional Summary",
+  "experience": [
+    {
+      "title": "Job Title",
+      "company": "Company Name",
+      "location": "Location",
+      "startDate": "MM/YYYY",
+      "endDate": "MM/YYYY or Present",
+      "description": "Role description",
+      "achievements": ["Achievement 1", "Achievement 2"]
+    }
+  ],
+  "education": [
+    {
+      "degree": "Degree Name",
+      "institution": "University/School",
+      "location": "Location",
+      "startDate": "MM/YYYY",
+      "endDate": "MM/YYYY"
+    }
+  ],
+  "skills": {
+    "technical": ["Skill 1", "Skill 2"],
+    "soft": ["Skill 1", "Skill 2"]
+  },
+  "projects": [
+    {
+      "name": "Project Name",
+      "description": "Project description",
+      "technologies": ["Tech 1", "Tech 2"]
+    }
+  ]
+}`;
+
+    return generateStructuredContent<any>(prompt, MODELS.PRO);
+  }
+
+  async optimizeResumeForJD(resume: any, jobDescription: string) {
+    const prompt = `Optimize the following resume based on the job description.
+Follow these rules:
+1. Extract important keywords from JD.
+2. Compare them with the resume.
+3. Rewrite the summary to be more aligned with the role.
+4. Improve bullet points using action verbs and quantifiable results.
+5. Add missing relevant skills that the candidate likely has based on their experience.
+6. Provide a before/after comparison for each major change.
+
+Resume:
+${JSON.stringify(resume, null, 2)}
+
+Job Description:
+${jobDescription}
+
+Return JSON:
+{
+  "optimizedResume": { ... },
+  "keyChanges": [
+    { "section": "summary", "before": "...", "after": "...", "reason": "..." },
+    { "section": "experience", "before": "...", "after": "...", "reason": "..." }
+  ],
+  "missingKeywords": ["...", "..."],
+  "matchedKeywords": ["...", "..."]
+}`;
+
+    return generateStructuredContent<any>(prompt, MODELS.PRO);
+  }
+
   // ── Cover Letter ─────────────────────────────────────────────────────
 
   async generateCoverLetter(userId: string, data: {

@@ -1,6 +1,6 @@
 'use client';
 
-import { AppSidebar } from "@/components/layout/app-siderbar";
+import { AppSidebar } from "@/components/layout/app-sidebar";
 import { AppNavbar } from "@/components/layout/app-navbar";
 import { useUIStore } from "@/store/uiStore";
 

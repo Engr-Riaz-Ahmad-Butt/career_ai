@@ -85,3 +85,17 @@ export const uploadResume = async (req: Request, res: Response) => {
   const resume = await resumeService.uploadResume(req.user!.userId, req.file, req.body.title);
   res.status(201).json({ success: true, message: 'Resume uploaded and parsed', data: { resume } });
 };
+
+export const extractResume = async (req: Request, res: Response) => {
+  if (!req.file) return res.status(400).json({ success: false, message: 'No file uploaded' });
+  const data = await resumeService.extractAndParse(req.user!.userId, req.file);
+  res.json({ success: true, data });
+};
+
+export const optimizeResume = async (req: Request, res: Response) => {
+  const { jobDescription } = req.body;
+  if (!jobDescription) return res.status(400).json({ success: false, message: 'Job description is required' });
+
+  const result = await resumeService.optimizeResume(req.user!.userId, req.params.id, jobDescription);
+  res.json({ success: true, data: result });
+};

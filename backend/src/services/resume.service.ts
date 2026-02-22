@@ -1,5 +1,8 @@
 import prisma from '../config/database';
 import { ApiError } from '../middleware/error';
+import aiService from './ai/aiService';
+import pdf from 'pdf-parse';
+import mammoth from 'mammoth';
 
 const RESUME_SELECT = {
     id: true,
@@ -20,6 +23,7 @@ const RESUME_SELECT = {
     certifications: true,
     projects: true,
     languages: true,
+    styling: true,
     version: true,
     createdAt: true,
     updatedAt: true,
@@ -163,14 +167,20 @@ export class ResumeService {
 
     // POST /resumes/upload
     async uploadResume(userId: string, file: Express.Multer.File, title?: string) {
-        // TODO: integrate PDF/DOCX parser (e.g., pdf-parse, mammoth)
-        // For now return a stub parsed object
+        const text = await this.extractTextFromBuffer(file.buffer, file.mimetype);
+        const parsed = await aiService.extractResumeData(text);
+
         const resume = await prisma.resume.create({
             data: {
                 userId,
                 title: title || file.originalname,
                 template: 'modern',
-                summary: 'Imported resume — please review and update sections.',
+                personalInfo: parsed.personalInfo || {},
+                summary: parsed.summary || '',
+                experience: parsed.experience || [],
+                education: parsed.education || [],
+                skills: parsed.skills || {},
+                projects: parsed.projects || [],
                 version: 1,
             },
             select: RESUME_SELECT,
@@ -178,6 +188,32 @@ export class ResumeService {
 
         await this._deductCredit(userId, 'UPLOAD_RESUME', 1, resume.id);
         return resume;
+    }
+
+    async extractAndParse(userId: string, file: Express.Multer.File) {
+        const text = await this.extractTextFromBuffer(file.buffer, file.mimetype);
+        const parsed = await aiService.extractResumeData(text);
+        return parsed;
+    }
+
+    async optimizeResume(userId: string, id: string, jobDescription: string) {
+        const resume = await prisma.resume.findFirst({ where: { id, userId } });
+        if (!resume) throw new ApiError(404, 'Resume not found');
+
+        const result = await aiService.optimizeResumeForJD(resume, jobDescription);
+        return result;
+    }
+
+    private async extractTextFromBuffer(buffer: Buffer, mimetype: string): Promise<string> {
+        if (mimetype === 'application/pdf') {
+            const data = await (pdf as any)(buffer);
+            return data.text;
+        } else if (mimetype === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') {
+            const result = await mammoth.extractRawText({ buffer });
+            return result.value;
+        } else {
+            throw new ApiError(400, 'Unsupported file type. Please upload PDF or DOCX.');
+        }
     }
 
     // ── Private helpers ────────────────────────────────────────────────────
