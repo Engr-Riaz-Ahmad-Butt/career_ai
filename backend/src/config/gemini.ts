@@ -11,8 +11,8 @@ const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
 
 // Model configurations
 export const MODELS = {
-  PRO: 'gemini-1.5-pro-latest', // For complex tasks (resume generation, detailed analysis)
-  FLASH: 'gemini-1.5-flash-latest', // For quick tasks (keyword extraction, simple improvements)
+  PRO: 'gemini-2.0-pro',
+  FLASH: 'gemini-2.0-flash',
 };
 
 /**
@@ -60,10 +60,10 @@ export const generateStructuredContent = async <T>(
     const result = await model.generateContent(prompt);
     const response = await result.response;
     const text = response.text();
-    
+
     // Remove markdown code blocks if present
     const cleanedText = text.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
-    
+
     return JSON.parse(cleanedText) as T;
   } catch (error: any) {
     console.error('Gemini Structured Generation Error:', error);
