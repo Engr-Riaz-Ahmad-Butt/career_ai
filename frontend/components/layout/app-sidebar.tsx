@@ -51,21 +51,30 @@ export function AppSidebar() {
       transition={{ duration: 0.3 }}
       className="fixed left-0 top-0 bottom-0 border-r border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 z-40 flex flex-col pt-20"
     >
-      {/* Top Section: Sidebar Toggle */}
-      <div className="px-4 py-2 border-b border-slate-100 dark:border-slate-800/50">
-        <button
-          onClick={toggleSidebar}
-          className="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-slate-500 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-900 transition-all duration-200"
-        >
-          {sidebarOpen ? (
-            <>
-              <ChevronLeft className="h-5 w-5 flex-shrink-0" />
-              <span className="text-sm font-bold">Collapse</span>
-            </>
-          ) : (
-            <ChevronRight className="h-5 w-5 flex-shrink-0 mx-auto" />
-          )}
-        </button>
+      {/* Branding & Top Toggle */}
+      <div className="px-5 py-4 flex items-center justify-between border-b border-slate-100 dark:border-slate-800/50">
+        {sidebarOpen ? (
+          <div className="flex items-center gap-2">
+            <div className="p-1.5 rounded-lg bg-indigo-600">
+              <Zap className="h-4 w-4 text-white" />
+            </div>
+            <span className="text-sm font-bold text-slate-900 dark:text-white">CareerAI</span>
+          </div>
+        ) : (
+          <div className="mx-auto p-1.5 rounded-lg bg-indigo-600">
+            <Zap className="h-4 w-4 text-white" />
+          </div>
+        )}
+
+        {sidebarOpen && (
+          <button
+            onClick={toggleSidebar}
+            className="p-1.5 rounded-md text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-900 transition-colors"
+            title="Collapse Sidebar"
+          >
+            <ChevronLeft className="h-4 w-4" />
+          </button>
+        )}
       </div>
 
       {/* Sidebar Content */}
@@ -94,16 +103,16 @@ export function AppSidebar() {
       {/* Bottom Section: Account & Sidebar Toggle */}
       <div className="border-t border-slate-200 dark:border-slate-800 p-4 space-y-4 text-center">
         {user && (
-          <div className={`flex items-center gap-3 p-2 rounded-xl bg-slate-50 dark:bg-slate-900/50 border border-slate-100 dark:border-slate-800/50 transition-all duration-300 ${!sidebarOpen && 'justify-center origin-left'}`}>
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-500 flex-shrink-0 flex items-center justify-center text-white text-[10px] font-bold">
+          <div className={`flex items-center gap-2 p-1.5 rounded-lg bg-slate-50 dark:bg-slate-900/40 border border-slate-100 dark:border-slate-800/50 transition-all duration-300 ${!sidebarOpen && 'justify-center'}`}>
+            <div className="w-7 h-7 rounded-md bg-gradient-to-br from-indigo-500 to-purple-500 flex-shrink-0 flex items-center justify-center text-white text-[9px] font-bold">
               {user.name?.charAt(0) || user.email?.charAt(0) || 'U'}
             </div>
             {sidebarOpen && (
-              <div className="flex-1 min-w-0 pr-1 text-left">
-                <p className="text-xs font-bold text-slate-900 dark:text-white truncate">
+              <div className="flex-1 min-w-0 text-left">
+                <p className="text-[11px] font-bold text-slate-900 dark:text-white truncate leading-tight">
                   {user.name || 'User'}
                 </p>
-                <p className="text-[10px] text-slate-500 dark:text-slate-400 truncate opacity-80 uppercase tracking-tighter">
+                <p className="text-[9px] text-slate-500 dark:text-slate-400 truncate opacity-70 uppercase tracking-tighter">
                   {user.plan || 'Free'} Account
                 </p>
               </div>
@@ -111,17 +120,27 @@ export function AppSidebar() {
           </div>
         )}
 
-        <div className="space-y-1">
+        <div className="flex items-center gap-1 w-full">
           <button
             onClick={async () => {
               await logout();
               window.location.href = '/auth/login';
             }}
-            className="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-slate-600 dark:text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-500/10 transition-all duration-200 group"
+            className={`flex items-center gap-3 px-3 py-2 rounded-lg text-slate-600 dark:text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-500/10 transition-all duration-200 group flex-1 ${!sidebarOpen && 'justify-center'}`}
           >
-            <LogOut className="h-5 w-5 flex-shrink-0 group-hover:scale-110 transition-transform" />
-            {sidebarOpen && <span className="text-sm font-bold">Logout</span>}
+            <LogOut className="h-4 w-4 flex-shrink-0 group-hover:scale-110 transition-transform" />
+            {sidebarOpen && <span className="text-xs font-bold">Logout</span>}
           </button>
+
+          {sidebarOpen && (
+            <button
+              onClick={toggleSidebar}
+              className="p-2 rounded-lg text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-900 transition-all duration-200"
+              title="Collapse Sidebar"
+            >
+              <ChevronLeft className="h-4 w-4" />
+            </button>
+          )}
         </div>
       </div>
     </motion.div>

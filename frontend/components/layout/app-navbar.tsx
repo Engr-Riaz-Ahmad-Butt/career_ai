@@ -12,7 +12,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Menu, Search, Bell, Settings, LogOut } from 'lucide-react';
+import { Menu, Search, Bell, Settings, LogOut, ChevronLeft, ChevronRight } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
@@ -51,9 +51,10 @@ export function AppNavbar() {
         <div className="flex items-center gap-4 flex-1">
           <button
             onClick={toggleSidebar}
-            className="md:hidden p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors"
+            className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors flex items-center justify-center text-slate-500 dark:text-slate-400"
+            title={sidebarOpen ? "Collapse Sidebar" : "Expand Sidebar"}
           >
-            <Menu className="h-5 w-5" />
+            {sidebarOpen ? <ChevronLeft className="h-5 w-5" /> : <ChevronRight className="h-5 w-5" />}
           </button>
 
           <div className="hidden md:flex flex-1 max-w-xs">
