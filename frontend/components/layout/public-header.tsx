@@ -51,11 +51,11 @@ export function PublicHeader() {
             {theme === 'dark' ? '☀️' : '🌙'}
           </button>
 
-          <Link href="/login" className="hidden md:inline-block">
+          <Link href="/auth/login" className="hidden md:inline-block">
             <Button variant="ghost">Sign In</Button>
           </Link>
 
-          <Link href="/register">
+          <Link href="/auth/register">
             <Button className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700">
               Start Free
             </Button>
