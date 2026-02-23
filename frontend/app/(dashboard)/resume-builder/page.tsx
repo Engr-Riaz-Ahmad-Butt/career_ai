@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -31,7 +31,9 @@ import {
   Camera,
   Layout as LayoutIcon,
   FileText,
-  User
+  User,
+  Briefcase,
+  Globe
 } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { ResumeUploadFlow } from '@/components/resume/ResumeUploadFlow';
@@ -45,42 +47,85 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
+  DropdownMenuSeparator,
 } from '@/components/ui/dropdown-menu';
 import { message } from 'antd';
 import { ResumeData } from '@/store/documentStore';
+import { useUIStore } from '@/store/uiStore';
+import { ChevronLeft, Home } from 'lucide-react';
+import Link from 'next/link';
 
-const sections = ['Contact', 'Summary', 'Experience', 'Education', 'Skills'];
+const sections = ['Contact', 'Summary', 'Experience', 'Education', 'Certificates', 'Skills', 'Languages'];
 
-export default function ResumeBuilderPage() {
+export default function ResumeBuilderPage({
+  initialFlow = 'selection',
+  initialTab = 'editor'
+}: {
+  initialFlow?: 'selection' | 'upload' | 'scratch' | 'editor';
+  initialTab?: string;
+}) {
   const [previewZoom, setPreviewZoom] = useState(100);
   const [isSaving, setIsSaving] = useState(false);
   const [showTemplateSelector, setShowTemplateSelector] = useState(false);
-  const [showNewResume, setShowNewResume] = useState(true);
-  const [activeTab, setActiveTab] = useState('editor');
+  const [showNewResume, setShowNewResume] = useState(initialFlow === 'selection');
+  const [activeTab, setActiveTab] = useState(initialTab);
+  const [flow, setFlow] = useState<'selection' | 'upload' | 'scratch' | 'editor'>(initialFlow);
 
-  const { currentResume, updateContact, updateSummary, updateSkills, updateStyling, setFullResume, updateTemplate, createResume, createResumeWithData } = useDocumentStore();
+  const {
+    currentResume,
+    updateContact,
+    updateSummary,
+    updateSkills,
+    updateStyling,
+    setFullResume,
+    updateTemplate,
+    deleteResume
+  } = useDocumentStore();
 
-  const handleCreateResume = (template: ResumeTemplate) => {
-    createResume(`Resume - ${new Date().toLocaleDateString()}`, template);
-    setShowTemplateSelector(false);
-    setShowNewResume(false);
+  const { setSidebarOpen } = useUIStore();
+
+  useEffect(() => {
+    // Collapse sidebar when entering resume builder
+    setSidebarOpen(false);
+    return () => {
+      // Re-open sidebar when leaving
+      setSidebarOpen(true);
+    };
+  }, [setSidebarOpen]);
+
+  const handleDownload = () => {
+    setIsSaving(true);
+    // Simulate downloading
+    setTimeout(() => {
+      setIsSaving(false);
+      message.success('Resume downloaded successfully!');
+    }, 1000);
   };
 
   const handleChangeTemplate = (template: ResumeTemplate) => {
-    if (currentResume) {
-      updateTemplate(template);
-    }
+    updateTemplate(template);
     setShowTemplateSelector(false);
+    message.success(`Template changed to ${template.name}`);
   };
 
-  const handleSave = async () => {
-    setIsSaving(true);
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-    setIsSaving(false);
-    message.success('Resume saved successfully!');
+  const handleDelete = () => {
+    if (currentResume) {
+      if (confirm('Are you sure you want to delete this resume?')) {
+        deleteResume(currentResume.id);
+        setFlow('selection');
+        setShowNewResume(true);
+        message.success('Resume deleted');
+      }
+    }
   };
 
-  const [flow, setFlow] = useState<'selection' | 'upload' | 'scratch' | 'editor'>('selection');
+  const handleRename = () => {
+    const newName = prompt('Enter new resume name:', currentResume?.name);
+    if (newName && currentResume) {
+      setFullResume({ name: newName });
+      message.success('Resume renamed');
+    }
+  };
 
   const handleUploadComplete = (extractedData: any) => {
     setFlow('editor');
@@ -208,299 +253,551 @@ export default function ResumeBuilderPage() {
   }
 
   return (
-    <div className="bg-slate-50 dark:bg-slate-950 min-h-screen">
-      {/* Sticky Header */}
-      <header className="sticky top-0 z-50 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-slate-200 dark:border-slate-800">
-        <div className="max-w-[1600px] mx-auto px-6 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-6">
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center text-white">
-                <FileText className="w-5 h-5" />
-              </div>
-              <span className="font-black text-xl tracking-tighter">CareerAI</span>
-            </div>
-
-            <div className="h-6 w-[1px] bg-slate-200 dark:bg-slate-700 mx-2" />
-
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="font-bold flex items-center gap-2 px-3 py-1.5 h-auto">
-                  {currentResume?.name || 'Untitled Resume'}
-                  <ChevronDown className="w-4 h-4 opacity-50" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="start" className="w-56">
-                <DropdownMenuItem onClick={() => setShowTemplateSelector(true)}>Change Template</DropdownMenuItem>
-                <DropdownMenuItem>Rename</DropdownMenuItem>
-                <DropdownMenuItem className="text-rose-500">Delete</DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-
-            <div className="flex items-center gap-1">
-              <Button variant="ghost" size="icon" className="h-8 w-8 opacity-50 hover:opacity-100">
-                <Undo2 className="w-4 h-4" />
-              </Button>
-              <Button variant="ghost" size="icon" className="h-8 w-8 opacity-50 hover:opacity-100">
-                <Redo2 className="w-4 h-4" />
-              </Button>
-            </div>
-          </div>
-
-          <div className="flex items-center bg-slate-100 dark:bg-slate-800 p-1 rounded-xl">
-            <Tabs value={activeTab} onValueChange={setActiveTab} className="w-fit">
-              <TabsList className="bg-transparent border-0 h-9">
-                <TabsTrigger value="overview" className="rounded-lg h-7 px-4 font-bold text-xs">Overview</TabsTrigger>
-                <TabsTrigger value="editor" className="rounded-lg h-7 px-4 font-bold text-xs">Content</TabsTrigger>
-                <TabsTrigger value="customize" className="rounded-lg h-7 px-4 font-bold text-xs">Customize</TabsTrigger>
-                <TabsTrigger value="optimizer" className="rounded-lg h-7 px-4 font-bold text-xs flex items-center gap-1.5">
-                  <Zap className="w-3 h-3 text-amber-500 fill-amber-500" /> AI Tools
-                </TabsTrigger>
-              </TabsList>
-            </Tabs>
-          </div>
-
-          <div className="flex items-center gap-3">
-            <Button variant="ghost" size="icon" className="text-slate-500">
-              <MoreVertical className="w-5 h-5" />
+    <div className="bg-[#f8f7f4] dark:bg-slate-950 min-h-screen">
+      {/* Top Breadcrumb & Navigation */}
+      <div className="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 px-6 py-3 flex items-center justify-between sticky top-0 z-[60]">
+        <div className="flex items-center gap-3">
+          <Link href="/dashboard">
+            <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full hover:bg-slate-100">
+              <ChevronLeft className="w-5 h-5 text-slate-600" />
             </Button>
-            <Button className="bg-slate-900 dark:bg-white dark:text-slate-900 rounded-xl font-bold px-6 flex items-center gap-2" onClick={handleSave}>
-              Download <Download className="w-4 h-4" />
-            </Button>
+          </Link>
+          <div className="flex items-center gap-2 text-sm font-medium">
+            <Link href="/dashboard" className="text-slate-500 hover:text-slate-900 transition-colors">Dashboard</Link>
+            <span className="text-slate-300">/</span>
+            <span className="text-slate-900 dark:text-white font-bold">Resume Builder</span>
           </div>
         </div>
-      </header>
+
+        <div className="flex items-center gap-4">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" className="bg-slate-50 border-slate-200 font-bold flex items-center gap-4 px-4 py-2 h-10 rounded-xl min-w-[200px] justify-between">
+                <span className="truncate">{currentResume?.name || 'Untitled Resume'}</span>
+                <ChevronDown className="w-4 h-4 opacity-50" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-56">
+              <DropdownMenuItem onClick={() => setShowTemplateSelector(true)}>Change Template</DropdownMenuItem>
+              <DropdownMenuItem onClick={handleRename}>Rename</DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem className="text-rose-500" onClick={handleDelete}>Delete</DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+
+          <Button className="bg-[#1a1c20] hover:bg-[#2a2c30] text-white rounded-xl font-bold px-6 h-10 flex items-center gap-2 shadow-sm" onClick={handleDownload}>
+            Download <Download className="w-4 h-4" />
+          </Button>
+
+          <Button variant="outline" size="icon" className="h-10 w-10 rounded-xl border-slate-200">
+            <MoreVertical className="w-5 h-5" />
+          </Button>
+        </div>
+      </div>
+
+      {/* Sub-Header Tabs */}
+      <div className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 sticky top-[61px] z-50">
+        <div className="max-w-[1600px] mx-auto px-6 h-16 flex items-center">
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+            <TabsList className="bg-transparent border-0 h-16 w-full justify-start gap-8">
+              <TabsTrigger
+                value="overview"
+                className="bg-transparent border-0 h-16 px-2 font-bold text-sm data-[state=active]:text-indigo-600 data-[state=active]:border-b-2 data-[state=active]:border-indigo-600 rounded-none transition-none shadow-none"
+              >
+                <LayoutIcon className="w-4 h-4 mr-2" /> Overview
+              </TabsTrigger>
+              <TabsTrigger
+                value="editor"
+                className="bg-transparent border-0 h-16 px-2 font-bold text-sm data-[state=active]:text-indigo-600 data-[state=active]:border-b-2 data-[state=active]:border-indigo-600 rounded-none transition-none shadow-none"
+              >
+                <FileText className="w-4 h-4 mr-2" /> Content
+              </TabsTrigger>
+              <TabsTrigger
+                value="customize"
+                className="bg-transparent border-0 h-16 px-2 font-bold text-sm data-[state=active]:text-indigo-600 data-[state=active]:border-b-2 data-[state=active]:border-indigo-600 rounded-none transition-none shadow-none"
+              >
+                <Palette className="w-4 h-4 mr-2" /> Customize
+              </TabsTrigger>
+              <TabsTrigger
+                value="optimizer"
+                className="bg-transparent border-0 h-16 px-2 font-bold text-sm data-[state=active]:text-indigo-600 data-[state=active]:border-b-2 data-[state=active]:border-indigo-600 rounded-none transition-none shadow-none flex items-center"
+              >
+                <Zap className="w-4 h-4 mr-2 fill-amber-500 text-amber-500" /> AI Tools
+              </TabsTrigger>
+            </TabsList>
+          </Tabs>
+        </div>
+      </div>
 
       <main className="max-w-[1600px] mx-auto px-6 py-8">
         <Tabs value={activeTab} className="w-full">
           {/* CONTENT (EDITOR) VIEW */}
           <TabsContent value="editor" className="mt-0">
-            <div className="grid grid-cols-1 xl:grid-cols-12 gap-10">
-              {/* Sidebar: Form */}
-              <div className="xl:col-span-4 space-y-6">
-                {/* Profile Card */}
-                <Card className="p-6 rounded-3xl border-0 shadow-sm overflow-hidden relative group">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
+              {/* Left Column: Form */}
+              <div className="space-y-6 pb-20">
+                {/* Profile Section */}
+                <Card className="p-6 rounded-3xl border border-slate-100 shadow-sm bg-white overflow-hidden relative group">
                   <div className="flex items-center gap-6">
                     <div className="relative">
-                      <div className="w-24 h-24 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center border-4 border-white dark:border-slate-900 shadow-md group-hover:opacity-80 transition-opacity">
+                      <div className="w-24 h-24 rounded-full bg-slate-50 flex items-center justify-center border-4 border-white shadow-sm group-hover:opacity-80 transition-opacity">
                         {currentResume?.contact.photoUrl ? (
                           <img src={currentResume.contact.photoUrl} className="w-full h-full rounded-full object-cover" alt="Profile" />
                         ) : (
-                          <User className="w-10 h-10 text-slate-300" />
+                          <div className="w-full h-full rounded-full bg-slate-100 flex items-center justify-center">
+                            <Camera className="w-8 h-8 text-slate-300" />
+                          </div>
                         )}
                       </div>
-                      <button className="absolute bottom-0 right-0 w-8 h-8 rounded-full bg-pink-500 text-white flex items-center justify-center shadow-lg hover:scale-110 transition-transform">
-                        <Camera className="w-4 h-4" />
+                      <button className="absolute bottom-0 right-0 w-8 h-8 rounded-full bg-[#ff4b8b] text-white flex items-center justify-center shadow-md hover:scale-110 transition-transform">
+                        <Palette className="w-4 h-4" />
                       </button>
                     </div>
                     <div className="flex-1 min-w-0">
-                      <h2 className="text-2xl font-black truncate">{currentResume?.contact.fullName || 'Your Name'}</h2>
-                      <div className="flex flex-col gap-1 mt-2 text-sm text-slate-500">
-                        <p className="truncate">{currentResume?.contact.email || 'email@example.com'}</p>
-                        <p>{currentResume?.contact.phone || '+1 234 567 890'}</p>
-                        <p className="truncate">{currentResume?.contact.location || 'Location'}</p>
+                      <div className="flex justify-between items-start">
+                        <div>
+                          <h2 className="text-2xl font-black text-slate-900 truncate">{currentResume?.contact.fullName || 'Your Name'}</h2>
+                          <div className="flex flex-col gap-1 mt-2 text-sm text-slate-500">
+                            <div className="flex items-center gap-2">
+                              <div className="w-5 h-5 rounded-full bg-slate-100 flex items-center justify-center flex-shrink-0">
+                                <User className="w-3 h-3" />
+                              </div>
+                              <span className="truncate">{currentResume?.contact.email || 'email@example.com'}</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <div className="w-5 h-5 rounded-full bg-slate-100 flex items-center justify-center flex-shrink-0">
+                                <Zap className="w-3 h-3" />
+                              </div>
+                              <span>{currentResume?.contact.phone || '+1 234 567 890'}</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <div className="w-5 h-5 rounded-full bg-slate-100 flex items-center justify-center flex-shrink-0">
+                                <LayoutIcon className="w-3 h-3" />
+                              </div>
+                              <span className="truncate">{currentResume?.contact.location || 'Location'}</span>
+                            </div>
+                          </div>
+                        </div>
+                        <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full bg-pink-50 text-pink-500 hover:bg-pink-100">
+                          <Plus className="w-4 h-4" />
+                        </Button>
                       </div>
                     </div>
                   </div>
                 </Card>
 
-                {/* Section Accordions */}
-                <Accordion type="single" collapsible defaultValue="contact" className="space-y-4">
+                {/* Section Cards */}
+                <div className="space-y-4">
                   {sections.map((section) => (
-                    <AccordionItem key={section} value={section.toLowerCase()} className="border-0">
-                      <AccordionTrigger className="hover:no-underline bg-white dark:bg-slate-900 px-6 py-4 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-sm">
-                        <div className="flex items-center gap-3">
-                          <div className="w-8 h-8 rounded-lg bg-slate-50 dark:bg-slate-800 flex items-center justify-center group-data-[state=open]:bg-indigo-50 dark:group-data-[state=open]:bg-indigo-900/30 group-data-[state=open]:text-indigo-600 transition-colors">
-                            {section === 'Contact' && <User className="w-4 h-4" />}
-                            {section === 'Summary' && <FileText className="w-4 h-4" />}
-                            {section === 'Experience' && <LayoutIcon className="w-4 h-4" />}
-                            {section === 'Education' && <Plus className="w-4 h-4" />}
-                            {section === 'Skills' && <Zap className="w-4 h-4" />}
-                          </div>
-                          <span className="font-bold">{section}</span>
-                        </div>
-                      </AccordionTrigger>
-                      <AccordionContent className="pt-6 px-4 space-y-6 bg-white/50 dark:bg-slate-900/50 rounded-b-2xl -mt-4 border-x border-b border-white/20">
-                        {section === 'Contact' && currentResume && (
-                          <>
-                            <div className="space-y-2">
-                              <Label>Full Name</Label>
-                              <Input
-                                value={currentResume.contact.fullName}
-                                onChange={(e) => updateContact({ ...currentResume.contact, fullName: e.target.value })}
-                              />
-                            </div>
-                            <div className="grid grid-cols-2 gap-4">
-                              <div className="space-y-2">
-                                <Label>Email</Label>
-                                <Input
-                                  value={currentResume.contact.email}
-                                  onChange={(e) => updateContact({ ...currentResume.contact, email: e.target.value })}
-                                />
+                    <Card key={section} className="border border-slate-100 shadow-sm rounded-2xl overflow-hidden bg-white">
+                      <Accordion type="single" collapsible className="w-full">
+                        <AccordionItem value={section.toLowerCase()} className="border-0">
+                          <AccordionTrigger className="px-6 py-5 hover:no-underline group">
+                            <div className="flex items-center gap-4">
+                              <div className="w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center text-slate-600 transition-colors group-data-[state=open]:bg-indigo-50 group-data-[state=open]:text-indigo-600">
+                                {section === 'Contact' && <User className="w-5 h-5" />}
+                                {section === 'Summary' && <FileText className="w-5 h-5" />}
+                                {section === 'Experience' && <Briefcase className="w-5 h-5" />}
+                                {section === 'Education' && <LayoutIcon className="w-5 h-5" />}
+                                {section === 'Certificates' && <Plus className="w-5 h-5" />}
+                                {section === 'Skills' && <Zap className="w-5 h-5" />}
+                                {section === 'Languages' && <Globe className="w-5 h-5" />}
                               </div>
-                              <div className="space-y-2">
-                                <Label>Phone</Label>
-                                <Input
-                                  value={currentResume.contact.phone}
-                                  onChange={(e) => updateContact({ ...currentResume.contact, phone: e.target.value })}
-                                />
+                              <span className="font-bold text-slate-900">{section}</span>
+                            </div>
+                          </AccordionTrigger>
+                          <AccordionContent className="px-6 pb-6 pt-2">
+                            {section === 'Contact' && currentResume && (
+                              <div className="space-y-4">
+                                <div className="space-y-2">
+                                  <Label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Full Name</Label>
+                                  <Input
+                                    value={currentResume.contact.fullName}
+                                    placeholder="Enter your full name"
+                                    className="rounded-xl border-slate-200 focus:border-indigo-500 transition-colors h-11"
+                                    onChange={(e) => updateContact({ ...currentResume.contact, fullName: e.target.value })}
+                                  />
+                                </div>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                  <div className="space-y-2">
+                                    <Label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Email</Label>
+                                    <Input
+                                      value={currentResume.contact.email}
+                                      placeholder="example@gmail.com"
+                                      className="rounded-xl border-slate-200 focus:border-indigo-500 transition-colors h-11"
+                                      onChange={(e) => updateContact({ ...currentResume.contact, email: e.target.value })}
+                                    />
+                                  </div>
+                                  <div className="space-y-2">
+                                    <Label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Phone</Label>
+                                    <Input
+                                      value={currentResume.contact.phone}
+                                      placeholder="+1 234 567 890"
+                                      className="rounded-xl border-slate-200 focus:border-indigo-500 transition-colors h-11"
+                                      onChange={(e) => updateContact({ ...currentResume.contact, phone: e.target.value })}
+                                    />
+                                  </div>
+                                </div>
+                                <div className="space-y-2">
+                                  <Label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Location</Label>
+                                  <Input
+                                    value={currentResume.contact.location}
+                                    placeholder="City, Country"
+                                    className="rounded-xl border-slate-200 focus:border-indigo-500 transition-colors h-11"
+                                    onChange={(e) => updateContact({ ...currentResume.contact, location: e.target.value })}
+                                  />
+                                </div>
                               </div>
-                            </div>
-                            <div className="space-y-2">
-                              <Label>Location</Label>
-                              <Input
-                                value={currentResume.contact.location}
-                                onChange={(e) => updateContact({ ...currentResume.contact, location: e.target.value })}
-                              />
-                            </div>
-                          </>
-                        )}
+                            )}
 
-                        {section === 'Summary' && currentResume && (
-                          <div className="space-y-4">
-                            <Label>Professional Summary</Label>
-                            <Textarea
-                              value={currentResume.summary}
-                              onChange={(e) => updateSummary(e.target.value)}
-                              className="min-h-[150px]"
-                            />
-                          </div>
-                        )}
-
-                        {section === 'Experience' && currentResume && (
-                          <div className="space-y-8">
-                            {currentResume.experience.map((exp, index) => (
-                              <div key={exp.id} className="p-4 rounded-xl border border-slate-100 bg-slate-50/50 space-y-4">
-                                <div className="flex justify-between items-center">
-                                  <h4 className="font-bold text-sm">Experience #{index + 1}</h4>
-                                  <Button variant="ghost" size="icon" className="text-rose-500 h-8 w-8" onClick={() => useDocumentStore.getState().removeExperience(exp.id)}>
-                                    <Trash2 className="w-4 h-4" />
+                            {section === 'Summary' && currentResume && (
+                              <div className="space-y-4">
+                                <Label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Professional Summary</Label>
+                                <Textarea
+                                  value={currentResume.summary}
+                                  placeholder="Briefly describe your professional background and key strengths..."
+                                  className="min-h-[150px] rounded-xl border-slate-200 focus:border-indigo-500 transition-colors p-4"
+                                  onChange={(e) => updateSummary(e.target.value)}
+                                />
+                                <div className="flex justify-end pt-2">
+                                  <Button variant="ghost" size="sm" className="text-indigo-600 font-bold hover:bg-indigo-50">
+                                    <Zap className="w-4 h-4 mr-2" /> Enhance with AI
                                   </Button>
                                 </div>
-                                <Input value={exp.company} placeholder="Company" onChange={(e) => {
-                                  const newExp = [...currentResume.experience];
-                                  newExp[index].company = e.target.value;
-                                  setFullResume({ experience: newExp });
-                                }} />
-                                <Input value={exp.position} placeholder="Position" onChange={(e) => {
-                                  const newExp = [...currentResume.experience];
-                                  newExp[index].position = e.target.value;
-                                  setFullResume({ experience: newExp });
-                                }} />
-                                <Textarea value={exp.description} placeholder="Description" onChange={(e) => {
-                                  const newExp = [...currentResume.experience];
-                                  newExp[index].description = e.target.value;
-                                  setFullResume({ experience: newExp });
-                                }} />
                               </div>
-                            ))}
-                            <Button variant="outline" className="w-full dashed" onClick={() => useDocumentStore.getState().addExperience({
-                              id: Math.random().toString(36).substr(2, 9),
-                              company: '',
-                              position: '',
-                              startDate: '',
-                              endDate: '',
-                              description: '',
-                            })}>
-                              <Plus className="w-4 h-4 mr-2" /> Add Experience
-                            </Button>
-                          </div>
-                        )}
+                            )}
 
-                        {section === 'Education' && currentResume && (
-                          <div className="space-y-8">
-                            {currentResume.education.map((edu, index) => (
-                              <div key={edu.id} className="p-4 rounded-xl border border-slate-100 bg-slate-50/50 space-y-4">
-                                <div className="flex justify-between items-center">
-                                  <h4 className="font-bold text-sm">Education #{index + 1}</h4>
-                                  <Button variant="ghost" size="icon" className="text-rose-500 h-8 w-8" onClick={() => useDocumentStore.getState().removeEducation(edu.id)}>
-                                    <Trash2 className="w-4 h-4" />
-                                  </Button>
+                            {section === 'Experience' && currentResume && (
+                              <div className="space-y-6">
+                                {currentResume.experience.map((exp, index) => (
+                                  <div key={exp.id} className="p-5 rounded-2xl border border-slate-100 bg-slate-50/50 space-y-4 relative group/exp">
+                                    <div className="flex justify-between items-center">
+                                      <h4 className="font-bold text-sm text-slate-700">Experience #{index + 1}</h4>
+                                      <Button variant="ghost" size="icon" className="text-rose-500 h-8 w-8 hover:bg-rose-50 rounded-full" onClick={() => useDocumentStore.getState().removeExperience(exp.id)}>
+                                        <Trash2 className="w-4 h-4" />
+                                      </Button>
+                                    </div>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                      <div className="space-y-2">
+                                        <Label className="text-xs font-bold text-slate-500">Company</Label>
+                                        <Input
+                                          value={exp.company}
+                                          placeholder="e.g. Google"
+                                          className="rounded-xl border-slate-200 h-10"
+                                          onChange={(e) => {
+                                            const newExp = [...currentResume.experience];
+                                            newExp[index] = { ...newExp[index], company: e.target.value };
+                                            setFullResume({ experience: newExp });
+                                          }}
+                                        />
+                                      </div>
+                                      <div className="space-y-2">
+                                        <Label className="text-xs font-bold text-slate-500">Position</Label>
+                                        <Input
+                                          value={exp.position}
+                                          placeholder="e.g. Senior Developer"
+                                          className="rounded-xl border-slate-200 h-10"
+                                          onChange={(e) => {
+                                            const newExp = [...currentResume.experience];
+                                            newExp[index] = { ...newExp[index], position: e.target.value };
+                                            setFullResume({ experience: newExp });
+                                          }}
+                                        />
+                                      </div>
+                                    </div>
+                                    <div className="grid grid-cols-2 gap-4">
+                                      <div className="space-y-2">
+                                        <Label className="text-xs font-bold text-slate-500">Start Date</Label>
+                                        <Input value={exp.startDate} placeholder="MM/YYYY" className="rounded-xl h-10" onChange={(e) => {
+                                          const newExp = [...currentResume.experience];
+                                          newExp[index] = { ...newExp[index], startDate: e.target.value };
+                                          setFullResume({ experience: newExp });
+                                        }} />
+                                      </div>
+                                      <div className="space-y-2">
+                                        <Label className="text-xs font-bold text-slate-500">End Date</Label>
+                                        <Input value={exp.endDate} placeholder="MM/YYYY or Present" className="rounded-xl h-10" onChange={(e) => {
+                                          const newExp = [...currentResume.experience];
+                                          newExp[index] = { ...newExp[index], endDate: e.target.value };
+                                          setFullResume({ experience: newExp });
+                                        }} />
+                                      </div>
+                                    </div>
+                                    <div className="space-y-2">
+                                      <Label className="text-xs font-bold text-slate-500">Description</Label>
+                                      <Textarea
+                                        value={exp.description}
+                                        placeholder="Describe your responsibilities and achievements..."
+                                        className="rounded-xl border-slate-200 min-h-[100px]"
+                                        onChange={(e) => {
+                                          const newExp = [...currentResume.experience];
+                                          newExp[index] = { ...newExp[index], description: e.target.value };
+                                          setFullResume({ experience: newExp });
+                                        }}
+                                      />
+                                    </div>
+                                  </div>
+                                ))}
+                                <Button variant="outline" className="w-full h-12 rounded-xl border-dashed border-2 hover:border-indigo-500 hover:text-indigo-600 transition-all" onClick={() => useDocumentStore.getState().addExperience({
+                                  id: Math.random().toString(36).substr(2, 9),
+                                  company: '',
+                                  position: '',
+                                  startDate: '',
+                                  endDate: '',
+                                  description: '',
+                                })}>
+                                  <Plus className="w-4 h-4 mr-2" /> Add Experience entry
+                                </Button>
+                              </div>
+                            )}
+
+                            {section === 'Education' && currentResume && (
+                              <div className="space-y-6">
+                                {currentResume.education.map((edu, index) => (
+                                  <div key={edu.id} className="p-5 rounded-2xl border border-slate-100 bg-slate-50/50 space-y-4 relative group/edu">
+                                    <div className="flex justify-between items-center">
+                                      <h4 className="font-bold text-sm text-slate-700">Education #{index + 1}</h4>
+                                      <Button variant="ghost" size="icon" className="text-rose-500 h-8 w-8 hover:bg-rose-50 rounded-full" onClick={() => useDocumentStore.getState().removeEducation(edu.id)}>
+                                        <Trash2 className="w-4 h-4" />
+                                      </Button>
+                                    </div>
+                                    <div className="space-y-2">
+                                      <Label className="text-xs font-bold text-slate-500">School / University</Label>
+                                      <Input
+                                        value={edu.school}
+                                        placeholder="e.g. Stanford University"
+                                        className="rounded-xl h-10"
+                                        onChange={(e) => {
+                                          const newEdu = [...currentResume.education];
+                                          newEdu[index] = { ...newEdu[index], school: e.target.value };
+                                          setFullResume({ education: newEdu });
+                                        }}
+                                      />
+                                    </div>
+                                    <div className="space-y-2">
+                                      <Label className="text-xs font-bold text-slate-500">Degree</Label>
+                                      <Input
+                                        value={edu.degree}
+                                        placeholder="e.g. Bachelor of Science in Computer Science"
+                                        className="rounded-xl h-10"
+                                        onChange={(e) => {
+                                          const newEdu = [...currentResume.education];
+                                          newEdu[index] = { ...newEdu[index], degree: e.target.value };
+                                          setFullResume({ education: newEdu });
+                                        }}
+                                      />
+                                    </div>
+                                    <div className="grid grid-cols-2 gap-4">
+                                      <div className="space-y-2">
+                                        <Label className="text-xs font-bold text-slate-500">Start Date</Label>
+                                        <Input value={edu.startDate} placeholder="MM/YYYY" className="rounded-xl h-10" onChange={(e) => {
+                                          const newEdu = [...currentResume.education];
+                                          newEdu[index] = { ...newEdu[index], startDate: e.target.value };
+                                          setFullResume({ education: newEdu });
+                                        }} />
+                                      </div>
+                                      <div className="space-y-2">
+                                        <Label className="text-xs font-bold text-slate-500">End Date</Label>
+                                        <Input value={edu.endDate} placeholder="MM/YYYY" className="rounded-xl h-10" onChange={(e) => {
+                                          const newEdu = [...currentResume.education];
+                                          newEdu[index] = { ...newEdu[index], endDate: e.target.value };
+                                          setFullResume({ education: newEdu });
+                                        }} />
+                                      </div>
+                                    </div>
+                                  </div>
+                                ))}
+                                <Button variant="outline" className="w-full h-12 rounded-xl border-dashed border-2 hover:border-indigo-500 hover:text-indigo-600 transition-all" onClick={() => useDocumentStore.getState().addEducation({
+                                  id: Math.random().toString(36).substr(2, 9),
+                                  school: '',
+                                  degree: '',
+                                  startDate: '',
+                                  endDate: '',
+                                })}>
+                                  <Plus className="w-4 h-4 mr-2" /> Add Education entry
+                                </Button>
+                              </div>
+                            )}
+
+                            {section === 'Certificates' && currentResume && (
+                              <div className="space-y-6">
+                                {currentResume.certifications?.map((cert, index) => (
+                                  <div key={cert.id} className="p-5 rounded-2xl border border-slate-100 bg-slate-50/50 space-y-4 relative group/cert">
+                                    <div className="flex justify-between items-center">
+                                      <h4 className="font-bold text-sm text-slate-700">Certificate #{index + 1}</h4>
+                                      <Button variant="ghost" size="icon" className="text-rose-500 h-8 w-8 hover:bg-rose-50 rounded-full" onClick={() => {
+                                        const newCerts = currentResume.certifications?.filter(c => c.id !== cert.id);
+                                        setFullResume({ certifications: newCerts });
+                                      }}>
+                                        <Trash2 className="w-4 h-4" />
+                                      </Button>
+                                    </div>
+                                    <div className="space-y-2">
+                                      <Label className="text-xs font-bold text-slate-500">Certificate Name</Label>
+                                      <Input
+                                        value={cert.name}
+                                        placeholder="e.g. AWS Certified Solutions Architect"
+                                        className="rounded-xl h-10"
+                                        onChange={(e) => {
+                                          const newCerts = [...(currentResume.certifications || [])];
+                                          newCerts[index] = { ...newCerts[index], name: e.target.value };
+                                          setFullResume({ certifications: newCerts });
+                                        }}
+                                      />
+                                    </div>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                      <div className="space-y-2">
+                                        <Label className="text-xs font-bold text-slate-500">Issuer</Label>
+                                        <Input
+                                          value={cert.issuer}
+                                          placeholder="e.g. Amazon Web Services"
+                                          className="rounded-xl h-10"
+                                          onChange={(e) => {
+                                            const newCerts = [...(currentResume.certifications || [])];
+                                            newCerts[index] = { ...newCerts[index], issuer: e.target.value };
+                                            setFullResume({ certifications: newCerts });
+                                          }}
+                                        />
+                                      </div>
+                                      <div className="space-y-2">
+                                        <Label className="text-xs font-bold text-slate-500">Date</Label>
+                                        <Input
+                                          value={cert.date}
+                                          placeholder="MM/YYYY"
+                                          className="rounded-xl h-10"
+                                          onChange={(e) => {
+                                            const newCerts = [...(currentResume.certifications || [])];
+                                            newCerts[index] = { ...newCerts[index], date: e.target.value };
+                                            setFullResume({ certifications: newCerts });
+                                          }}
+                                        />
+                                      </div>
+                                    </div>
+                                  </div>
+                                ))}
+                                <Button variant="outline" className="w-full h-12 rounded-xl border-dashed border-2 hover:border-indigo-500 hover:text-indigo-600 transition-all" onClick={() => {
+                                  const newCerts = [...(currentResume.certifications || [])];
+                                  newCerts.push({
+                                    id: Math.random().toString(36).substr(2, 9),
+                                    name: '',
+                                    issuer: '',
+                                    date: ''
+                                  });
+                                  setFullResume({ certifications: newCerts });
+                                }}>
+                                  <Plus className="w-4 h-4 mr-2" /> Add Certificate
+                                </Button>
+                              </div>
+                            )}
+
+                            {section === 'Skills' && currentResume && (
+                              <div className="space-y-6">
+                                <div className="space-y-2">
+                                  <Label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Technical Skills</Label>
+                                  <Textarea
+                                    value={currentResume.skills.technical.join(', ')}
+                                    placeholder="React, Node.js, TypeScript, etc. (comma separated)"
+                                    className="rounded-xl border-slate-200 min-h-[100px] p-4"
+                                    onChange={(e) => updateSkills({
+                                      ...currentResume.skills,
+                                      technical: e.target.value.split(',').map(s => s.trim())
+                                    })}
+                                  />
                                 </div>
-                                <Input value={edu.school} placeholder="School/University" onChange={(e) => {
-                                  const newEdu = [...currentResume.education];
-                                  newEdu[index].school = e.target.value;
-                                  setFullResume({ education: newEdu });
-                                }} />
-                                <Input value={edu.degree} placeholder="Degree" onChange={(e) => {
-                                  const newEdu = [...currentResume.education];
-                                  newEdu[index].degree = e.target.value;
-                                  setFullResume({ education: newEdu });
-                                }} />
-                                <div className="grid grid-cols-2 gap-4">
-                                  <Input value={edu.startDate} placeholder="Start Date" onChange={(e) => {
-                                    const newEdu = [...currentResume.education];
-                                    newEdu[index].startDate = e.target.value;
-                                    setFullResume({ education: newEdu });
-                                  }} />
-                                  <Input value={edu.endDate} placeholder="End Date" onChange={(e) => {
-                                    const newEdu = [...currentResume.education];
-                                    newEdu[index].endDate = e.target.value;
-                                    setFullResume({ education: newEdu });
-                                  }} />
+                                <div className="space-y-2">
+                                  <Label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Soft Skills</Label>
+                                  <Textarea
+                                    value={currentResume.skills.soft.join(', ')}
+                                    placeholder="Leadership, Communication, etc. (comma separated)"
+                                    className="rounded-xl border-slate-200 min-h-[100px] p-4"
+                                    onChange={(e) => updateSkills({
+                                      ...currentResume.skills,
+                                      soft: e.target.value.split(',').map(s => s.trim())
+                                    })}
+                                  />
                                 </div>
                               </div>
-                            ))}
-                            <Button variant="outline" className="w-full dashed" onClick={() => useDocumentStore.getState().addEducation({
-                              id: Math.random().toString(36).substr(2, 9),
-                              school: '',
-                              degree: '',
-                              startDate: '',
-                              endDate: '',
-                            })}>
-                              <Plus className="w-4 h-4 mr-2" /> Add Education
-                            </Button>
-                          </div>
-                        )}
+                            )}
 
-                        {section === 'Skills' && currentResume && (
-                          <div className="space-y-4">
-                            <div className="space-y-2">
-                              <Label>Technical Skills (comma separated)</Label>
-                              <Textarea
-                                value={currentResume.skills.technical.join(', ')}
-                                placeholder="React, Node.js, TypeScript..."
-                                onChange={(e) => updateSkills({
-                                  ...currentResume.skills,
-                                  technical: e.target.value.split(',').map(s => s.trim())
-                                })}
-                              />
-                            </div>
-                            <div className="space-y-2">
-                              <Label>Soft Skills (comma separated)</Label>
-                              <Textarea
-                                value={currentResume.skills.soft.join(', ')}
-                                placeholder="Leadership, Communication, Problem Solving..."
-                                onChange={(e) => updateSkills({
-                                  ...currentResume.skills,
-                                  soft: e.target.value.split(',').map(s => s.trim())
-                                })}
-                              />
-                            </div>
-                          </div>
-                        )}
-                      </AccordionContent>
-                    </AccordionItem>
+                            {section === 'Languages' && currentResume && (
+                              <div className="space-y-6">
+                                {currentResume.languages?.map((lang, index) => (
+                                  <div key={lang.id} className="p-4 rounded-2xl border border-slate-100 bg-slate-50/50 flex items-center gap-4">
+                                    <div className="flex-1 space-y-2">
+                                      <Label className="text-xs font-bold text-slate-500">Language</Label>
+                                      <Input value={lang.name} placeholder="e.g. English" className="rounded-xl h-10" onChange={(e) => {
+                                        const newLangs = [...(currentResume.languages || [])];
+                                        newLangs[index] = { ...newLangs[index], name: e.target.value };
+                                        setFullResume({ languages: newLangs });
+                                      }} />
+                                    </div>
+                                    <div className="flex-1 space-y-2">
+                                      <Label className="text-xs font-bold text-slate-500">Proficiency</Label>
+                                      <Input value={lang.level} placeholder="e.g. Native" className="rounded-xl h-10" onChange={(e) => {
+                                        const newLangs = [...(currentResume.languages || [])];
+                                        newLangs[index] = { ...newLangs[index], level: e.target.value };
+                                        setFullResume({ languages: newLangs });
+                                      }} />
+                                    </div>
+                                    <Button variant="ghost" size="icon" className="text-rose-500 h-8 w-8 hover:bg-rose-50 rounded-full self-end mb-1" onClick={() => {
+                                      const newLangs = currentResume.languages?.filter(l => l.id !== lang.id);
+                                      setFullResume({ languages: newLangs });
+                                    }}>
+                                      <Trash2 className="w-4 h-4" />
+                                    </Button>
+                                  </div>
+                                ))}
+                                <Button variant="outline" className="w-full h-12 rounded-xl border-dashed border-2 hover:border-indigo-500 hover:text-indigo-600 transition-all" onClick={() => {
+                                  const newLangs = [...(currentResume.languages || [])];
+                                  newLangs.push({
+                                    id: Math.random().toString(36).substr(2, 9),
+                                    name: '',
+                                    level: ''
+                                  });
+                                  setFullResume({ languages: newLangs });
+                                }}>
+                                  <Plus className="w-4 h-4 mr-2" /> Add Language
+                                </Button>
+                              </div>
+                            )}
+
+                            {section !== 'Contact' && section !== 'Summary' && section !== 'Experience' && section !== 'Education' && section !== 'Certificates' && section !== 'Skills' && section !== 'Languages' && (
+                              <div className="p-4 border border-dashed border-slate-200 rounded-xl text-center text-sm text-slate-400">
+                                Form inputs for {section} coming soon...
+                              </div>
+                            )}
+                          </AccordionContent>
+                        </AccordionItem>
+                      </Accordion>
+                    </Card>
                   ))}
-                </Accordion>
+                </div>
+
+                {/* Add Content Button */}
+                <Button className="w-full h-14 rounded-2xl bg-gradient-to-r from-[#ff4b8b] to-[#ff2d55] hover:opacity-90 text-white font-bold text-lg flex items-center justify-center gap-2 shadow-lg transition-all active:scale-[0.98]">
+                  <Plus className="w-6 h-6" /> Add Content
+                </Button>
               </div>
 
-              {/* Preview Side */}
-              <div className="xl:col-span-8">
-                <div className="sticky top-24 h-[calc(100vh-160px)] rounded-3xl bg-white dark:bg-slate-900 border-8 border-slate-100 dark:border-slate-800 overflow-hidden shadow-2xl">
-                  <div className="absolute top-6 right-6 z-10 flex gap-2">
-                    <div className="bg-white/90 dark:bg-slate-800/90 backdrop-blur px-4 py-2 rounded-full shadow-lg flex items-center gap-4 border border-slate-200 dark:border-slate-700">
-                      <button onClick={() => setPreviewZoom(Math.max(40, previewZoom - 5))} className="hover:text-indigo-600 transition-colors font-black text-xl">−</button>
-                      <span className="text-sm font-bold w-12 text-center">{previewZoom}%</span>
-                      <button onClick={() => setPreviewZoom(Math.min(100, previewZoom + 5))} className="hover:text-indigo-600 transition-colors font-black text-xl">+</button>
-                    </div>
-                  </div>
-                  <div className="h-full overflow-y-auto custom-scrollbar p-12 bg-slate-100/50 dark:bg-slate-900/50">
+              {/* Right Column: Preview */}
+              <div className="sticky top-[141px] h-[calc(100vh-181px)] bg-white rounded-3xl border border-slate-200 shadow-xl overflow-hidden flex flex-col">
+                <div className="flex-1 overflow-auto p-12 bg-slate-50/50 custom-scrollbar flex justify-center items-start">
+                  <div className="shadow-2xl bg-white origin-top" style={{ transform: `scale(${previewZoom / 100})` }}>
                     {currentResume ? (
-                      <TemplateRenderer resume={currentResume} zoom={previewZoom / 100} />
+                      <TemplateRenderer resume={currentResume} zoom={1} />
                     ) : (
-                      <div className="flex items-center justify-center h-full text-slate-400">No data available</div>
+                      <div className="w-[210mm] h-[297mm] flex items-center justify-center text-slate-300">
+                        No data available
+                      </div>
                     )}
                   </div>
+                </div>
+
+                {/* Zoom Controls Overlay */}
+                <div className="absolute bottom-6 left-1/2 -translate-x-1/2 bg-white/90 backdrop-blur px-4 py-2 rounded-full shadow-lg flex items-center gap-4 border border-slate-200">
+                  <button onClick={() => setPreviewZoom(Math.max(40, previewZoom - 5))} className="hover:text-indigo-600 transition-colors font-black text-xl">−</button>
+                  <span className="text-sm font-bold w-12 text-center">{previewZoom}%</span>
+                  <button onClick={() => setPreviewZoom(Math.min(100, previewZoom + 5))} className="hover:text-indigo-600 transition-colors font-black text-xl">+</button>
                 </div>
               </div>
             </div>
