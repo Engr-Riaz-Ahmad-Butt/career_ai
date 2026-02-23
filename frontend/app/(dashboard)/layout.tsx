@@ -21,7 +21,7 @@ export default function DashboardLayout({
                 }}
             >
                 <AppNavbar />
-                <main className="flex-1 pt-20 p-6">
+                <main className="flex-1 pt-16 p-6">
                     {children}
                 </main>
             </div>

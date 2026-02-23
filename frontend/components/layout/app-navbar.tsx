@@ -40,7 +40,7 @@ export function AppNavbar() {
       initial={{ y: -20, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
       transition={{ duration: 0.3 }}
-      className="fixed top-0 left-0 right-0 z-30 border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 backdrop-blur-sm"
+      className="fixed top-0 left-0 right-0 z-30 border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 backdrop-blur-sm h-16"
       style={{
         paddingLeft: sidebarOpen ? '256px' : '80px',
         transition: 'padding-left 0.3s ease',
@@ -54,7 +54,7 @@ export function AppNavbar() {
             className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors flex items-center justify-center text-slate-500 dark:text-slate-400"
             title={sidebarOpen ? "Collapse Sidebar" : "Expand Sidebar"}
           >
-            {sidebarOpen ? <ChevronLeft className="h-5 w-5" /> : <ChevronRight className="h-5 w-5" />}
+            <Menu className="h-5 w-5" />
           </button>
 
           <div className="hidden md:flex flex-1 max-w-xs">

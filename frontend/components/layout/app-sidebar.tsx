@@ -49,32 +49,24 @@ export function AppSidebar() {
       initial={{ width: sidebarOpen ? 256 : 80 }}
       animate={{ width: sidebarOpen ? 256 : 80 }}
       transition={{ duration: 0.3 }}
-      className="fixed left-0 top-0 bottom-0 border-r border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 z-40 flex flex-col pt-20"
+      className="fixed left-0 top-0 bottom-0 border-r border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 z-40 flex flex-col"
     >
-      {/* Branding & Top Toggle */}
-      <div className="px-5 py-4 flex items-center justify-between border-b border-slate-100 dark:border-slate-800/50">
-        {sidebarOpen ? (
-          <div className="flex items-center gap-2">
-            <div className="p-1.5 rounded-lg bg-indigo-600">
-              <Zap className="h-4 w-4 text-white" />
-            </div>
-            <span className="text-sm font-bold text-slate-900 dark:text-white">CareerAI</span>
-          </div>
-        ) : (
-          <div className="mx-auto p-1.5 rounded-lg bg-indigo-600">
+      {/* Branding & Top Toggle - Aligned with Navbar */}
+      <div className="px-5 h-16 flex items-center justify-between border-b border-slate-200 dark:border-slate-800 flex-shrink-0">
+        <div className="flex items-center gap-2">
+          <div className="p-1.5 rounded-lg bg-indigo-600">
             <Zap className="h-4 w-4 text-white" />
           </div>
-        )}
+          {sidebarOpen && <span className="text-sm font-bold text-slate-900 dark:text-white">CareerAI</span>}
+        </div>
 
-        {sidebarOpen && (
-          <button
-            onClick={toggleSidebar}
-            className="p-1.5 rounded-md text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-900 transition-colors"
-            title="Collapse Sidebar"
-          >
-            <ChevronLeft className="h-4 w-4" />
-          </button>
-        )}
+        <button
+          onClick={toggleSidebar}
+          className={`p-1.5 rounded-md text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-900 transition-colors ${!sidebarOpen && 'mx-auto'}`}
+          title={sidebarOpen ? "Collapse Sidebar" : "Expand Sidebar"}
+        >
+          {sidebarOpen ? <ChevronLeft className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
+        </button>
       </div>
 
       {/* Sidebar Content */}
