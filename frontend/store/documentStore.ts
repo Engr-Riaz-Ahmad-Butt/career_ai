@@ -118,6 +118,7 @@ interface DocumentState {
   setFullResume: (resume: Partial<ResumeData>) => void;
   createResumeWithData: (name: string, template: ResumeTemplate, data: Partial<ResumeData>) => void;
   getResumeById: (id: string) => ResumeData | undefined;
+  updateResumeName: (id: string, name: string) => void;
 }
 
 export const useDocumentStore = create<DocumentState>((set, get) => ({
@@ -205,6 +206,15 @@ export const useDocumentStore = create<DocumentState>((set, get) => ({
     set((state) => ({
       resumes: state.resumes.filter((r) => r.id !== id),
       currentResume: state.currentResume?.id === id ? null : state.currentResume,
+    }));
+  },
+
+  updateResumeName: (id: string, name: string) => {
+    set((state) => ({
+      resumes: state.resumes.map((r) => r.id === id ? { ...r, name } : r),
+      currentResume: state.currentResume?.id === id
+        ? { ...state.currentResume, name }
+        : state.currentResume,
     }));
   },
 

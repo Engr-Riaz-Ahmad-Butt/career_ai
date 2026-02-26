@@ -1,14 +1,64 @@
 'use client';
 
-import { ResumeTemplate } from '@/lib/resume-templates';
+import { ResumeTemplate, resumeTemplates } from '@/lib/resume-templates';
 import { ResumeData } from '@/store/documentStore';
 import React from 'react';
 
 interface TemplatePreviewProps {
   template: ResumeTemplate;
-  data: ResumeData;
-  isSelected: boolean;
+  data?: ResumeData;
+  isSelected?: boolean;
 }
+
+const SAMPLE_DATA: ResumeData = {
+  id: 'sample',
+  name: 'Sample Resume',
+  template: resumeTemplates[0],
+  contact: {
+    fullName: 'John Doe',
+    email: 'john.doe@example.com',
+    phone: '+1 234 567 890',
+    location: 'New York, USA',
+  },
+  summary: 'Experienced professional with a strong track record of success in various roles. Skilled in leadership, communication, and problem-solving.',
+  experience: [
+    {
+      id: 'exp1',
+      company: 'Tech Solutions Inc.',
+      position: 'Senior Software Engineer',
+      startDate: 'Jan 2020',
+      endDate: 'Present',
+      description: 'Leading a team of developers to build scalable web applications.',
+    },
+  ],
+  education: [
+    {
+      id: 'edu1',
+      school: 'University of Technology',
+      degree: 'Bachelor of Science in Computer Science',
+      startDate: 'Sep 2012',
+      endDate: 'May 2016',
+    },
+  ],
+  skills: {
+    technical: ['React', 'TypeScript', 'Node.js'],
+    soft: ['Leadership', 'Communication'],
+  },
+  projects: [],
+  certifications: [],
+  languages: [],
+  interests: [],
+  createdAt: new Date(),
+  updatedAt: new Date(),
+  styling: {
+    spacing: { fontSize: 10, lineHeight: 1.2, sideMargin: 15, topBottomMargin: 15, entrySpacing: 5 },
+    colors: { primary: '#000000', accent: '#4f46e5', applyToName: true, applyToTitle: true, applyToIcons: true, applyToBubbles: true },
+    typography: { fontFamily: 'Inter', category: 'Sans' },
+    headingStyle: { style: 'line-under', capitalization: 'uppercase', size: 'L', icons: 'filled' },
+    personalDetails: { align: 'left', arrangement: 'horizontal', iconStyle: 'classic' },
+    entryLayout: { style: 'default' },
+  },
+};
 
 const ResumeContainer = ({ children, styling }: { children: React.ReactNode; styling?: any }) => {
   const customStyles = {
@@ -31,8 +81,8 @@ const ResumeContainer = ({ children, styling }: { children: React.ReactNode; sty
   );
 };
 
-export function ClassicProfessionalPreview({ template, data }: TemplatePreviewProps) {
-  const styling = data.styling;
+export function ClassicProfessionalPreview({ template, data = SAMPLE_DATA }: TemplatePreviewProps) {
+  const styling = data?.styling || SAMPLE_DATA.styling;
   const primaryColor = styling?.colors?.primary || template.colors.primary;
   const accentColor = styling?.colors?.accent || template.colors.accent;
 
@@ -141,8 +191,8 @@ export function ClassicProfessionalPreview({ template, data }: TemplatePreviewPr
   );
 }
 
-export function ModernTechPreview({ template, data }: TemplatePreviewProps) {
-  const styling = data.styling;
+export function ModernTechPreview({ template, data = SAMPLE_DATA }: TemplatePreviewProps) {
+  const styling = data?.styling || SAMPLE_DATA.styling;
   const primaryColor = styling?.colors?.primary || template.colors.primary;
   const accentColor = styling?.colors?.accent || template.colors.accent;
 
@@ -248,8 +298,8 @@ export function ModernTechPreview({ template, data }: TemplatePreviewProps) {
   );
 }
 
-export function MinimalistCleanPreview({ template, data }: TemplatePreviewProps) {
-  const styling = data.styling;
+export function MinimalistCleanPreview({ template, data = SAMPLE_DATA }: TemplatePreviewProps) {
+  const styling = data?.styling || SAMPLE_DATA.styling;
   const primaryColor = styling?.colors?.primary || template.colors.primary;
 
   return (
@@ -305,8 +355,8 @@ export function MinimalistCleanPreview({ template, data }: TemplatePreviewProps)
   );
 }
 
-export function CreativeDesignerPreview({ template, data }: TemplatePreviewProps) {
-  const styling = data.styling;
+export function CreativeDesignerPreview({ template, data = SAMPLE_DATA }: TemplatePreviewProps) {
+  const styling = data?.styling || SAMPLE_DATA.styling;
   const primaryColor = styling?.colors?.primary || template.colors.primary;
   const accentColor = styling?.colors?.accent || template.colors.accent;
 
@@ -384,8 +434,8 @@ export function CreativeDesignerPreview({ template, data }: TemplatePreviewProps
   );
 }
 
-export function ExecutiveElegantPreview({ template, data }: TemplatePreviewProps) {
-  const styling = data.styling;
+export function ExecutiveElegantPreview({ template, data = SAMPLE_DATA }: TemplatePreviewProps) {
+  const styling = data?.styling || SAMPLE_DATA.styling;
   const primaryColor = styling?.colors?.primary || template.colors.primary;
   const accentColor = styling?.colors?.accent || template.colors.accent;
 
@@ -481,8 +531,8 @@ export function ExecutiveElegantPreview({ template, data }: TemplatePreviewProps
   );
 }
 
-export function StartupVibrantPreview({ template, data }: TemplatePreviewProps) {
-  const styling = data.styling;
+export function StartupVibrantPreview({ template, data = SAMPLE_DATA }: TemplatePreviewProps) {
+  const styling = data?.styling || SAMPLE_DATA.styling;
   const primaryColor = styling?.colors?.primary || template.colors.primary;
   const accentColor = styling?.colors?.accent || template.colors.accent;
 
@@ -571,8 +621,8 @@ export function StartupVibrantPreview({ template, data }: TemplatePreviewProps) 
   );
 }
 
-export function AcademicStructuredPreview({ template, data }: TemplatePreviewProps) {
-  const styling = data.styling;
+export function AcademicStructuredPreview({ template, data = SAMPLE_DATA }: TemplatePreviewProps) {
+  const styling = data?.styling || SAMPLE_DATA.styling;
   const primaryColor = styling?.colors?.primary || template.colors.primary;
 
   return (
@@ -658,8 +708,8 @@ export function AcademicStructuredPreview({ template, data }: TemplatePreviewPro
   );
 }
 
-export function GradientModernPreview({ template, data }: TemplatePreviewProps) {
-  const styling = data.styling;
+export function GradientModernPreview({ template, data = SAMPLE_DATA }: TemplatePreviewProps) {
+  const styling = data?.styling || SAMPLE_DATA.styling;
   const primaryColor = styling?.colors?.primary || template.colors.primary;
   const accentColor = styling?.colors?.accent || template.colors.accent;
 

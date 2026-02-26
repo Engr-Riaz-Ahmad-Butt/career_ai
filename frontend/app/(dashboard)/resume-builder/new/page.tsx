@@ -7,5 +7,5 @@ import ResumeBuilderPage from '../page';
  * but default it to the 'selection' flow.
  */
 export default function NewResumePage() {
-    return <ResumeBuilderPage initialFlow="selection" />;
+    return <ResumeBuilderPage initialFlow="template-selection" />;
 }
