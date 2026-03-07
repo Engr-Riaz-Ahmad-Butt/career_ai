@@ -8,6 +8,13 @@ import { tailorResume, getTailorHistory, getTailored, deleteTailored } from '../
 import { enhanceResume, scoreAts } from '../controllers/ai.controller';
 import { authenticate, requireCredits } from '../middleware/auth';
 import { uploadResume as resumeUpload } from '../middleware/upload';
+import { validate } from '../middleware/validate';
+import {
+  createResumeSchema,
+  updateResumeSchema,
+  tailorResumeSchema,
+  paginationSchema
+} from '../utils/validation';
 
 const router = Router();
 router.use(authenticate);
@@ -16,16 +23,16 @@ router.use(authenticate);
 router.post('/upload', resumeUpload.single('file'), requireCredits(2), uploadResume);
 
 // Tailoring sub-routes
-router.post('/tailor', requireCredits(3), tailorResume);
+router.post('/tailor', validate(tailorResumeSchema), requireCredits(3), tailorResume);
 router.get('/tailor/history', getTailorHistory);
 router.get('/tailor/:id', getTailored);
 router.delete('/tailor/:id', deleteTailored);
 
 // CRUD
-router.get('/', listResumes);
-router.post('/', requireCredits(1), createResume);
+router.get('/', validate(paginationSchema, 'query'), listResumes);
+router.post('/', validate(createResumeSchema), requireCredits(1), createResume);
 router.get('/:id', getResume);
-router.put('/:id', updateResume);
+router.put('/:id', validate(updateResumeSchema), updateResume);
 router.delete('/:id', deleteResume);
 
 // Actions on a specific resume
@@ -41,3 +48,4 @@ router.post('/:id/optimize', requireCredits(3), optimizeResume);
 router.post('/extract', resumeUpload.single('file'), requireCredits(2), extractResume);
 
 export default router;
+

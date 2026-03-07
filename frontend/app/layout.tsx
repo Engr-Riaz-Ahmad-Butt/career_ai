@@ -33,6 +33,8 @@ import { ThemeProvider } from "@/components/providers/ThemeProvider";
 
 import QueryProvider from "@/components/providers/QueryProvider";
 
+import { ErrorBoundary } from "@/components/shared/ErrorBoundary";
+
 export default function RootLayout({
   children,
 }: {
@@ -48,7 +50,9 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <QueryProvider>
-            <AuthProvider>{children}</AuthProvider>
+            <ErrorBoundary>
+              <AuthProvider>{children}</AuthProvider>
+            </ErrorBoundary>
           </QueryProvider>
         </ThemeProvider>
       </body>

@@ -3,42 +3,32 @@ import { ZodSchema } from 'zod';
 
 /**
  * Validation middleware factory.
- *
- * Usage in routes:
- * ```
- * import { validate } from '../middleware/validate';
- * import { loginSchema } from '../utils/validation';
- *
- * router.post('/login', validate(loginSchema), login);
- * ```
- *
- * The middleware validates `req.body` against the provided Zod schema.
- * If validation fails, the error bubbles up to the global error handler
- * which already knows how to format ZodErrors (400 with field-level details).
+ * 
+ * @param schema - Zod schema to validate against
+ * @param location - Which part of the request to validate ('body', 'query', or 'params'). Default is 'body'.
  */
-export const validate = (schema: ZodSchema) => {
+export const validate = (schema: ZodSchema, location: 'body' | 'query' | 'params' = 'body') => {
     return (req: Request, _res: Response, next: NextFunction) => {
-        schema.parse(req.body);
+        if (location === 'query') {
+            req.query = schema.parse(req.query);
+        } else if (location === 'params') {
+            req.params = schema.parse(req.params);
+        } else {
+            req.body = schema.parse(req.body);
+        }
         next();
     };
 };
 
 /**
  * Validate query parameters against a Zod schema.
+ * @deprecated Use validate(schema, 'query') instead
  */
-export const validateQuery = (schema: ZodSchema) => {
-    return (req: Request, _res: Response, next: NextFunction) => {
-        req.query = schema.parse(req.query);
-        next();
-    };
-};
+export const validateQuery = (schema: ZodSchema) => validate(schema, 'query');
 
 /**
  * Validate route parameters against a Zod schema.
+ * @deprecated Use validate(schema, 'params') instead
  */
-export const validateParams = (schema: ZodSchema) => {
-    return (req: Request, _res: Response, next: NextFunction) => {
-        schema.parse(req.params);
-        next();
-    };
-};
+export const validateParams = (schema: ZodSchema) => validate(schema, 'params');
+

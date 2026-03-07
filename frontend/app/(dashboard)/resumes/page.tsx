@@ -4,14 +4,21 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { FileText, Plus, Clock, ArrowRight } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { ResumeData } from '@/types';
 
-// Mock data — replace with documentStore
-const resumes = [
-    { id: '1', title: 'Software Engineer Resume', updatedAt: '2026-02-22', atsScore: 85 },
-    { id: '2', title: 'Product Manager Resume', updatedAt: '2026-02-15', atsScore: 78 },
-];
+import { useResumes } from '@/hooks/use-resumes';
 
 export default function ResumesPage() {
+    const { data: resumesResponse, isLoading } = useResumes();
+    const resumes = resumesResponse?.data || [];
+
+    if (isLoading) {
+        return (
+            <div className="max-w-4xl mx-auto py-20 text-center text-slate-500">
+                Loading your resumes...
+            </div>
+        );
+    }
     return (
         <div className="max-w-4xl mx-auto space-y-8">
             <div className="flex items-center justify-between">
@@ -28,7 +35,7 @@ export default function ResumesPage() {
 
             {resumes.length > 0 ? (
                 <div className="space-y-3">
-                    {resumes.map((resume) => (
+                    {resumes.map((resume: ResumeData) => (
                         <motion.div
                             key={resume.id}
                             whileHover={{ y: -1 }}

@@ -4,7 +4,8 @@ import {
     updateProfile,
 } from '../controllers/profile.controller';
 import { authenticate } from '../middleware/auth';
-import { asyncHandler } from '../middleware/error';
+import { validate } from '../middleware/validate';
+import { updateProfileSchema } from '../utils/validation';
 
 const router = Router();
 
@@ -16,13 +17,14 @@ router.use(authenticate);
  * @desc    Get current user profile
  * @access  Private
  */
-router.get('/me', asyncHandler(getCurrentUser));
+router.get('/me', getCurrentUser);
 
 /**
  * @route   PUT /api/profile
  * @desc    Update user profile
  * @access  Private
  */
-router.put('/', asyncHandler(updateProfile));
+router.put('/', validate(updateProfileSchema), updateProfile);
 
 export default router;
+

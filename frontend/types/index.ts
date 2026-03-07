@@ -40,13 +40,7 @@ export interface Testimonial {
   gradient: string;
 }
 
-export interface Resume {
-  id: string;
-  title: string;
-  lastModified: Date;
-  atsScore: number;
-  keywordMatch: number;
-}
+export * from './resume';
 
 export interface Document {
   id: string;
@@ -55,42 +49,7 @@ export interface Document {
   lastModified: Date;
 }
 
-export interface ResumeData {
-  contact: {
-    fullName: string;
-    email: string;
-    phone: string;
-    location: string;
-    linkedin?: string;
-    portfolio?: string;
-  };
-  summary: string;
-  experience: Array<{
-    id: string;
-    company: string;
-    position: string;
-    startDate: string;
-    endDate: string;
-    currentlyWorking: boolean;
-    description: string;
-  }>;
-  education: Array<{
-    id: string;
-    school: string;
-    degree: string;
-    field: string;
-    graduationDate: string;
-    gpa?: string;
-  }>;
-  skills: string[];
-  certifications: Array<{
-    id: string;
-    name: string;
-    issuer: string;
-    dateIssued: string;
-    expirationDate?: string;
-  }>;
-}
+// ResumeData and related types are exported from ./resume
 
 export interface TailorResult {
   atsScore: number;

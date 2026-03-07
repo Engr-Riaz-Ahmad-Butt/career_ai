@@ -1,7 +1,9 @@
 import axios from 'axios';
+import { env } from '@/config/env';
+import { message } from 'antd';
 
 const api = axios.create({
-    baseURL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api/v1',
+    baseURL: env.NEXT_PUBLIC_API_URL,
     headers: {
         'Content-Type': 'application/json',
     },
@@ -10,7 +12,6 @@ const api = axios.create({
 // Request interceptor to add auth token
 api.interceptors.request.use(
     (config) => {
-        // In a real app, you'd get this from your auth store or session
         if (typeof window !== 'undefined') {
             const token = localStorage.getItem('access_token');
             if (token) {
@@ -52,6 +53,15 @@ api.interceptors.response.use(
                 if (typeof window !== 'undefined') {
                     window.location.href = '/auth/login';
                 }
+            }
+        }
+
+        // Global Error Handling
+        if (typeof window !== 'undefined') {
+            const errorMsg = error.response?.data?.message || error.message || 'An unexpected error occurred';
+            // Avoid showing error toasts for 401s that we are trying to refresh
+            if (error.response?.status !== 401) {
+                message.error(errorMsg);
             }
         }
 

@@ -15,7 +15,8 @@ import {
 import { TemplateSelector } from '@/components/resume/template-selector';
 import { TemplateRenderer } from '@/components/resume/template-renderer';
 import { useDocumentStore } from '@/store/documentStore';
-import { resumeTemplates, ResumeTemplate } from '@/lib/resume-templates';
+import { resumeTemplates } from '@/lib/resume-templates';
+import { ResumeData, ResumeTemplate, ResumeExperience, ResumeEducation, ResumeSkills, ResumeStyling, CVMode } from '@/types';
 import {
   Plus,
   Trash2,
@@ -40,13 +41,13 @@ import {
   DropdownMenuSeparator,
 } from '@/components/ui/dropdown-menu';
 import { message } from 'antd';
-import { ResumeData } from '@/store/documentStore';
 import { useUIStore } from '@/store/uiStore';
-import { ChevronLeft, Home } from 'lucide-react';
+import { ChevronLeft, Home, Loader2 } from 'lucide-react';
 import Link from 'next/link';
-
-// New 4-mode components
-import { CVModeSelector, CVMode } from '@/components/resume/CVModeSelector';
+import { useSearchParams } from 'next/navigation';
+import { useResumes, useResume, useCreateResume, useUpdateResume, useDeleteResume } from '@/hooks/use-resumes';
+import { useDebounce } from '@/hooks/use-debounce';
+import { CVModeSelector } from '@/components/resume/CVModeSelector';
 import { ManualBuilderWizard, WizardData } from '@/components/resume/ManualBuilderWizard';
 import { AIGenerateMode } from '@/components/resume/AIGenerateMode';
 import { ImproveCVMode } from '@/components/resume/ImproveCVMode';
@@ -66,8 +67,8 @@ type FlowState =
 
 function mapWizardDataToResumeData(data: Partial<WizardData>, template: ResumeTemplate): Partial<ResumeData> {
   return {
-    template,
-    contact: {
+    template: template.id,
+    personalInfo: {
       fullName: data.contact?.fullName ?? '',
       email: data.contact?.email ?? '',
       phone: data.contact?.phone ?? '',
@@ -125,13 +126,15 @@ export default function ResumeBuilderPage({
   initialFlow?: FlowState | 'template-selection' | 'selection' | 'upload' | 'scratch';
   initialTab?: string;
 }) {
+  const searchParams = useSearchParams();
+  const resumeId = searchParams.get('id');
+
   const [previewZoom, setPreviewZoom] = useState(100);
-  const [isSaving, setIsSaving] = useState(false);
   const [showTemplateSelector, setShowTemplateSelector] = useState(false);
 
   // Normalise legacy initialFlow values
   const getInitialFlow = (): FlowState => {
-    if (initialFlow === 'editor') return 'editor';
+    if (initialFlow === 'editor' || resumeId) return 'editor';
     return 'mode-selection';
   };
 
@@ -143,19 +146,48 @@ export default function ResumeBuilderPage({
   const [newResumeName, setNewResumeName] = useState('');
   const [showATSScore, setShowATSScore] = useState(false);
 
+  // Store
   const {
-    resumes,
     currentResume,
-    setCurrentResume,
-    createResume,
-    deleteResume,
-    updateResumeName,
+    setResume,
     updateContact,
     updateSummary,
     updateStyling,
+    updateExperience,
+    updateEducation,
+    updateTemplate,
+    updateTitle,
     setFullResume,
-    createResumeWithData,
+    isDirty,
+    markSaved,
   } = useDocumentStore();
+
+  // Queries & Mutations
+  const { data: resumesResponse } = useResumes();
+  const resumes = resumesResponse?.data || [];
+  const { data: resumeResponse, isLoading: isLoadingResume } = useResume(resumeId);
+  const createMutation = useCreateResume();
+  const updateMutation = useUpdateResume();
+  const deleteMutation = useDeleteResume();
+
+  // Sync server data to store
+  useEffect(() => {
+    if (resumeResponse?.data?.resume) {
+      setResume(resumeResponse.data.resume);
+      setFlow('editor');
+    }
+  }, [resumeResponse, setResume]);
+
+  // Auto-save logic
+  const debouncedResume = useDebounce(currentResume, 2000);
+
+  useEffect(() => {
+    if (isDirty && debouncedResume && resumeId) {
+      updateMutation.mutate({ id: resumeId, data: debouncedResume }, {
+        onSuccess: () => markSaved()
+      });
+    }
+  }, [debouncedResume, isDirty, resumeId, updateMutation, markSaved]);
 
   const { sidebarOpen } = useUIStore();
 
@@ -180,24 +212,29 @@ export default function ResumeBuilderPage({
     if (!pendingWizardData) {
       // Coming from inside the editor (switching template)
       if (currentResume) {
-        setFullResume({ template });
+        updateTemplate(template.id);
       }
       setShowTemplateSelector(false);
       return;
     }
 
     const resumeData = mapWizardDataToResumeData(pendingWizardData, template);
-    const name = pendingWizardData?.contact?.fullName
+    const title = pendingWizardData?.contact?.fullName
       ? `${pendingWizardData.contact.fullName}'s CV`
       : 'My New CV';
-    createResumeWithData(name, template, resumeData);
+
+    createMutation.mutate({ ...resumeData, title }, {
+      onSuccess: (response) => {
+        setResume(response.data.resume);
+        setFlow('editor');
+        message.success('Your CV is ready to edit!');
+      }
+    });
     setPendingWizardData(null);
-    setFlow('editor');
-    message.success('Your CV is ready to edit!');
   };
 
   const handleChangeTemplate = (template: ResumeTemplate) => {
-    if (currentResume) setFullResume({ template });
+    if (currentResume) updateTemplate(template.id);
     setShowTemplateSelector(false);
   };
 
@@ -210,7 +247,7 @@ export default function ResumeBuilderPage({
 
   const handleRenameResume = () => {
     if (currentResume && newResumeName.trim()) {
-      updateResumeName(currentResume.id, newResumeName.trim());
+      updateTitle(newResumeName.trim());
     }
     setIsRenamingResume(false);
     setNewResumeName('');
@@ -218,9 +255,13 @@ export default function ResumeBuilderPage({
 
   const handleDeleteResume = () => {
     if (!currentResume) return;
-    deleteResume(currentResume.id);
-    setFlow('mode-selection');
-    message.success('Resume deleted.');
+    deleteMutation.mutate(currentResume.id, {
+      onSuccess: () => {
+        setResume(null);
+        setFlow('mode-selection');
+        message.success('Resume deleted.');
+      }
+    });
   };
 
   const handleDownload = () => {
@@ -229,10 +270,10 @@ export default function ResumeBuilderPage({
 
   // ── Routing shortcuts (for /resume-builder/new etc.) ──────────────────────
   useEffect(() => {
-    if (initialFlow === 'editor' && resumes.length > 0 && !currentResume) {
-      setCurrentResume(resumes[resumes.length - 1].id);
+    if (initialFlow === 'editor' && resumes.length > 0 && !currentResume && !resumeId) {
+      setResume(resumes[resumes.length - 1]);
     }
-  }, []);
+  }, [initialFlow, resumes, currentResume, resumeId, setResume]);
 
   // ── Render ─────────────────────────────────────────────────────────────────
 
@@ -246,15 +287,15 @@ export default function ResumeBuilderPage({
               You have <strong>{resumes.length}</strong> existing {resumes.length === 1 ? 'resume' : 'resumes'}.
             </p>
             <div className="flex gap-2">
-              {resumes.slice(0, 3).map(r => (
+              {resumes.slice(0, 3).map((r: ResumeData) => (
                 <Button
                   key={r.id}
                   variant="outline"
                   size="sm"
-                  onClick={() => { setCurrentResume(r); setFlow('editor'); }}
+                  onClick={() => { setResume(r); setFlow('editor'); }}
                   className="rounded-xl text-xs h-8"
                 >
-                  {r.name}
+                  {r.title}
                 </Button>
               ))}
             </div>
@@ -315,6 +356,14 @@ export default function ResumeBuilderPage({
 
   // ── Editor view ────────────────────────────────────────────────────────────
 
+  if (isLoadingResume) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin text-indigo-600" />
+      </div>
+    );
+  }
+
   if (!currentResume) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -352,15 +401,15 @@ export default function ResumeBuilderPage({
               onBlur={handleRenameResume}
               onKeyDown={e => { if (e.key === 'Enter') handleRenameResume(); if (e.key === 'Escape') setIsRenamingResume(false); }}
               className="h-8 rounded-xl text-sm font-bold w-48"
-              placeholder={currentResume.name}
+              placeholder={currentResume.title}
             />
           </div>
         ) : (
           <button
-            onClick={() => { setIsRenamingResume(true); setNewResumeName(currentResume.name); }}
+            onClick={() => { setIsRenamingResume(true); setNewResumeName(currentResume.title); }}
             className="font-black text-slate-900 dark:text-white hover:text-indigo-600 transition-colors text-sm"
           >
-            {currentResume.name}
+            {currentResume.title}
           </button>
         )}
 
@@ -399,7 +448,7 @@ export default function ResumeBuilderPage({
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="rounded-2xl">
-            <DropdownMenuItem onClick={() => { setIsRenamingResume(true); setNewResumeName(currentResume.name); }}>
+            <DropdownMenuItem onClick={() => { setIsRenamingResume(true); setNewResumeName(currentResume.title); }}>
               Rename Resume
             </DropdownMenuItem>
             <DropdownMenuItem onClick={() => setShowTemplateSelector(true)}>
@@ -476,7 +525,7 @@ export default function ResumeBuilderPage({
                                 <div key={key} className="space-y-1.5">
                                   <Label className="text-xs font-bold uppercase tracking-wider text-slate-500">{label}</Label>
                                   <Input
-                                    value={(currentResume.contact as any)[key] ?? ''}
+                                    value={(currentResume.personalInfo as any)[key] ?? ''}
                                     placeholder={placeholder}
                                     className="rounded-xl h-10"
                                     onChange={e => updateContact({ [key]: e.target.value })}
@@ -745,8 +794,8 @@ export default function ResumeBuilderPage({
                   <div className="w-20 h-20 bg-indigo-100 dark:bg-indigo-900/30 rounded-3xl flex items-center justify-center text-indigo-600 mx-auto">
                     <FileText className="w-10 h-10" />
                   </div>
-                  <h3 className="text-xl font-bold text-slate-900 dark:text-white">{currentResume.name}</h3>
-                  <p className="text-sm text-slate-500">Last edited {currentResume.updatedAt.toLocaleTimeString()}</p>
+                  <h3 className="text-xl font-bold text-slate-900 dark:text-white">{currentResume.title}</h3>
+                  <p className="text-sm text-slate-500">Last edited {new Date(currentResume.updatedAt).toLocaleString()}</p>
                   <div className="flex gap-3 justify-center pt-2">
                     <Button variant="outline" className="rounded-xl" onClick={() => setShowATSScore(true)}>ATS Score</Button>
                     <Button className="rounded-xl bg-slate-900 dark:bg-white dark:text-slate-900 text-white" onClick={handleDownload}>Download</Button>
@@ -789,7 +838,7 @@ export default function ResumeBuilderPage({
         isOpen={showTemplateSelector}
         onClose={() => setShowTemplateSelector(false)}
         onSelect={handleChangeTemplate}
-        selectedTemplateId={currentResume?.template.id}
+        selectedTemplateId={currentResume?.template}
       />
 
       {/* Floating auto-save bar */}
@@ -799,7 +848,7 @@ export default function ResumeBuilderPage({
           <Button variant="ghost" size="icon" className="h-9 w-9"><Redo2 className="w-4 h-4" /></Button>
         </div>
         <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">
-          {isSaving ? 'Saving…' : 'All changes saved'}
+          {updateMutation.isPending ? 'Saving…' : 'All changes saved'}
         </p>
       </div>
     </div>

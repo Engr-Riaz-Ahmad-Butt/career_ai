@@ -30,8 +30,10 @@ const envSchema = z.object({
     SMTP_PORT: z.coerce.number().default(587),
     SMTP_USER: z.string().optional(),
     SMTP_PASS: z.string().optional(),
+    SMTP_SECURE: z.coerce.string().default('false'),
     EMAIL_USER: z.string().optional(),
     EMAIL_PASS: z.string().optional(),
+    EMAIL_FROM: z.string().optional(),
 
     // Frontend / CORS
     FRONTEND_URL: z.string().url().default('http://localhost:3000'),

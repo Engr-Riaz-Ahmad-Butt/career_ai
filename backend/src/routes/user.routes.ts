@@ -11,6 +11,8 @@ import {
 } from '../controllers/user.controller';
 import { authenticate } from '../middleware/auth';
 import { uploadAvatar as avatarUpload } from '../middleware/upload';
+import { validate } from '../middleware/validate';
+import { userUpdateProfileSchema, userChangePasswordSchema } from '../utils/validation';
 
 const router = Router();
 
@@ -18,12 +20,13 @@ const router = Router();
 router.use(authenticate);
 
 router.get('/me', getMe);
-router.put('/me', updateMe);
+router.put('/me', validate(userUpdateProfileSchema), updateMe);
 router.delete('/me', deleteMe);
-router.put('/me/password', changePassword);
+router.put('/me/password', validate(userChangePasswordSchema), changePassword);
 router.post('/me/avatar', avatarUpload.single('file'), uploadAvatar);
 router.get('/me/credits', getCredits);
 router.get('/me/usage', getUsage);
 router.get('/me/referrals', getReferrals);
 
 export default router;
+

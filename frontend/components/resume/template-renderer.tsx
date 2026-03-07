@@ -1,6 +1,7 @@
 'use client';
 
-import { ResumeData } from '@/store/documentStore';
+import { ResumeData, ResumeTemplate } from '@/types';
+import { resumeTemplates } from '@/lib/resume-templates';
 import {
   ClassicProfessionalPreview,
   ModernTechPreview,
@@ -29,7 +30,8 @@ const previewMap: Record<string, React.ComponentType<any>> = {
 };
 
 export function TemplateRenderer({ resume, zoom = 1 }: TemplateRendererProps) {
-  const PreviewComponent = previewMap[resume.template.id];
+  const templateObject = resumeTemplates.find(t => t.id === resume.template) || resumeTemplates[0];
+  const PreviewComponent = previewMap[resume.template];
 
   if (!PreviewComponent) {
     return (

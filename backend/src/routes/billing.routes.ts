@@ -4,6 +4,8 @@ import {
     getPlans, createCheckout, createPortal, getSubscription,
     cancelSubscription, reactivateSubscription, purchaseCredits, listInvoices, handleWebhook,
 } from '../controllers/billing.controller';
+import { validate } from '../middleware/validate';
+import { checkoutSchema, purchaseCreditsSchema, paginationSchema } from '../utils/validation';
 
 const router = Router();
 
@@ -15,12 +17,13 @@ router.get('/plans', getPlans);
 
 // Authenticated
 router.use(authenticate);
-router.post('/checkout', createCheckout);
+router.post('/checkout', validate(checkoutSchema), createCheckout);
 router.post('/portal', createPortal);
 router.get('/subscription', getSubscription);
 router.post('/cancel', cancelSubscription);
 router.post('/reactivate', reactivateSubscription);
-router.post('/credits/purchase', purchaseCredits);
-router.get('/invoices', listInvoices);
+router.post('/credits/purchase', validate(purchaseCreditsSchema), purchaseCredits);
+router.get('/invoices', validate(paginationSchema, 'query'), listInvoices);
 
 export default router;
+

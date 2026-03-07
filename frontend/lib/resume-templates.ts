@@ -1,17 +1,4 @@
-export interface ResumeTemplate {
-  id: string;
-  name: string;
-  description: string;
-  category: 'classic' | 'modern' | 'minimal' | 'creative';
-  icon?: string;
-  colors: {
-    primary: string;
-    secondary: string;
-    accent: string;
-  };
-  layout: 'single-column' | 'two-column' | 'sidebar';
-  features: string[];
-}
+import { ResumeTemplate } from '@/types';
 
 export const resumeTemplates: ResumeTemplate[] = [
   {

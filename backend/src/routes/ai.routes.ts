@@ -1,6 +1,8 @@
 import { Router } from 'express';
 import { authenticate, requireCredits } from '../middleware/auth';
-import { enhanceResume, scoreAts, getSuggestions, extractKeywords, fixGrammar, improveText } from '../controllers/ai.controller';
+import {
+  enhanceResume, scoreAts, getSuggestions, extractKeywords, fixGrammar, improveText
+} from '../controllers/ai.controller';
 import {
   generateCoverLetter, generateSOP, generateMotivationLetter,
   generateStudyPlan, generateFinancialLetter, generateBio,
@@ -8,17 +10,28 @@ import {
 import { tailorResume } from '../controllers/tailoring.controller';
 import { generateSession, submitFeedback } from '../controllers/interview.controller';
 import { analyzeCommunicationAI } from '../controllers/communication.controller';
+import { validate } from '../middleware/validate';
+import {
+  enhanceResumeSchema,
+  tailorResumeSchema,
+  atsScoreSchema,
+  aiSuggestionsSchema,
+  extractKeywordsSchema,
+  fixGrammarSchema,
+  improveTextSchema
+} from '../utils/validation';
 
 const router = Router();
 router.use(authenticate);
 
 // ── Resume AI ─────────────────────────────────────────────────────────────
-router.post('/resume/enhance', requireCredits(2), enhanceResume);           // route via req.body.resumeId
-router.post('/resume/tailor', requireCredits(3), tailorResume);
-router.post('/resume/ats-score', requireCredits(1), scoreAts);
-router.post('/resume/suggestions', getSuggestions);
+router.post('/resume/enhance', validate(enhanceResumeSchema), requireCredits(2), enhanceResume);
+router.post('/resume/tailor', validate(tailorResumeSchema), requireCredits(3), tailorResume);
+router.post('/resume/ats-score', validate(atsScoreSchema), requireCredits(1), scoreAts);
+router.post('/resume/suggestions', validate(aiSuggestionsSchema), getSuggestions);
 
 // ── Document Generators (aliases at /ai/* per spec) ──────────────────────
+// Document validation schemas will be added when refactoring document routes
 router.post('/cover-letter/generate', requireCredits(2), generateCoverLetter);
 router.post('/sop/generate', requireCredits(3), generateSOP);
 router.post('/motivation-letter/generate', requireCredits(2), generateMotivationLetter);
@@ -33,8 +46,9 @@ router.post('/interview/feedback', requireCredits(1), submitFeedback);
 router.post('/communication/analyze', requireCredits(1), analyzeCommunicationAI);
 
 // ── Utilities ─────────────────────────────────────────────────────────────
-router.post('/keywords/extract', extractKeywords);
-router.post('/grammar/fix', fixGrammar);
-router.post('/text/improve', improveText);
+router.post('/keywords/extract', validate(extractKeywordsSchema), extractKeywords);
+router.post('/grammar/fix', validate(fixGrammarSchema), fixGrammar);
+router.post('/text/improve', validate(improveTextSchema), improveText);
 
 export default router;
+
