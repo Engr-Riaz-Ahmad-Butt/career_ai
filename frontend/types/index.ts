@@ -1,8 +1,8 @@
 // ─── Navigation ───────────────────────────────────────────────────────────────
 
 export interface NavLink {
-    name: string;
-    href: string;
+  name: string;
+  href: string;
 }
 
 // ─── Features Section ─────────────────────────────────────────────────────────
@@ -10,34 +10,34 @@ export interface NavLink {
 export type FeatureColor = "blue" | "green" | "purple" | "orange" | "cyan" | "red";
 
 export interface Feature {
-    icon: string;
-    title: string;
-    description: string;
-    color: FeatureColor;
-    badge?: string;
+  icon: string;
+  title: string;
+  description: string;
+  color: FeatureColor;
+  badge?: string;
 }
 
 // ─── How It Works Section ─────────────────────────────────────────────────────
 
 export interface HowItWorksStep {
-    num: string;
-    title: string;
-    desc: string;
-    gradient: string;
-    border: string;
-    color: string;
+  num: string;
+  title: string;
+  desc: string;
+  gradient: string;
+  border: string;
+  color: string;
 }
 
 // ─── Testimonials Section ─────────────────────────────────────────────────────
 
 export interface Testimonial {
-    stars: string;
-    quote: string;
-    avatar: string;
-    name: string;
-    role: string;
-    badge: string;
-    gradient: string;
+  stars: string;
+  quote: string;
+  avatar: string;
+  name: string;
+  role: string;
+  badge: string;
+  gradient: string;
 }
 
 export interface Resume {
@@ -107,13 +107,6 @@ export interface BlogPost {
   excerpt: string;
   date: Date;
   image: string;
-}
-
-export interface Testimonial {
-  name: string;
-  role: string;
-  quote: string;
-  avatar: string;
 }
 
 export interface PricingTier {

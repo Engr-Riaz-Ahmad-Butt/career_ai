@@ -5,9 +5,10 @@ import morgan from 'morgan';
 import compression from 'compression';
 import rateLimit from 'express-rate-limit';
 import 'express-async-errors';
-import dotenv from 'dotenv';
 
-dotenv.config();
+// Centralized env config — validates all env vars at startup
+import { env } from './config/env';
+import prisma from './config/database';
 
 // Routes
 import authRoutes from './routes/auth.routes';
@@ -33,9 +34,9 @@ const app: Application = express();
 
 app.use(helmet());
 
-const allowedOrigins = process.env.ALLOWED_ORIGINS
-  ? process.env.ALLOWED_ORIGINS.split(',')
-  : [process.env.FRONTEND_URL || 'http://localhost:3000'];
+const allowedOrigins = env.ALLOWED_ORIGINS
+  ? env.ALLOWED_ORIGINS.split(',')
+  : [env.FRONTEND_URL];
 
 app.use(
   cors({
@@ -58,7 +59,7 @@ app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 app.use(compression());
 
-if (process.env.NODE_ENV === 'development') {
+if (env.NODE_ENV === 'development') {
   app.use(morgan('dev'));
 } else {
   app.use(morgan('combined'));
@@ -66,8 +67,8 @@ if (process.env.NODE_ENV === 'development') {
 
 // Plan-aware rate limiter
 const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: parseInt(process.env.RATE_LIMIT_MAX_REQUESTS || '100'),
+  windowMs: env.RATE_LIMIT_WINDOW_MS,
+  max: env.RATE_LIMIT_MAX_REQUESTS,
   message: {
     success: false,
     message: 'Too many requests from this IP. Please try again later.',
@@ -80,13 +81,21 @@ app.use('/api/', limiter);
 
 // ── Health Check ───────────────────────────────────────────────────────────
 
-app.get('/health', (_req, res) => {
-  res.json({
-    success: true,
+app.get('/health', async (_req, res) => {
+  let dbStatus = 'ok';
+  try {
+    await prisma.$queryRaw`SELECT 1`;
+  } catch {
+    dbStatus = 'unreachable';
+  }
+
+  res.status(dbStatus === 'ok' ? 200 : 503).json({
+    success: dbStatus === 'ok',
     message: 'CareerAI API is running',
     version: 'v1',
     timestamp: new Date().toISOString(),
-    environment: process.env.NODE_ENV,
+    environment: env.NODE_ENV,
+    services: { database: dbStatus },
   });
 });
 
@@ -120,30 +129,55 @@ app.use(errorHandler);
 
 // ── Start Server ───────────────────────────────────────────────────────────
 
-const PORT = process.env.PORT || 5000;
+let server: ReturnType<typeof app.listen> | null = null;
+
+async function gracefulShutdown(signal: string) {
+  console.log(`\n⏳ Received ${signal}. Shutting down gracefully...`);
+
+  if (server) {
+    server.close(() => {
+      console.log('   ✅ HTTP server closed');
+    });
+  }
+
+  try {
+    await prisma.$disconnect();
+    console.log('   ✅ Database disconnected');
+  } catch (err) {
+    console.error('   ❌ Error disconnecting database:', err);
+  }
+
+  process.exit(0);
+}
 
 if (require.main === module) {
-  app.listen(PORT, () => {
+  server = app.listen(env.PORT, () => {
     console.log(`
   🚀 CareerAI API Server
   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  📡 Port:        ${PORT}
-  🌍 Environment: ${process.env.NODE_ENV || 'development'}
-  🔗 Health:      http://localhost:${PORT}/health
-  📚 API v1:      http://localhost:${PORT}/api/v1
+  📡 Port:        ${env.PORT}
+  🌍 Environment: ${env.NODE_ENV}
+  🔗 Health:      http://localhost:${env.PORT}/health
+  📚 API v1:      http://localhost:${env.PORT}/api/v1
   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
     `);
   });
 }
 
+// ── Graceful Shutdown ──────────────────────────────────────────────────────
+
+process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
+process.on('SIGINT', () => gracefulShutdown('SIGINT'));
+
 process.on('unhandledRejection', (err: Error) => {
   console.error('Unhandled Promise Rejection:', err);
-  process.exit(1);
+  gracefulShutdown('unhandledRejection');
 });
 
 process.on('uncaughtException', (err: Error) => {
   console.error('Uncaught Exception:', err);
-  process.exit(1);
+  gracefulShutdown('uncaughtException');
 });
 
 export default app;
+
