@@ -4,7 +4,8 @@ import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Check, Crown, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { resumeTemplates, ResumeTemplate } from '@/lib/resume-templates';
+import { resumeTemplates } from '@/lib/resume-templates';
+import { ResumeTemplate } from '@/types';
 import {
     ClassicProfessionalPreview,
     ModernTechPreview,
@@ -15,7 +16,7 @@ import {
     AcademicStructuredPreview,
     GradientModernPreview,
 } from '@/components/resume/template-preview';
-import { ResumeData } from '@/store/documentStore';
+import { ResumeData } from '@/types';
 
 type FilterStyle = 'all' | 'ats-friendly' | 'modern' | 'creative' | 'executive' | 'simple';
 
@@ -90,8 +91,8 @@ export function TemplateGallery({ selectedTemplate, onSelect, onContinue, previe
                             key={filter.id}
                             onClick={() => setActiveFilter(filter.id)}
                             className={`px-4 py-1.5 rounded-full text-sm font-semibold transition-all ${activeFilter === filter.id
-                                    ? 'bg-indigo-600 text-white shadow-md'
-                                    : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700'
+                                ? 'bg-indigo-600 text-white shadow-md'
+                                : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700'
                                 }`}
                         >
                             {filter.label}
@@ -116,8 +117,8 @@ export function TemplateGallery({ selectedTemplate, onSelect, onContinue, previe
                                 transition={{ delay: index * 0.05 }}
                                 onClick={() => onSelect(template)}
                                 className={`group relative rounded-2xl overflow-hidden cursor-pointer transition-all duration-300 ${isSelected
-                                        ? 'ring-4 ring-indigo-500 ring-offset-2 shadow-2xl scale-[1.02]'
-                                        : 'hover:shadow-xl hover:scale-[1.01]'
+                                    ? 'ring-4 ring-indigo-500 ring-offset-2 shadow-2xl scale-[1.02]'
+                                    : 'hover:shadow-xl hover:scale-[1.01]'
                                     }`}
                             >
                                 {/* Pro badge */}

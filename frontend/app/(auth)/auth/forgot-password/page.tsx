@@ -3,36 +3,54 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Zap, ArrowLeft, Mail, CheckCircle2 } from 'lucide-react';
+import { Zap, ArrowLeft, Mail, CheckCircle2, AlertCircle } from 'lucide-react';
+import { forgotPasswordSchema } from '@/lib/validation';
+import { z } from 'zod';
+
+type ForgotPasswordFormData = z.infer<typeof forgotPasswordSchema>;
 
 export default function ForgotPasswordPage() {
-    const [email, setEmail] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const [isSubmitted, setIsSubmitted] = useState(false);
-    const [error, setError] = useState('');
+    const [serverError, setServerError] = useState('');
+    const [submittedEmail, setSubmittedEmail] = useState('');
 
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-        setError('');
+    const {
+        register,
+        handleSubmit,
+        formState: { errors },
+    } = useForm<ForgotPasswordFormData>({
+        resolver: zodResolver(forgotPasswordSchema),
+        defaultValues: {
+            email: '',
+        },
+    });
+
+    const onSubmit = async (data: ForgotPasswordFormData) => {
+        setServerError('');
         setIsLoading(true);
+        setSubmittedEmail(data.email);
 
         try {
             const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/api/auth/forgot-password`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email }),
+                body: JSON.stringify(data),
             });
 
             if (!response.ok) {
-                throw new Error('Something went wrong. Please try again.');
+                const errorData = await response.json().catch(() => ({}));
+                throw new Error(errorData.message || 'Something went wrong. Please try again.');
             }
 
             setIsSubmitted(true);
         } catch (err: any) {
-            setError(err.message || 'Failed to send reset email.');
+            setServerError(err.message || 'Failed to send reset email.');
         } finally {
             setIsLoading(false);
         }
@@ -56,10 +74,10 @@ export default function ForgotPasswordPage() {
                         Check your email
                     </h1>
                     <p className="text-slate-600 dark:text-slate-400 mb-8">
-                        We've sent a password reset link to <span className="font-semibold text-slate-900 dark:text-white">{email}</span>.
+                        We've sent a password reset link to <span className="font-semibold text-slate-900 dark:text-white">{submittedEmail}</span>.
                     </p>
                     <Link href="/auth/login">
-                        <Button variant="outline" className="w-full">
+                        <Button variant="outline" className="w-full h-11 rounded-xl">
                             Back to Login
                         </Button>
                     </Link>
@@ -90,14 +108,15 @@ export default function ForgotPasswordPage() {
                     Enter your email and we'll send you a link to reset your password.
                 </p>
 
-                <form onSubmit={handleSubmit} className="space-y-4">
-                    {error && (
+                <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+                    {serverError && (
                         <motion.div
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
-                            className="p-3 rounded-lg bg-rose-50 dark:bg-rose-900/20 border border-rose-200 dark:border-rose-900 text-rose-700 dark:text-rose-300 text-sm"
+                            className="p-3 rounded-lg bg-rose-50 dark:bg-rose-900/20 border border-rose-200 dark:border-rose-900 text-rose-700 dark:text-rose-300 text-sm flex items-center gap-2"
                         >
-                            {error}
+                            <AlertCircle className="h-4 w-4 shrink-0" />
+                            {serverError}
                         </motion.div>
                     )}
 
@@ -113,18 +132,17 @@ export default function ForgotPasswordPage() {
                                 id="email"
                                 type="email"
                                 placeholder="you@example.com"
-                                value={email}
-                                onChange={(e) => setEmail(e.target.value)}
-                                required
-                                className="pl-10 bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-800"
+                                {...register('email')}
+                                className={`pl-10 bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-800 ${errors.email ? 'border-rose-500' : ''}`}
                             />
                         </div>
+                        {errors.email && <p className="text-xs text-rose-500 mt-1">{errors.email.message}</p>}
                     </div>
 
                     <Button
                         type="submit"
                         disabled={isLoading}
-                        className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white"
+                        className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white h-11 rounded-xl shadow-lg shadow-indigo-500/20"
                     >
                         {isLoading ? 'Sending Link...' : 'Send Reset Link'}
                     </Button>

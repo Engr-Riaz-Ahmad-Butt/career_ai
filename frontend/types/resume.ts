@@ -38,6 +38,7 @@ export interface ResumeEducation {
     graduationDate?: string;
     location?: string;
     gpa?: string;
+    description?: string;
 }
 
 export interface ResumeSkills {

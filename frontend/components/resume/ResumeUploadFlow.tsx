@@ -6,7 +6,7 @@ import { Upload, FileText, CheckCircle2, Loader2, ArrowRight, AlertCircle } from
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Card } from '@/components/ui/card';
-import { api } from '@/lib/api-client';
+import api from '@/lib/api-client';
 
 interface ResumeUploadFlowProps {
     onComplete: (data: any) => void;
@@ -105,10 +105,11 @@ export function ResumeUploadFlow({ onComplete, onCancel }: ResumeUploadFlowProps
                                 accept=".pdf,.docx"
                                 onChange={handleFileChange}
                             />
-                            <Button asChild variant="outline">
-                                <label htmlFor="cv-upload" className="cursor-pointer">
-                                    Select File
-                                </label>
+                            <Button
+                                variant="outline"
+                                onClick={() => document.getElementById('cv-upload')?.click()}
+                            >
+                                Select File
                             </Button>
 
                             {error && (

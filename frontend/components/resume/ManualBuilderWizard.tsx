@@ -21,7 +21,8 @@ import {
     AcademicStructuredPreview,
     GradientModernPreview,
 } from '@/components/resume/template-preview';
-import { resumeTemplates, ResumeTemplate } from '@/lib/resume-templates';
+import { resumeTemplates } from '@/lib/resume-templates';
+import { ResumeTemplate } from '@/types';
 
 const PREVIEW_MAP: Record<string, React.ComponentType<any>> = {
     'classic-professional': ClassicProfessionalPreview,
@@ -539,8 +540,8 @@ export function ManualBuilderWizard({ initialData, selectedTemplate, onComplete,
                                 key={s.id}
                                 onClick={() => i < step && setStep(i)}
                                 className={`flex-1 h-1.5 rounded-full transition-all duration-300 ${i < step ? 'bg-indigo-600 cursor-pointer hover:bg-indigo-700' :
-                                        i === step ? 'bg-indigo-600' :
-                                            'bg-slate-100 dark:bg-slate-800 cursor-not-allowed'
+                                    i === step ? 'bg-indigo-600' :
+                                        'bg-slate-100 dark:bg-slate-800 cursor-not-allowed'
                                     }`}
                             />
                         ))}
@@ -553,8 +554,8 @@ export function ManualBuilderWizard({ initialData, selectedTemplate, onComplete,
                             return (
                                 <div key={s.id} className={`flex-1 flex flex-col items-center gap-1`}>
                                     <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 transition-all ${i < step ? 'bg-indigo-600 text-white' :
-                                            i === step ? 'bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 ring-2 ring-indigo-600' :
-                                                'bg-slate-50 dark:bg-slate-800 text-slate-400'
+                                        i === step ? 'bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 ring-2 ring-indigo-600' :
+                                            'bg-slate-50 dark:bg-slate-800 text-slate-400'
                                         }`}>
                                         {i < step ? <CheckCircle2 className="w-4 h-4" /> : <Icon className="w-4 h-4" />}
                                     </div>

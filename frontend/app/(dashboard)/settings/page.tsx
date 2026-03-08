@@ -2,6 +2,8 @@
 
 import { useState } from 'react';
 import { motion } from 'framer-motion';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -9,6 +11,9 @@ import { Switch } from '@/components/ui/switch';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAuthStore } from '@/store/authStore';
 import { useRouter } from 'next/navigation';
+import { userApi } from '@/lib/api/user';
+import { updateProfileSchema, changePasswordSchema } from '@/lib/validation';
+import { z } from 'zod';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -18,23 +23,207 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
-import { User, Lock, Bell, Zap } from 'lucide-react';
+import { User, Lock, Bell, Zap, CheckCircle2 } from 'lucide-react';
+import { message } from 'antd';
+
+type ProfileData = z.infer<typeof updateProfileSchema>;
+type PasswordData = z.infer<typeof changePasswordSchema>;
+
+function ProfileTab({ user, onUpdate }: { user: any, onUpdate: (data: any) => void }) {
+  const [isSaving, setIsSaving] = useState(false);
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<ProfileData>({
+    resolver: zodResolver(updateProfileSchema),
+    defaultValues: {
+      fullName: user?.name || '',
+      phone: user?.phone || '',
+      bio: '', // Bio doesn't exist in User type yet, but we'll include it
+    },
+  });
+
+  const onSubmit = async (values: ProfileData) => {
+    setIsSaving(true);
+    try {
+      const [firstName, ...rest] = values.fullName.split(' ');
+      const lastName = rest.join(' ') || '.';
+
+      const response = await userApi.updateMe({
+        firstName,
+        lastName,
+        phone: values.phone,
+        // other fields like bio if needed by backend
+      });
+
+      onUpdate(response.data.user);
+      message.success('Profile updated successfully');
+    } catch (error: any) {
+      message.error(error.message || 'Failed to update profile');
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  return (
+    <div className="p-6 space-y-6">
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+        <h3 className="font-semibold text-slate-900 dark:text-white">
+          Profile Information
+        </h3>
+
+        <div className="space-y-4">
+          <div className="space-y-2">
+            <Label>Full Name</Label>
+            <Input
+              {...register('fullName')}
+              className={`bg-slate-50 dark:bg-slate-900 ${errors.fullName ? 'border-rose-500' : ''}`}
+            />
+            {errors.fullName && <p className="text-[10px] text-rose-500">{errors.fullName.message}</p>}
+          </div>
+
+          <div className="space-y-2">
+            <Label>Email</Label>
+            <Input
+              type="email"
+              defaultValue={user?.email}
+              className="bg-slate-50 dark:bg-slate-900"
+              disabled
+            />
+            <p className="text-[10px] text-slate-400">Email cannot be changed contact support.</p>
+          </div>
+
+          <div className="space-y-2">
+            <Label>Phone</Label>
+            <Input
+              {...register('phone')}
+              placeholder="+1 (555) 123-4567"
+              className="bg-slate-50 dark:bg-slate-900"
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label>Bio</Label>
+            <textarea
+              {...register('bio')}
+              placeholder="Tell us about yourself..."
+              className="w-full px-3 py-2 rounded-md border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-white text-sm"
+              rows={4}
+            />
+          </div>
+        </div>
+
+        <Button
+          type="submit"
+          disabled={isSaving}
+          className="bg-gradient-to-r from-indigo-600 to-purple-600"
+        >
+          {isSaving ? 'Saving...' : 'Save Changes'}
+        </Button>
+      </form>
+    </div>
+  );
+}
+
+function SecurityTab() {
+  const [isLoading, setIsLoading] = useState(false);
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors },
+  } = useForm<PasswordData>({
+    resolver: zodResolver(changePasswordSchema),
+  });
+
+  const onSubmit = async (values: PasswordData) => {
+    setIsLoading(true);
+    try {
+      await userApi.changePassword({
+        currentPassword: values.currentPassword,
+        newPassword: values.newPassword,
+      });
+      message.success('Password changed successfully');
+      reset();
+    } catch (error: any) {
+      message.error(error.message || 'Failed to change password');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  return (
+    <div className="p-6 space-y-6">
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+        <h3 className="font-semibold text-slate-900 dark:text-white">
+          Password
+        </h3>
+
+        <div className="space-y-4">
+          <div className="space-y-2">
+            <Label>Current Password</Label>
+            <Input
+              type="password"
+              placeholder="••••••••"
+              {...register('currentPassword')}
+              className={`bg-slate-50 dark:bg-slate-900 ${errors.currentPassword ? 'border-rose-500' : ''}`}
+            />
+            {errors.currentPassword && <p className="text-[10px] text-rose-500">{errors.currentPassword.message}</p>}
+          </div>
+
+          <div className="space-y-2">
+            <Label>New Password</Label>
+            <Input
+              type="password"
+              placeholder="••••••••"
+              {...register('newPassword')}
+              className={`bg-slate-50 dark:bg-slate-900 ${errors.newPassword ? 'border-rose-500' : ''}`}
+            />
+            {errors.newPassword && <p className="text-[10px] text-rose-500">{errors.newPassword.message}</p>}
+          </div>
+
+          <div className="space-y-2">
+            <Label>Confirm Password</Label>
+            <Input
+              type="password"
+              placeholder="••••••••"
+              {...register('confirmPassword')}
+              className={`bg-slate-50 dark:bg-slate-900 ${errors.confirmPassword ? 'border-rose-500' : ''}`}
+            />
+            {errors.confirmPassword && <p className="text-[10px] text-rose-500">{errors.confirmPassword.message}</p>}
+          </div>
+        </div>
+
+        <Button type="submit" disabled={isLoading} className="bg-gradient-to-r from-indigo-600 to-purple-600">
+          {isLoading ? 'Updating...' : 'Update Password'}
+        </Button>
+      </form>
+
+      <div className="border-t border-slate-200 dark:border-slate-800 pt-6">
+        <h3 className="font-semibold text-slate-900 dark:text-white mb-4">
+          Two-Factor Authentication
+        </h3>
+        <p className="text-sm text-slate-600 dark:text-slate-400 mb-4">
+          Add an extra layer of security to your account
+        </p>
+        <Button variant="outline">
+          Enable 2FA
+        </Button>
+      </div>
+    </div>
+  );
+}
 
 export default function SettingsPage() {
   const user = useAuthStore((state) => state.user);
+  const setUser = useAuthStore((state) => state.setUser);
   const logout = useAuthStore((state) => state.logout);
   const router = useRouter();
-  const [isSaving, setIsSaving] = useState(false);
-
-  const handleSave = async () => {
-    setIsSaving(true);
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-    setIsSaving(false);
-  };
 
   const handleLogout = () => {
     logout();
-    router.push('/login');
+    router.push('/auth/login');
   };
 
   return (
@@ -81,113 +270,12 @@ export default function SettingsPage() {
               </TabsTrigger>
             </TabsList>
 
-            {/* Profile Tab */}
-            <TabsContent value="profile" className="p-6 space-y-6">
-              <div className="space-y-4">
-                <h3 className="font-semibold text-slate-900 dark:text-white">
-                  Profile Information
-                </h3>
-
-                <div className="space-y-4">
-                  <div className="space-y-2">
-                    <Label>Full Name</Label>
-                    <Input
-                      defaultValue={user?.name}
-                      className="bg-slate-50 dark:bg-slate-900"
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label>Email</Label>
-                    <Input
-                      type="email"
-                      defaultValue={user?.email}
-                      className="bg-slate-50 dark:bg-slate-900"
-                      disabled
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label>Phone</Label>
-                    <Input
-                      type="tel"
-                      placeholder="+1 (555) 123-4567"
-                      className="bg-slate-50 dark:bg-slate-900"
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label>Bio</Label>
-                    <textarea
-                      placeholder="Tell us about yourself..."
-                      className="w-full px-3 py-2 rounded-md border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-white"
-                      rows={4}
-                    />
-                  </div>
-                </div>
-              </div>
-
-              <Button
-                onClick={handleSave}
-                disabled={isSaving}
-                className="bg-gradient-to-r from-indigo-600 to-purple-600"
-              >
-                {isSaving ? 'Saving...' : 'Save Changes'}
-              </Button>
+            <TabsContent value="profile">
+              <ProfileTab user={user} onUpdate={(updatedUser) => setUser(updatedUser)} />
             </TabsContent>
 
-            {/* Security Tab */}
-            <TabsContent value="security" className="p-6 space-y-6">
-              <div className="space-y-4">
-                <h3 className="font-semibold text-slate-900 dark:text-white">
-                  Password
-                </h3>
-
-                <div className="space-y-4">
-                  <div className="space-y-2">
-                    <Label>Current Password</Label>
-                    <Input
-                      type="password"
-                      placeholder="••••••••"
-                      className="bg-slate-50 dark:bg-slate-900"
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label>New Password</Label>
-                    <Input
-                      type="password"
-                      placeholder="••••••••"
-                      className="bg-slate-50 dark:bg-slate-900"
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label>Confirm Password</Label>
-                    <Input
-                      type="password"
-                      placeholder="••••••••"
-                      className="bg-slate-50 dark:bg-slate-900"
-                    />
-                  </div>
-                </div>
-
-                <Button className="bg-gradient-to-r from-indigo-600 to-purple-600">
-                  Update Password
-                </Button>
-              </div>
-
-              <div className="border-t border-slate-200 dark:border-slate-800 pt-6">
-                <h3 className="font-semibold text-slate-900 dark:text-white mb-4">
-                  Two-Factor Authentication
-                </h3>
-                <p className="text-sm text-slate-600 dark:text-slate-400 mb-4">
-                  Add an extra layer of security to your account
-                </p>
-                <Button variant="outline">
-                  Enable 2FA
-                </Button>
-              </div>
+            <TabsContent value="security">
+              <SecurityTab />
             </TabsContent>
 
             {/* Notifications Tab */}
@@ -232,14 +320,14 @@ export default function SettingsPage() {
 
                 <div className="p-4 rounded-lg border border-indigo-200 dark:border-indigo-900 bg-indigo-50 dark:bg-indigo-900/10">
                   <p className="font-semibold text-indigo-900 dark:text-indigo-100 mb-2">
-                    {user?.plan === 'free' ? 'Free Plan' : 'Pro Plan'}
+                    {user?.plan === 'FREE' ? 'Free Plan' : 'Pro Plan'}
                   </p>
                   <p className="text-sm text-indigo-800 dark:text-indigo-200 mb-4">
-                    {user?.plan === 'free'
+                    {user?.plan === 'FREE'
                       ? 'Limited to 1 resume and 5 tailors per month'
                       : 'Unlimited resumes and tailors with priority support'}
                   </p>
-                  {user?.plan === 'free' && (
+                  {user?.plan === 'FREE' && (
                     <Button className="bg-indigo-600 hover:bg-indigo-700">
                       Upgrade to Pro
                     </Button>
@@ -256,7 +344,7 @@ export default function SettingsPage() {
                 </p>
 
                 <AlertDialog>
-                  <AlertDialogTrigger asChild>
+                  <AlertDialogTrigger>
                     <Button variant="destructive">
                       Logout
                     </Button>
@@ -268,7 +356,7 @@ export default function SettingsPage() {
                     </AlertDialogDescription>
                     <div className="flex gap-2 justify-end">
                       <AlertDialogCancel>Cancel</AlertDialogCancel>
-                      <AlertDialogAction onClick={handleLogout} className="bg-rose-600 hover:bg-rose-700">
+                      <AlertDialogAction onClick={handleLogout}>
                         Logout
                       </AlertDialogAction>
                     </div>

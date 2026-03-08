@@ -9,38 +9,45 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Zap, Lock, CheckCircle2, AlertCircle } from 'lucide-react';
 
+import { z } from 'zod';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { resetPasswordSchema } from '@/lib/validation';
+
+type ResetPasswordData = z.infer<typeof resetPasswordSchema>;
+
 function ResetPasswordForm() {
     const router = useRouter();
     const searchParams = useSearchParams();
     const token = searchParams.get('token');
 
-    const [password, setPassword] = useState('');
-    const [confirmPassword, setConfirmPassword] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const [isSubmitted, setIsSubmitted] = useState(false);
-    const [error, setError] = useState('');
+    const [serverError, setServerError] = useState('');
 
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-        setError('');
+    const {
+        register,
+        handleSubmit,
+        formState: { errors },
+    } = useForm<ResetPasswordData>({
+        resolver: zodResolver(resetPasswordSchema),
+        mode: 'onChange',
+    });
 
-        if (password !== confirmPassword) {
-            setError('Passwords do not match.');
-            return;
-        }
-
+    const onSubmit = async (values: ResetPasswordData) => {
         if (!token) {
-            setError('Invalid or missing reset token.');
+            setServerError('Invalid or missing reset token.');
             return;
         }
 
         setIsLoading(true);
+        setServerError('');
 
         try {
             const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/api/auth/reset-password`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ token, password }),
+                body: JSON.stringify({ token, password: values.password }),
             });
 
             if (!response.ok) {
@@ -53,7 +60,7 @@ function ResetPasswordForm() {
                 router.push('/auth/login');
             }, 3000);
         } catch (err: any) {
-            setError(err.message || 'Something went wrong.');
+            setServerError(err.message || 'Something went wrong.');
         } finally {
             setIsLoading(false);
         }
@@ -106,14 +113,14 @@ function ResetPasswordForm() {
     }
 
     return (
-        <form onSubmit={handleSubmit} className="space-y-4">
-            {error && (
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+            {serverError && (
                 <motion.div
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     className="p-3 rounded-lg bg-rose-50 dark:bg-rose-900/20 border border-rose-200 dark:border-rose-900 text-rose-700 dark:text-rose-300 text-sm"
                 >
-                    {error}
+                    {serverError}
                 </motion.div>
             )}
 
@@ -129,12 +136,13 @@ function ResetPasswordForm() {
                         id="password"
                         type="password"
                         placeholder="••••••••"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        required
-                        className="pl-10 bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-800"
+                        {...register('password')}
+                        className={`pl-10 bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-800 ${errors.password ? 'border-rose-500' : ''}`}
                     />
                 </div>
+                {errors.password && (
+                    <p className="text-[10px] text-rose-500 mt-1 font-medium">{errors.password.message}</p>
+                )}
             </div>
 
             <div className="space-y-2">
@@ -149,12 +157,13 @@ function ResetPasswordForm() {
                         id="confirmPassword"
                         type="password"
                         placeholder="••••••••"
-                        value={confirmPassword}
-                        onChange={(e) => setConfirmPassword(e.target.value)}
-                        required
-                        className="pl-10 bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-800"
+                        {...register('confirmPassword')}
+                        className={`pl-10 bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-800 ${errors.confirmPassword ? 'border-rose-500' : ''}`}
                     />
                 </div>
+                {errors.confirmPassword && (
+                    <p className="text-[10px] text-rose-500 mt-1 font-medium">{errors.confirmPassword.message}</p>
+                )}
             </div>
 
             <Button

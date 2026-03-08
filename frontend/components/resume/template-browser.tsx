@@ -3,7 +3,8 @@
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { resumeTemplates, type ResumeTemplate } from '@/lib/resume-templates';
+import { resumeTemplates } from '@/lib/resume-templates';
+import { ResumeTemplate } from '@/types';
 import { Eye } from 'lucide-react';
 
 interface TemplateBrowserProps {
