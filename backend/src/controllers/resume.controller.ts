@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import { ResumeService } from '../services/resume.service';
 import { asyncHandler } from '../middleware/error';
+import { cacheInvalidations } from '../services/cache-invalidation.service';
 
 const resumeService = new ResumeService();
 
@@ -21,11 +22,15 @@ export const getResume = asyncHandler(async (req: Request, res: Response) => {
 
 export const updateResume = asyncHandler(async (req: Request, res: Response) => {
   const resume = await resumeService.updateResume(req.user!.userId, req.params.id, req.body);
+  // Invalidate cache after update
+  await cacheInvalidations.afterResumeUpdate(req.params.id);
   res.json({ success: true, message: 'Resume updated', data: { resume } });
 });
 
 export const deleteResume = asyncHandler(async (req: Request, res: Response) => {
   await resumeService.deleteResume(req.user!.userId, req.params.id);
+  // Invalidate all cached data for this resume
+  await cacheInvalidations.afterResumeDelete(req.params.id);
   res.json({ success: true, message: 'Resume deleted' });
 });
 
@@ -46,6 +51,8 @@ export const listVersions = asyncHandler(async (req: Request, res: Response) => 
 
 export const restoreVersion = asyncHandler(async (req: Request, res: Response) => {
   const resume = await resumeService.restoreVersion(req.user!.userId, req.params.id, req.params.versionId);
+  // Invalidate cache after restore
+  await cacheInvalidations.afterResumeUpdate(req.params.id);
   res.json({ success: true, message: 'Resume restored', data: { resume } });
 });
 
