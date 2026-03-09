@@ -7,17 +7,14 @@
  */
 
 import { Request, Response } from 'express';
-import { register, login, logout, refreshAccessToken } from '../src/controllers/auth.controller';
 import { AuthService } from '../src/services/auth.service';
 
 // Mock dependencies
-jest.mock('../src/services/auth.service');
 jest.mock('../src/utils/validation');
 
 describe('Auth Controller - HttpOnly Cookies', () => {
   let mockRequest: Partial<Request>;
   let mockResponse: Partial<Response>;
-  let mockAuthService: jest.Mocked<AuthService>;
 
   beforeEach(() => {
     // Clear mocks
@@ -45,7 +42,6 @@ describe('Auth Controller - HttpOnly Cookies', () => {
       cookies: {},
     };
 
-    mockAuthService = AuthService as jest.Mocked<typeof AuthService>;
   });
 
   describe('register - HttpOnly cookie', () => {
@@ -59,15 +55,11 @@ describe('Auth Controller - HttpOnly Cookies', () => {
         plan: 'FREE',
       };
 
-      const mockInstance = {
-        register: jest.fn().mockResolvedValue({
-          accessToken: 'access_token_123',
-          refreshToken: 'refresh_token_456',
-          user: testUser,
-        }),
-      };
-
-      (AuthService as any).mockImplementation(() => mockInstance);
+      jest.spyOn(AuthService.prototype, 'register').mockResolvedValue({
+        accessToken: 'access_token_123',
+        refreshToken: 'refresh_token_456',
+        user: testUser as any,
+      });
 
       // Act
       const controller = require('../src/controllers/auth.controller');
@@ -106,15 +98,11 @@ describe('Auth Controller - HttpOnly Cookies', () => {
         plan: 'FREE',
       };
 
-      const mockInstance = {
-        login: jest.fn().mockResolvedValue({
-          accessToken: 'access_token_123',
-          refreshToken: 'refresh_token_456',
-          user: testUser,
-        }),
-      };
-
-      (AuthService as any).mockImplementation(() => mockInstance);
+      jest.spyOn(AuthService.prototype, 'login').mockResolvedValue({
+        accessToken: 'access_token_123',
+        refreshToken: 'refresh_token_456',
+        user: testUser as any,
+      });
 
       mockRequest.body = {
         email: 'test@example.com',
@@ -148,15 +136,11 @@ describe('Auth Controller - HttpOnly Cookies', () => {
         plan: 'FREE',
       };
 
-      const mockInstance = {
-        refreshTokens: jest.fn().mockResolvedValue({
-          accessToken: 'new_access_token',
-          refreshToken: 'new_refresh_token',
-          user: testUser,
-        }),
-      };
-
-      (AuthService as any).mockImplementation(() => mockInstance);
+      jest.spyOn(AuthService.prototype, 'refreshTokens').mockResolvedValue({
+        accessToken: 'new_access_token',
+        refreshToken: 'new_refresh_token',
+        user: testUser as any,
+      });
 
       mockRequest.cookies = {
         refreshToken: 'old_refresh_token',
@@ -200,11 +184,7 @@ describe('Auth Controller - HttpOnly Cookies', () => {
   describe('logout - Cookie clearing', () => {
     it('should clear HttpOnly refresh token cookie', async () => {
       // Arrange
-      const mockInstance = {
-        logout: jest.fn().mockResolvedValue({}),
-      };
-
-      (AuthService as any).mockImplementation(() => mockInstance);
+      jest.spyOn(AuthService.prototype, 'logout').mockResolvedValue();
 
       mockRequest.cookies = {
         refreshToken: 'refresh_token_to_clear',

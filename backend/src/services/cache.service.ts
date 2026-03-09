@@ -44,7 +44,7 @@ export class CacheService {
       this.client = createClient({
         url: env.REDIS_URL,
         socket: {
-          reconnectStrategy: (retries) => {
+          reconnectStrategy: (retries: number) => {
             if (retries > 10) {
               console.error('❌ Redis reconnection failed after 10 attempts');
               return new Error('Redis reconnection failed');
@@ -54,7 +54,7 @@ export class CacheService {
         },
       });
 
-      this.client.on('error', (err) => console.error('Redis error:', err));
+      this.client.on('error', (err: unknown) => console.error('Redis error:', err));
 
       await this.client.connect();
       this.connected = true;
@@ -153,7 +153,7 @@ export class CacheService {
     const fresh = await fetchFn();
 
     // Store in cache for next time
-    await this.set(fresh, { ttl, ...options });
+    await this.set(key, fresh, { ttl, ...options });
 
     return fresh;
   }
@@ -223,7 +223,7 @@ export class CacheService {
       const ns = namespace || this.namespace;
       const pattern = this.getKey('*', ns);
       const keys = await this.client.keys(pattern);
-      const info = await this.client.info('stats', 'memory');
+      const info = await this.client.info('stats');
 
       return {
         keys: keys.length,

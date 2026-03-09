@@ -184,8 +184,8 @@ export const globalInvalidations = {
  *   )
  * })
  */
-export function mergeInvalidations(...invalidations: any[][]): any[] {
+export function mergeInvalidations(...invalidations: unknown[][]): unknown[] {
   return Array.from(
-    new Set(invalidations.flat().map(JSON.stringify))
-  ).map(JSON.parse);
+    new Set(invalidations.flat().map((key) => JSON.stringify(key)))
+  ).map((serialized) => JSON.parse(serialized));
 }

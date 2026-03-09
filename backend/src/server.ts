@@ -25,6 +25,8 @@ import templatesRoutes from './routes/templates.routes';
 import portfolioRoutes from './routes/portfolio.routes';
 import adminRoutes from './routes/admin.routes';
 import analyzeRoutes from './routes/analyze.routes';
+import streamRoutes from './routes/stream.routes';
+import jobRoutes from './routes/job.routes';
 
 // Middleware
 import { errorHandler, notFound } from './middleware/error';
@@ -120,6 +122,8 @@ app.use(`${v1}/templates`, templatesRoutes);
 app.use(`${v1}/portfolio`, portfolioRoutes);
 app.use(`${v1}/admin`, adminRoutes);
 app.use(`${v1}/analyze`, analyzeRoutes);
+app.use(`${v1}/stream`, streamRoutes);
+app.use(`${v1}/jobs`, jobRoutes);
 
 // Backwards compatibility alias (old /api prefix)
 app.use('/api/auth', authRoutes);

@@ -97,11 +97,16 @@ export function errorResponse(
   code: string,
   details?: unknown
 ): ErrorResponse {
+  const error: { code: string; details?: unknown } = { code };
+  if (details !== undefined) {
+    error.details = details;
+  }
+
   return {
     success: false,
     data: null,
     message,
-    error: { code, ...(details && { details }) },
+    error,
   };
 }
 
