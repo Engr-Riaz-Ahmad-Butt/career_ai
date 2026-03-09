@@ -2,7 +2,8 @@
 
 import { useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Upload, Sparkles, ArrowLeft, ArrowRight, Loader2, CheckCircle2, AlertTriangle, Lightbulb, Check, X } from 'lucide-react';
+import { Upload, Sparkles, ArrowLeft, ArrowRight, CheckCircle2, AlertTriangle, Lightbulb, Check, X } from 'lucide-react';
+import { InlineLoading } from '@/components/shared';
 import { Button } from '@/components/ui/button';
 import { WizardData } from './ManualBuilderWizard';
 
@@ -214,7 +215,7 @@ export function ImproveCVMode({ onComplete, onCancel }: ImproveCVModeProps) {
                             className="w-full h-13 bg-gradient-to-r from-cyan-600 to-teal-600 hover:from-cyan-700 hover:to-teal-700 text-white font-bold rounded-2xl text-base shadow-lg py-3 disabled:opacity-40"
                         >
                             {loading ? (
-                                <span className="flex items-center gap-2"><Loader2 className="w-5 h-5 animate-spin" /> AI is analyzing your CV…</span>
+                                <InlineLoading text="AI is analyzing your CV…" size="sm" />
                             ) : (
                                 <span className="flex items-center gap-2"><Sparkles className="w-5 h-5" /> Extract & Analyze <ArrowRight className="w-4 h-4" /></span>
                             )}

@@ -1,6 +1,7 @@
 'use client';
 
-import { Loader2, Zap } from 'lucide-react';
+import { Zap } from 'lucide-react';
+import { LoadingSpinner } from '@/components/shared';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -86,7 +87,7 @@ export function AnalyzeFormCard({
             disabled={!canStartAnalysis || isStreamAnalyzing}
             onClick={onRunBackground}
           >
-            {isBackgroundAnalyzing ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Zap className="mr-2 h-4 w-4" />}
+            {isBackgroundAnalyzing ? <LoadingSpinner size="sm" variant="current" className="mr-2" /> : <Zap className="mr-2 h-4 w-4" />}
             {labels.backgroundButton}
           </Button>
 
@@ -96,7 +97,7 @@ export function AnalyzeFormCard({
             disabled={!canStartAnalysis || isBackgroundAnalyzing}
             onClick={onRunStream}
           >
-            {isStreamAnalyzing ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Zap className="mr-2 h-4 w-4" />}
+            {isStreamAnalyzing ? <LoadingSpinner size="sm" variant="current" className="mr-2" /> : <Zap className="mr-2 h-4 w-4" />}
             {labels.streamButton}
           </Button>
         </div>

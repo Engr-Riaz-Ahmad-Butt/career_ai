@@ -4,7 +4,8 @@ import { useState } from 'react';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { Check, Loader2 } from 'lucide-react';
+import { Check } from 'lucide-react';
+import { LoadingState } from '@/components/shared';
 import { usePricingPlans } from '@/hooks/usePricingPlans';
 
 export default function PricingPage() {
@@ -35,7 +36,7 @@ export default function PricingPage() {
   if (isLoading) {
     return (
       <div className="flex h-screen items-center justify-center bg-slate-50 dark:bg-slate-950">
-        <Loader2 className="h-12 w-12 animate-spin text-indigo-600" />
+        <LoadingState size="xl" />
       </div>
     );
   }

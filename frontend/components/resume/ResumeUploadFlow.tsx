@@ -1,7 +1,8 @@
 'use client';
 
 import { motion, AnimatePresence } from 'framer-motion';
-import { Upload, FileText, CheckCircle2, Loader2, ArrowRight, AlertCircle } from 'lucide-react';
+import { Upload, FileText, CheckCircle2, ArrowRight, AlertCircle } from 'lucide-react';
+import { LoadingSpinner } from '@/components/shared';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Card } from '@/components/ui/card';
@@ -100,7 +101,7 @@ export function ResumeUploadFlow({ onComplete, onCancel }: ResumeUploadFlowProps
                         className="flex flex-col items-center justify-center space-y-8 py-12"
                     >
                         <div className="relative">
-                            <Loader2 className="h-16 w-16 text-indigo-600 animate-spin" />
+                            <LoadingSpinner size="xl" variant="primary" />
                             <div className="absolute inset-0 flex items-center justify-center">
                                 <FileText className="h-6 w-6 text-indigo-600" />
                             </div>

@@ -2,7 +2,8 @@
 
 import { useState, useRef } from 'react';
 import { motion } from 'framer-motion';
-import { Upload, Sparkles, ArrowLeft, ArrowRight, Loader2, FileText, User, CheckCircle2 } from 'lucide-react';
+import { Upload, Sparkles, ArrowLeft, ArrowRight, FileText, User, CheckCircle2 } from 'lucide-react';
+import { LoadingSpinner, InlineLoading } from '@/components/shared';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -258,7 +259,7 @@ export function AIGenerateMode({ onComplete, onCancel }: AIGenerateModeProps) {
                             className="w-full h-13 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white font-bold rounded-2xl text-base shadow-lg py-3"
                         >
                             {loading ? (
-                                <span className="flex items-center gap-2"><Loader2 className="w-5 h-5 animate-spin" /> AI is generating your tailored CV…</span>
+                                <InlineLoading text="AI is generating your tailored CV…" size="sm" />
                             ) : (
                                 <span className="flex items-center gap-2"><Sparkles className="w-5 h-5" /> Generate Tailored CV <ArrowRight className="w-4 h-4" /></span>
                             )}

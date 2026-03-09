@@ -2,7 +2,8 @@
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { AlertCircle, Inbox, Loader2 } from 'lucide-react';
+import { AlertCircle, Inbox } from 'lucide-react';
+import { LoadingSpinner } from '@/components/shared';
 
 type AnalyzeStateCardVariant = 'loading' | 'error' | 'empty';
 
@@ -16,7 +17,7 @@ interface AnalyzeStateCardProps {
 
 function resolveIcon(variant: AnalyzeStateCardVariant) {
   if (variant === 'loading') {
-    return <Loader2 className="h-6 w-6 animate-spin text-indigo-600" />;
+    return <LoadingSpinner size="md" variant="primary" />;
   }
 
   if (variant === 'error') {

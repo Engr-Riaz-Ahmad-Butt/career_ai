@@ -1,6 +1,7 @@
 'use client';
 
-import { Loader2, Sparkles } from 'lucide-react';
+import { Sparkles } from 'lucide-react';
+import { LoadingSpinner } from '@/components/shared';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
@@ -58,7 +59,7 @@ export function ResumeOptimizerInputCard({
           disabled={isOptimizing || !jobDescription.trim()}
           onClick={onOptimize}
         >
-          {isOptimizing ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : <Sparkles className="mr-2 h-5 w-5" />}
+          {isOptimizing ? <LoadingSpinner size="md" variant="current" className="mr-2" /> : <Sparkles className="mr-2 h-5 w-5" />}
           {isOptimizing ? labels.loadingButton : labels.optimizeButton}
         </Button>
       </div>

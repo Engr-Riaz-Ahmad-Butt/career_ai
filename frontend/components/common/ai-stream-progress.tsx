@@ -3,7 +3,8 @@
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Loader2, Radio } from 'lucide-react';
+import { Radio } from 'lucide-react';
+import { LoadingSpinner } from '@/components/shared';
 import type { StreamChunk } from '@/lib/api/endpoints/stream.api';
 
 interface AIStreamProgressLabels {
@@ -49,7 +50,7 @@ export function AIStreamProgress({
         <CardTitle className="text-sm flex items-center gap-2">
           {isStreaming ? (
             <>
-              <Loader2 className="h-4 w-4 animate-spin text-indigo-600" />
+              <LoadingSpinner size="sm" variant="primary" />
               {labels.liveTitle}
             </>
           ) : (

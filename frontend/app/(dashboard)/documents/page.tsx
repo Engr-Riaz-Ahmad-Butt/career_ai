@@ -3,7 +3,8 @@
 import { motion } from 'framer-motion';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { FileText, Download, Edit, Plus, Loader2 } from 'lucide-react';
+import { FileText, Download, Edit, Plus } from 'lucide-react';
+import { LoadingState } from '@/components/shared';
 import { FeatureErrorBoundary } from '@/components/errors/FeatureErrorBoundary';
 import { useDocumentsLibrary } from '@/hooks/useDocumentsLibrary';
 
@@ -33,7 +34,7 @@ export default function DocumentsPage() {
   if (isLoading) {
     return (
       <div className="flex h-screen items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-indigo-600" />
+        <LoadingState size="lg" />
       </div>
     );
   }

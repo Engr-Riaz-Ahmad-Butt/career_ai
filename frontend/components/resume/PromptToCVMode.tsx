@@ -2,7 +2,8 @@
 
 import { useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { MessageSquare, Sparkles, ArrowRight, ArrowLeft, Loader2, FileText } from 'lucide-react';
+import { MessageSquare, Sparkles, ArrowRight, ArrowLeft, FileText } from 'lucide-react';
+import { InlineLoading } from '@/components/shared';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';

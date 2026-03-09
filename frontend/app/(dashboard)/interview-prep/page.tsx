@@ -12,7 +12,8 @@ import {
 } from '@/components/ui/accordion';
 import { Checkbox } from '@/components/ui/checkbox';
 import { interviewQuestions } from '@/lib/mock-data';
-import { Mic, Volume2, BookOpen, CheckCircle2, Plus, Loader2, History, Wand2, Trash2 } from 'lucide-react';
+import { Mic, Volume2, BookOpen, CheckCircle2, Plus, History, Wand2, Trash2 } from 'lucide-react';
+import { LoadingState, LoadingSpinner } from '@/components/shared';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { FeatureErrorBoundary } from '@/components/errors/FeatureErrorBoundary';
@@ -43,7 +44,7 @@ export default function InterviewPrepPage() {
   if (isSessionsLoading) {
     return (
       <div className="flex h-screen items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-indigo-600" />
+        <LoadingState size="lg" />
       </div>
     );
   }
@@ -72,7 +73,7 @@ export default function InterviewPrepPage() {
             className="bg-gradient-to-r from-indigo-600 to-purple-600"
           >
             {isGeneratingSession ? (
-              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+              <LoadingSpinner size="sm" variant="current" className="mr-2" />
             ) : (
               <Wand2 className="h-4 w-4 mr-2" />
             )}
@@ -222,7 +223,7 @@ export default function InterviewPrepPage() {
                   <h3 className="text-lg font-medium text-slate-900 dark:text-white mb-1">No sessions yet</h3>
                   <p className="text-slate-500 mb-6">Generate an AI-powered interview session tailored to your resume.</p>
                   <Button onClick={generateSession} disabled={isGeneratingSession}>
-                    {isGeneratingSession ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Wand2 className="h-4 w-4 mr-2" />}
+                    {isGeneratingSession ? <LoadingSpinner size="sm" variant="current" className="mr-2" /> : <Wand2 className="h-4 w-4 mr-2" />}
                     Build AI Interview
                   </Button>
                 </CardContent>
