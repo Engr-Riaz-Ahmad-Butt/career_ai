@@ -58,6 +58,7 @@ import { ContactSection } from '@/components/resume/ContactSection';
 import { SummarySection } from '@/components/resume/SummarySection';
 import { ExperienceSection } from '@/components/resume/ExperienceSection';
 import { EducationSection } from '@/components/resume/EducationSection';
+import { ComponentErrorBoundary } from '@/components/errors/ComponentErrorBoundary';
 
 export type FlowState =
     | 'mode-selection'
@@ -176,8 +177,8 @@ export function ResumeBuilder({
 
     // Sync server data to store
     useEffect(() => {
-        if (resumeResponse?.data?.resume) {
-            setResume(resumeResponse.data.resume);
+        if (resumeResponse) {
+            setResume(resumeResponse);
             setFlow('editor');
         }
     }, [resumeResponse, setResume]);
@@ -225,8 +226,8 @@ export function ResumeBuilder({
             : 'My New CV';
 
         createMutation.mutate({ ...resumeData, title }, {
-            onSuccess: (response) => {
-                setResume(response.data.resume);
+            onSuccess: (resume) => {
+                setResume(resume);
                 setFlow('editor');
                 message.success('Your CV is ready to edit!');
             }
@@ -462,14 +463,16 @@ export function ResumeBuilder({
                         className="fixed inset-0 bg-black/40 backdrop-blur-sm z-[200] flex items-center justify-center p-4"
                         onClick={e => { if (e.target === e.currentTarget) setShowATSScore(false); }}
                     >
-                        <ATSScorePanel
-                            score={currentResume.atsScore ?? 62}
-                            missingKeywords={['leadership', 'agile', 'stakeholder management', 'cross-functional']}
-                            weakSections={['Summary — too generic', 'Experience — missing quantifiable results']}
-                            onDownload={() => { setShowATSScore(false); window.print(); }}
-                            onFixWithAI={() => setShowATSScore(false)}
-                            onClose={() => setShowATSScore(false)}
-                        />
+                        <ComponentErrorBoundary componentName="ATSScorePanel">
+                            <ATSScorePanel
+                                score={currentResume.atsScore ?? 62}
+                                missingKeywords={['leadership', 'agile', 'stakeholder management', 'cross-functional']}
+                                weakSections={['Summary — too generic', 'Experience — missing quantifiable results']}
+                                onDownload={() => { setShowATSScore(false); window.print(); }}
+                                onFixWithAI={() => setShowATSScore(false)}
+                                onClose={() => setShowATSScore(false)}
+                            />
+                        </ComponentErrorBoundary>
                     </motion.div>
                 )}
             </AnimatePresence>
@@ -678,11 +681,13 @@ export function ResumeBuilder({
                     </TabsContent>
 
                     <TabsContent value="optimizer" className="mt-0">
-                        <ResumeOptimizer
-                            resumeId={currentResume.id}
-                            originalData={currentResume}
-                            onOptimize={data => setFullResume(data)}
-                        />
+                        <ComponentErrorBoundary componentName="ResumeOptimizer">
+                            <ResumeOptimizer
+                                resumeId={currentResume.id}
+                                originalData={currentResume}
+                                onOptimize={data => setFullResume(data)}
+                            />
+                        </ComponentErrorBoundary>
                     </TabsContent>
 
                     <TabsContent value="overview" className="mt-0">

@@ -9,42 +9,109 @@ import {
 
 const authService = new AuthService();
 
+// ── Cookie Config ──────────────────────────────────────────────────────────
+
+const REFRESH_COOKIE_OPTIONS = {
+  httpOnly: true,
+  secure: process.env.NODE_ENV === 'production',
+  sameSite: 'strict' as const,
+  maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days in ms
+  path: '/',
+};
+
+/** Helper: set refresh token as HttpOnly cookie */
+function setRefreshCookie(res: Response, refreshToken: string) {
+  res.cookie('refreshToken', refreshToken, REFRESH_COOKIE_OPTIONS);
+}
+
 // ── Handlers ───────────────────────────────────────────────────────────────
 
 /** POST /auth/register */
 export const register = async (req: Request, res: Response) => {
   const result = await authService.register(req.body);
+  const { accessToken, refreshToken, user } = result;
+
+  setRefreshCookie(res, refreshToken);
+
   res.status(201).json({
     success: true,
     message: 'Account created. Please verify your email.',
-    data: result
+    data: { accessToken, user },
   });
 };
 
 /** POST /auth/login */
 export const login = async (req: Request, res: Response) => {
   const result = await authService.login(req.body);
-  res.json({ success: true, message: 'Login successful', data: result });
+  const { accessToken, refreshToken, user } = result;
+
+  setRefreshCookie(res, refreshToken);
+
+  res.json({
+    success: true,
+    message: 'Login successful',
+    data: { accessToken, user },
+  });
 };
 
 /** POST /auth/google */
 export const googleAuth = async (req: Request, res: Response) => {
   const { googleToken } = req.body;
   const result = await authService.googleAuth(googleToken);
-  res.json({ success: true, message: 'Google authentication successful', data: result });
+  const { accessToken, refreshToken, user } = result;
+
+  setRefreshCookie(res, refreshToken);
+
+  res.json({
+    success: true,
+    message: 'Google authentication successful',
+    data: { accessToken, user },
+  });
 };
 
-/** POST /auth/refresh */
+/** POST /auth/refresh  — reads refreshToken from HttpOnly cookie */
 export const refreshAccessToken = async (req: Request, res: Response) => {
-  const { refreshToken } = req.body;
+  const refreshToken = req.cookies?.refreshToken;
+
+  if (!refreshToken) {
+    return res.status(401).json({
+      success: false,
+      message: 'No refresh token provided',
+    });
+  }
+
   const result = await authService.refreshTokens(refreshToken);
-  res.json({ success: true, message: 'Token refreshed', data: result });
+  const { accessToken, refreshToken: newRefreshToken, user } = result;
+
+  // Rotate: issue new cookie with rotated refresh token
+  setRefreshCookie(res, newRefreshToken);
+
+  res.json({
+    success: true,
+    message: 'Token refreshed',
+    data: { accessToken, user },
+  });
 };
 
-/** POST /auth/logout */
+/** POST /auth/logout — clears HttpOnly cookie */
 export const logout = async (req: Request, res: Response) => {
-  const { refreshToken } = req.body;
-  await authService.logout(refreshToken);
+  const refreshToken = req.cookies?.refreshToken;
+
+  if (refreshToken) {
+    // Best-effort revoke in DB (don't throw if it fails)
+    try {
+      await authService.logout(refreshToken);
+    } catch {
+      // already expired or revoked — that's fine
+    }
+  }
+
+  res.clearCookie('refreshToken', {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'strict',
+    path: '/',
+  });
   res.json({ success: true, message: 'Logged out successfully' });
 };
 
@@ -75,4 +142,3 @@ export const resendVerification = async (req: Request, res: Response) => {
   await authService.resendVerification(email);
   res.json({ success: true, message: 'Verification email sent if account exists.' });
 };
-

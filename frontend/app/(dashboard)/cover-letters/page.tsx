@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Mail, Plus, Clock, ArrowRight } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { FeatureErrorBoundary } from '@/components/errors/FeatureErrorBoundary';
 
 // Mock data — replace with real API
 const coverLetters = [
@@ -13,6 +14,7 @@ const coverLetters = [
 
 export default function CoverLettersPage() {
     return (
+        <FeatureErrorBoundary featureName="Cover Letters">
         <div className="max-w-4xl mx-auto space-y-8">
             {/* Header */}
             <div className="flex items-center justify-between">
@@ -68,5 +70,6 @@ export default function CoverLettersPage() {
                 </div>
             )}
         </div>
+        </FeatureErrorBoundary>
     );
 }

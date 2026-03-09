@@ -4,34 +4,28 @@ import { useAuthStore } from '@/store/authStore';
 
 export const useAuth = () => {
     const queryClient = useQueryClient();
-    const { setUser, clearAuth } = useAuthStore();
+    const { setUser, setAccessToken, clearAuth } = useAuthStore();
 
     const signupMutation = useMutation({
-        mutationFn: authApi.signup,
-        onSuccess: (data) => {
-            const { user, accessToken, refreshToken } = data.data;
-            localStorage.setItem('access_token', accessToken);
-            localStorage.setItem('refresh_token', refreshToken);
+        mutationFn: authApi.register,
+        onSuccess: ({ accessToken, user }) => {
+            setAccessToken(accessToken);
             setUser(user);
         },
     });
 
     const loginMutation = useMutation({
         mutationFn: authApi.login,
-        onSuccess: (data) => {
-            const { user, accessToken, refreshToken } = data.data;
-            localStorage.setItem('access_token', accessToken);
-            localStorage.setItem('refresh_token', refreshToken);
+        onSuccess: ({ accessToken, user }) => {
+            setAccessToken(accessToken);
             setUser(user);
         },
     });
 
     const googleAuthMutation = useMutation({
         mutationFn: authApi.googleAuth,
-        onSuccess: (data) => {
-            const { user, accessToken, refreshToken } = data.data;
-            localStorage.setItem('access_token', accessToken);
-            localStorage.setItem('refresh_token', refreshToken);
+        onSuccess: ({ accessToken, user }) => {
+            setAccessToken(accessToken);
             setUser(user);
         },
     });
@@ -41,15 +35,12 @@ export const useAuth = () => {
     });
 
     const resetPasswordMutation = useMutation({
-        mutationFn: authApi.resetPassword,
+        mutationFn: ({ token, newPassword }: { token: string; newPassword: string }) =>
+            authApi.resetPassword(token, newPassword),
     });
 
     const logoutMutation = useMutation({
-        mutationFn: () => {
-            const refreshToken = localStorage.getItem('refresh_token');
-            if (!refreshToken) return Promise.resolve();
-            return authApi.logout(refreshToken);
-        },
+        mutationFn: authApi.logout,
         onSuccess: () => {
             clearAuth();
             queryClient.clear();

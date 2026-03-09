@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { FileText, Plus, Clock, ArrowRight } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { ResumeData } from '@/types';
+import type { ResumeData } from '@/types';
 
 import { useResumes } from '@/hooks/use-resumes';
 
@@ -55,7 +55,7 @@ export default function ResumesPage() {
                             </div>
                             <div className="flex items-center gap-4">
                                 <div className="text-center">
-                                    <p className="font-bold text-slate-900 dark:text-white">{resume.atsScore}%</p>
+                                    <p className="font-bold text-slate-900 dark:text-white">{resume.atsScore ?? 0}%</p>
                                     <p className="text-[10px] text-slate-400">ATS Score</p>
                                 </div>
                                 <Link href={`/resume-builder?id=${resume.id}`}>

@@ -1,28 +1,30 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { userApi } from '@/lib/api/user';
+import { userApi } from '@/lib/api/endpoints/user.api';
 import { useAuthStore } from '@/store/authStore';
+import { queryKeys } from '@/lib/query-keys';
+import { STALE_TIMES, GC_TIMES } from '@/lib/query-config';
 
 export const useProfile = () => {
     const queryClient = useQueryClient();
-    const { setUser } = useAuthStore();
+    const { setUser, isAuthenticated } = useAuthStore();
 
     const meQuery = useQuery({
-        queryKey: ['profile', 'me'],
+        queryKey: queryKeys.user.me(),
         queryFn: async () => {
-            const data = await userApi.getMe();
-            if (data?.data?.user) {
-                setUser(data.data.user);
-            }
-            return data;
+            const profile = await userApi.getProfile();
+            setUser(profile);
+            return profile;
         },
-        enabled: typeof window !== 'undefined' && !!localStorage.getItem('access_token'),
+        enabled: typeof window !== 'undefined' && isAuthenticated,
+        staleTime: STALE_TIMES.USER_PROFILE,
+        gcTime: GC_TIMES.USER_PROFILE,
     });
 
     const updateProfileMutation = useMutation({
-        mutationFn: userApi.updateMe,
-        onSuccess: (data) => {
-            setUser(data.data.user);
-            queryClient.invalidateQueries({ queryKey: ['profile', 'me'] });
+        mutationFn: userApi.updateProfile,
+        onSuccess: (profile) => {
+            setUser(profile);
+            queryClient.invalidateQueries({ queryKey: queryKeys.user.me() });
         },
     });
 

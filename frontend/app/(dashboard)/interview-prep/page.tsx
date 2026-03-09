@@ -17,14 +17,17 @@ import { interviewQuestions } from '@/lib/mock-data';
 import { Mic, Volume2, BookOpen, CheckCircle2, Plus, Loader2, History, Wand2, Trash2 } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { FeatureErrorBoundary } from '@/components/errors/FeatureErrorBoundary';
+import { queryKeys } from '@/lib/query-keys';
+import { message } from 'antd';
 
 export default function InterviewPrepPage() {
   const [practicedQuestions, setPracticedQuestions] = useState<string[]>([]);
   const queryClient = useQueryClient();
 
   const { data: sessionsData, isLoading: sessionsLoading } = useQuery({
-    queryKey: ['interview', 'sessions'],
-    queryFn: interviewApi.getSessions,
+    queryKey: queryKeys.interview.history(),
+    queryFn: () => interviewApi.getSessions(),
   });
 
   const generateMutation = useMutation({
@@ -34,19 +37,18 @@ export default function InterviewPrepPage() {
       questionCount: 5,
     }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['interview', 'sessions'] });
-      alert('Interview session generated successfully!');
+      queryClient.invalidateQueries({ queryKey: queryKeys.interview.history() });
+      message.success('Interview session generated successfully!');
     },
     onError: (error) => {
-      console.error('Generation failed:', error);
-      alert('Failed to generate interview session. Check credits.');
+      message.error('Failed to generate interview session. Check credits.');
     }
   });
 
   const deleteMutation = useMutation({
     mutationFn: (id: string) => interviewApi.deleteSession(id),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['interview', 'sessions'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.interview.history() });
     }
   });
 
@@ -62,7 +64,7 @@ export default function InterviewPrepPage() {
     keyof typeof interviewQuestions
   >;
 
-  const sessions = sessionsData?.data?.sessions || [];
+  const sessions = sessionsData?.data || [];
 
   if (sessionsLoading) {
     return (
@@ -73,8 +75,9 @@ export default function InterviewPrepPage() {
   }
 
   return (
-    <div className="p-6 sm:p-8 bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-950 dark:to-slate-900 min-h-screen">
-      <div className="max-w-4xl mx-auto">
+    <FeatureErrorBoundary featureName="Interview Prep">
+      <div className="p-6 sm:p-8 bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-950 dark:to-slate-900 min-h-screen">
+        <div className="max-w-4xl mx-auto">
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: -20 }}
@@ -225,7 +228,7 @@ export default function InterviewPrepPage() {
                     <CardContent className="p-4 pt-0">
                       <div className="flex items-center gap-4 mt-2">
                         <div className="bg-indigo-50 dark:bg-indigo-900/20 px-3 py-1 rounded text-xs text-indigo-600 dark:text-indigo-400">
-                          {session.questions?.length || 0} Questions
+                          {session.questionCount || 0} Questions
                         </div>
                         <div className="bg-purple-50 dark:bg-purple-900/20 px-3 py-1 rounded text-xs text-purple-600 dark:text-purple-400 uppercase">
                           {session.difficulty || 'Mid'}
@@ -253,7 +256,8 @@ export default function InterviewPrepPage() {
             )}
           </TabsContent>
         </Tabs>
+        </div>
       </div>
-    </div>
+    </FeatureErrorBoundary>
   );
 }

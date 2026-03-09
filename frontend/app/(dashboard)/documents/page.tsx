@@ -4,9 +4,12 @@ import { motion } from 'framer-motion';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { useQuery } from '@tanstack/react-query';
-import { documentApi } from '@/lib/api/document';
-import { resumeApi } from '@/lib/api/resume';
+import { documentApi } from '@/lib/api/endpoints/document.api';
+import { resumeApi } from '@/lib/api/endpoints/resume.api';
 import { FileText, Download, Edit, Copy, Plus, Trash2, Loader2 } from 'lucide-react';
+import { FeatureErrorBoundary } from '@/components/errors/FeatureErrorBoundary';
+import { queryKeys } from '@/lib/query-keys';
+import { STALE_TIMES, GC_TIMES } from '@/lib/query-config';
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -30,17 +33,21 @@ const itemVariants = {
 
 export default function DocumentsPage() {
   const { data: docsData, isLoading: docsLoading } = useQuery({
-    queryKey: ['documents'],
-    queryFn: documentApi.getDocuments,
+    queryKey: queryKeys.documents.all(),
+    queryFn: () => documentApi.list(),
+    staleTime: STALE_TIMES.DOCUMENT_LIST,
+    gcTime: GC_TIMES.DOCUMENT_LIST,
   });
 
   const { data: resumesData, isLoading: resumesLoading } = useQuery({
-    queryKey: ['resumes'],
-    queryFn: resumeApi.getResumes,
+    queryKey: queryKeys.resumes.all(),
+    queryFn: () => resumeApi.list(),
+    staleTime: STALE_TIMES.RESUME_LIST,
+    gcTime: GC_TIMES.RESUME_LIST,
   });
 
-  const documents = docsData?.data?.documents || [];
-  const resumes = resumesData?.data?.resumes || [];
+  const documents = docsData?.data || [];
+  const resumes = resumesData?.data || [];
 
   // Combine and format for display
   const allDocuments = [
@@ -69,29 +76,30 @@ export default function DocumentsPage() {
   }
 
   return (
-    <div className="p-6 sm:p-8 bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-950 dark:to-slate-900 min-h-screen">
-      <div className="max-w-7xl mx-auto">
-        {/* Header */}
-        <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="flex items-center justify-between mb-8"
-        >
-          <div>
-            <h1 className="text-3xl font-bold text-slate-900 dark:text-white mb-2">
-              Documents
-            </h1>
-            <p className="text-slate-600 dark:text-slate-400">
-              Manage all your career documents in one place
-            </p>
-          </div>
-          <Link href="/resume-builder">
-            <Button className="bg-gradient-to-r from-indigo-600 to-purple-600">
-              <Plus className="h-4 w-4 mr-2" />
-              New Document
-            </Button>
-          </Link>
-        </motion.div>
+    <FeatureErrorBoundary featureName="Documents">
+      <div className="p-6 sm:p-8 bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-950 dark:to-slate-900 min-h-screen">
+        <div className="max-w-7xl mx-auto">
+          {/* Header */}
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="flex items-center justify-between mb-8"
+          >
+            <div>
+              <h1 className="text-3xl font-bold text-slate-900 dark:text-white mb-2">
+                Documents
+              </h1>
+              <p className="text-slate-600 dark:text-slate-400">
+                Manage all your career documents in one place
+              </p>
+            </div>
+            <Link href="/resume-builder">
+              <Button className="bg-gradient-to-r from-indigo-600 to-purple-600">
+                <Plus className="h-4 w-4 mr-2" />
+                New Document
+              </Button>
+            </Link>
+          </motion.div>
 
         {/* Documents Grid */}
         {allDocuments.length > 0 ? (
@@ -149,7 +157,8 @@ export default function DocumentsPage() {
             </Link>
           </div>
         )}
+        </div>
       </div>
-    </div>
+    </FeatureErrorBoundary>
   );
 }

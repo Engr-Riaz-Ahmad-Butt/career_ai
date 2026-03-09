@@ -9,6 +9,7 @@ import { ScoreCircle } from '@/components/common/score-circle';
 import { KeywordTag } from '@/components/common/keyword-tag';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Zap, Copy, Check } from 'lucide-react';
+import { FeatureErrorBoundary } from '@/components/errors/FeatureErrorBoundary';
 
 export default function TailorPage() {
   const [jobDescription, setJobDescription] = useState('');
@@ -37,8 +38,9 @@ export default function TailorPage() {
   };
 
   return (
-    <div className="p-6 sm:p-8 bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-950 dark:to-slate-900 min-h-screen">
-      <div className="max-w-7xl mx-auto">
+    <FeatureErrorBoundary featureName="AI Resume Tailor">
+      <div className="p-6 sm:p-8 bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-950 dark:to-slate-900 min-h-screen">
+        <div className="max-w-7xl mx-auto">
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: -20 }}
@@ -245,7 +247,8 @@ export default function TailorPage() {
             </Tabs>
           </motion.div>
         )}
+        </div>
       </div>
-    </div>
+    </FeatureErrorBoundary>
   );
 }

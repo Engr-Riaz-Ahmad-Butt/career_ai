@@ -16,7 +16,18 @@ export default function PricingPage() {
     queryFn: billingApi.getPlans,
   });
 
-  const plans = plansData?.data?.plans || [
+  const plans =
+    plansData && plansData.length > 0
+      ? plansData.map((p: any) => ({
+          name: p.name ?? p.id,
+          price: p.price ?? 0,
+          period: p.billingInterval ?? '',
+          description: '',
+          features: p.features ?? [],
+          cta: p.id === 'FREE' ? 'Get Started' : p.id === 'TEAM' || p.id === 'ENTERPRISE' ? 'Contact Sales' : 'Upgrade Now',
+          highlighted: p.id === 'PRO',
+        }))
+      : [
     {
       name: 'Free',
       price: 0,

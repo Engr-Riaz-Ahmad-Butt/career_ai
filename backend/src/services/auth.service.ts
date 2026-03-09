@@ -230,7 +230,10 @@ export class AuthService {
         await prisma.refreshToken.update({ where: { token: refreshToken }, data: { revoked: true } });
 
         const tokens = await this.generateTokens(user);
-        return tokens;
+
+        // Also return user profile so refresh endpoint can hydrate client state
+        const profile = await prisma.user.findUnique({ where: { id: user.id }, select: USER_SELECT });
+        return { ...tokens, user: profile };
     }
 
     // ── Forgot Password ───────────────────────────────────────────────────

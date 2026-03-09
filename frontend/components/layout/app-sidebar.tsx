@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useUIStore } from '@/store/uiStore';
 import { useAuthStore } from '@/store/authStore';
+import { authApi } from '@/lib/api/endpoints/auth.api';
 import { useState } from 'react';
 import {
   LayoutDashboard,
@@ -67,7 +68,7 @@ export function AppSidebar() {
   const pathname = usePathname();
   const sidebarOpen = useUIStore((state) => state.sidebarOpen);
   const toggleSidebar = useUIStore((state) => state.toggleSidebar);
-  const logout = useAuthStore((state) => state.logout);
+  const clearAuth = useAuthStore((state) => state.clearAuth);
   const user = useAuthStore((state) => state.user);
 
   // Auto-open menus based on current path
@@ -206,7 +207,11 @@ export function AppSidebar() {
 
         <button
           onClick={async () => {
-            await logout();
+            try {
+              await authApi.logout();
+            } finally {
+              clearAuth();
+            }
             window.location.href = '/auth/login';
           }}
           className={`flex items-center gap-3 px-3 py-2 rounded-lg text-slate-500 hover:text-rose-600 hover:bg-rose-50 dark:hover:text-rose-400 dark:hover:bg-rose-500/10 transition-all w-full group ${

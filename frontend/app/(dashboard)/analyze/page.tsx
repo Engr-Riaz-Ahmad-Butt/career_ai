@@ -5,14 +5,17 @@ import { Button } from '@/components/ui/button';
 import { ScoreCircle } from '@/components/common/score-circle';
 import { resumeAnalysis } from '@/lib/mock-data';
 import { useQuery, useMutation } from '@tanstack/react-query';
-import { aiApi } from '@/lib/api/ai';
-import { resumeApi } from '@/lib/api/resume';
+import { resumeApi } from '@/lib/api/endpoints/resume.api';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import { Zap, Loader2, Search, FileSearch } from 'lucide-react';
 import { useState } from 'react';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { FeatureErrorBoundary } from '@/components/errors/FeatureErrorBoundary';
+import { message } from 'antd';
+import { queryKeys } from '@/lib/query-keys';
+import { STALE_TIMES, GC_TIMES } from '@/lib/query-config';
 
 const keywordData = [
   { name: 'JavaScript', value: 45 },
@@ -29,22 +32,27 @@ export default function AnalyzePage() {
   const [analysisResult, setAnalysisResult] = useState<any>(null);
 
   const { data: resumesData, isLoading: resumesLoading } = useQuery({
-    queryKey: ['resumes'],
-    queryFn: resumeApi.getResumes,
+    queryKey: queryKeys.resumes.all(),
+    queryFn: () => resumeApi.list(),
+    staleTime: STALE_TIMES.RESUME_LIST,
+    gcTime: GC_TIMES.RESUME_LIST,
   });
 
   const analyzeMutation = useMutation({
-    mutationFn: () => aiApi.scoreAts(selectedResumeId, jobDescription),
+    mutationFn: () =>
+      resumeApi.getAtsScore(selectedResumeId, {
+        jobDescription,
+        returnSuggestions: true,
+      }),
     onSuccess: (data: any) => {
-      setAnalysisResult(data.data);
+      setAnalysisResult(data);
     },
     onError: (error) => {
-      console.error('Analysis failed:', error);
-      alert('Failed to analyze resume. Please try again.');
+      message.error('Failed to analyze resume. Please try again.');
     }
   });
 
-  const resumes = resumesData?.data?.resumes || [];
+  const resumes = resumesData?.data || [];
   const metrics = analysisResult?.score ? [
     { label: 'Overall Score', score: analysisResult.score },
     { label: 'Keyword Match', score: analysisResult.keywordMatch || 0 },
@@ -69,8 +77,9 @@ export default function AnalyzePage() {
   }
 
   return (
-    <div className="p-6 sm:p-8 bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-950 dark:to-slate-900 min-h-screen">
-      <div className="max-w-7xl mx-auto">
+    <FeatureErrorBoundary featureName="ATS Analysis">
+      <div className="p-6 sm:p-8 bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-950 dark:to-slate-900 min-h-screen">
+        <div className="max-w-7xl mx-auto">
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: -20 }}
@@ -234,7 +243,8 @@ export default function AnalyzePage() {
             </ul>
           </Card>
         </div>
+        </div>
       </div>
-    </div>
+    </FeatureErrorBoundary>
   );
 }

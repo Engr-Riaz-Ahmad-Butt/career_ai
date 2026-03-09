@@ -11,7 +11,8 @@ import { Switch } from '@/components/ui/switch';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAuthStore } from '@/store/authStore';
 import { useRouter } from 'next/navigation';
-import { userApi } from '@/lib/api/user';
+import { userApi } from '@/lib/api/endpoints/user.api';
+import { authApi } from '@/lib/api/endpoints/auth.api';
 import { updateProfileSchema, changePasswordSchema } from '@/lib/validation';
 import { z } from 'zod';
 import {
@@ -25,6 +26,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import { User, Lock, Bell, Zap, CheckCircle2 } from 'lucide-react';
 import { message } from 'antd';
+import { FeatureErrorBoundary } from '@/components/errors/FeatureErrorBoundary';
 
 type ProfileData = z.infer<typeof updateProfileSchema>;
 type PasswordData = z.infer<typeof changePasswordSchema>;
@@ -50,14 +52,14 @@ function ProfileTab({ user, onUpdate }: { user: any, onUpdate: (data: any) => vo
       const [firstName, ...rest] = values.fullName.split(' ');
       const lastName = rest.join(' ') || '.';
 
-      const response = await userApi.updateMe({
+      const profile = await userApi.updateProfile({
         firstName,
         lastName,
         phone: values.phone,
         // other fields like bio if needed by backend
       });
 
-      onUpdate(response.data.user);
+      onUpdate(profile);
       message.success('Profile updated successfully');
     } catch (error: any) {
       message.error(error.message || 'Failed to update profile');
@@ -218,17 +220,22 @@ function SecurityTab() {
 export default function SettingsPage() {
   const user = useAuthStore((state) => state.user);
   const setUser = useAuthStore((state) => state.setUser);
-  const logout = useAuthStore((state) => state.logout);
+  const clearAuth = useAuthStore((state) => state.clearAuth);
   const router = useRouter();
 
-  const handleLogout = () => {
-    logout();
-    router.push('/auth/login');
+  const handleLogout = async () => {
+    try {
+      await authApi.logout();
+    } finally {
+      clearAuth();
+      router.push('/auth/login');
+    }
   };
 
   return (
-    <div className="p-6 sm:p-8 bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-950 dark:to-slate-900 min-h-screen">
-      <div className="max-w-4xl mx-auto">
+    <FeatureErrorBoundary featureName="Settings">
+      <div className="p-6 sm:p-8 bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-950 dark:to-slate-900 min-h-screen">
+        <div className="max-w-4xl mx-auto">
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: -20 }}
@@ -366,7 +373,8 @@ export default function SettingsPage() {
             </TabsContent>
           </Tabs>
         </motion.div>
+        </div>
       </div>
-    </div>
+    </FeatureErrorBoundary>
   );
 }

@@ -3,9 +3,11 @@
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Mail, ArrowLeft } from 'lucide-react';
+import { FeatureErrorBoundary } from '@/components/errors/FeatureErrorBoundary';
 
 export default function NewCoverLetterPage() {
     return (
+        <FeatureErrorBoundary featureName="Cover Letter Generator">
         <div className="max-w-2xl mx-auto py-12 px-4 space-y-8">
             <Link href="/cover-letters">
                 <Button variant="ghost" size="sm" className="gap-2 text-slate-500 mb-4">
@@ -28,5 +30,6 @@ export default function NewCoverLetterPage() {
                 <p className="text-slate-400 text-sm mt-1">Coming soon — full AI-powered generation flow.</p>
             </div>
         </div>
+        </FeatureErrorBoundary>
     );
 }

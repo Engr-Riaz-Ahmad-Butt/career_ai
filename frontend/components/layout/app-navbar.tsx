@@ -5,6 +5,7 @@ import { useUIStore } from '@/store/uiStore';
 import { useAuthStore } from '@/store/authStore';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
+import { authApi } from '@/lib/api/endpoints/auth.api';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -23,16 +24,20 @@ export function AppNavbar() {
   const sidebarOpen = useUIStore((state) => state.sidebarOpen);
   const toggleSidebar = useUIStore((state) => state.toggleSidebar);
   const user = useAuthStore((state) => state.user);
-  const logout = useAuthStore((state) => state.logout);
+  const clearAuth = useAuthStore((state) => state.clearAuth);
   const router = useRouter();
 
   useEffect(() => {
     setMounted(true);
   }, []);
 
-  const handleLogout = () => {
-    logout();
-    router.push('/login');
+  const handleLogout = async () => {
+    try {
+      await authApi.logout();
+    } finally {
+      clearAuth();
+      router.push('/auth/login');
+    }
   };
 
   return (

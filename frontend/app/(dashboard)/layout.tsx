@@ -3,6 +3,7 @@
 import { AppSidebar } from "@/components/layout/app-sidebar";
 import { AppNavbar } from "@/components/layout/app-navbar";
 import { useUIStore } from "@/store/uiStore";
+import { FeatureErrorBoundary } from "@/components/errors/FeatureErrorBoundary";
 
 export default function DashboardLayout({
     children,
@@ -22,7 +23,9 @@ export default function DashboardLayout({
             >
                 <AppNavbar />
                 <main className="flex-1 pt-16 p-6">
-                    {children}
+                    <FeatureErrorBoundary featureName="Dashboard">
+                        {children}
+                    </FeatureErrorBoundary>
                 </main>
             </div>
         </div>

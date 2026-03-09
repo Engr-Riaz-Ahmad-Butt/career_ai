@@ -13,6 +13,7 @@ import { useAuthStore } from '@/store/authStore';
 import { Zap, Check, X, AlertCircle } from 'lucide-react';
 import { signupSchema } from '@/lib/validation';
 import { z } from 'zod';
+import { authApi } from '@/lib/api/endpoints/auth.api';
 
 type SignupFormData = z.infer<typeof signupSchema>;
 
@@ -27,7 +28,8 @@ export default function RegisterPage() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   const [serverError, setServerError] = useState('');
-  const registerUser = useAuthStore((state) => state.register);
+  const setAccessToken = useAuthStore((state) => state.setAccessToken);
+  const setUser = useAuthStore((state) => state.setUser);
 
   const {
     register,
@@ -52,10 +54,14 @@ export default function RegisterPage() {
     setIsLoading(true);
 
     try {
-      // Concatenate for the legacy register function if it expects a single name, 
-      // otherwise we should update the authStore/API to take first/last name separately.
-      // Based on our Phase 2 refactor, the backend expects firstName and lastName.
-      await registerUser(data.email, data.password, `${data.firstName} ${data.lastName}`);
+      const result = await authApi.register({
+        firstName: data.firstName,
+        lastName: data.lastName,
+        email: data.email,
+        password: data.password,
+      });
+      setAccessToken(result.accessToken);
+      setUser(result.user);
       router.push('/dashboard');
     } catch (err: any) {
       setServerError(err.response?.data?.message || 'Registration failed. Please try again.');

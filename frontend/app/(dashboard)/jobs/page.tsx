@@ -15,6 +15,7 @@ import {
   TabsTrigger,
 } from '@/components/ui/tabs';
 import { Plus, BarChart3, TrendingUp } from 'lucide-react';
+import { FeatureErrorBoundary } from '@/components/errors/FeatureErrorBoundary';
 
 export default function JobsPage() {
   const [selectedJob, setSelectedJob] = useState<JobApplication | null>(null);
@@ -49,13 +50,14 @@ export default function JobsPage() {
   };
 
   return (
-    <div className="p-6 sm:p-8 bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-950 dark:to-slate-900 min-h-screen">
-      <motion.div
-        className="max-w-7xl mx-auto"
-        variants={containerVariants}
-        initial="hidden"
-        animate="visible"
-      >
+    <FeatureErrorBoundary featureName="Job Tracker">
+      <div className="p-6 sm:p-8 bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-950 dark:to-slate-900 min-h-screen">
+        <motion.div
+          className="max-w-7xl mx-auto"
+          variants={containerVariants}
+          initial="hidden"
+          animate="visible"
+        >
         {/* Header */}
         <motion.div variants={itemVariants} className="mb-8 flex items-center justify-between">
           <div>
@@ -244,7 +246,8 @@ export default function JobsPage() {
             )}
           </div>
         </motion.div>
-      </motion.div>
-    </div>
+        </motion.div>
+      </div>
+    </FeatureErrorBoundary>
   );
 }
