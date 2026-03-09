@@ -1,16 +1,16 @@
-import prisma from '../config/database';
+import prisma from '@/config/database';
 import { OAuth2Client } from 'google-auth-library';
 import crypto from 'crypto';
-import { hashPassword, comparePassword } from '../utils/password';
+import { hashPassword, comparePassword } from '@/utils/password';
 import {
     generateAccessToken,
     generateRefreshToken,
     verifyRefreshToken,
     getRefreshTokenExpiry,
-} from '../utils/jwt';
-import { createHttpError } from '../utils/errorHandler';
-import { emailService } from './email.service';
-import { env } from '../config/env';
+} from '@/utils/jwt';
+import { createHttpError } from '@/utils/errorHandler';
+import { emailService } from '@/services/email.service';
+import { env } from '@/config/env';
 
 const googleClient = new OAuth2Client(env.GOOGLE_CLIENT_ID);
 

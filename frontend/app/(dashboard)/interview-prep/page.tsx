@@ -1,23 +1,24 @@
 'use client';
 
-import { useState } from 'react';
 import { motion } from 'framer-motion';
+import { Mic, Volume2, BookOpen, CheckCircle2, Plus, History, Wand2, Trash2 } from 'lucide-react';
 import Link from 'next/link';
-import { Button } from '@/components/ui/button';
+import { useState } from 'react';
+
+import { FeatureErrorBoundary } from '@/components/errors/FeatureErrorBoundary';
+import { LoadingState, LoadingSpinner } from '@/components/shared/LoadingSpinner';
 import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
 } from '@/components/ui/accordion';
-import { Checkbox } from '@/components/ui/checkbox';
-import { interviewQuestions } from '@/lib/mockData';
-import { Mic, Volume2, BookOpen, CheckCircle2, Plus, History, Wand2, Trash2 } from 'lucide-react';
-import { LoadingState, LoadingSpinner } from '@/components/shared';
+import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { FeatureErrorBoundary } from '@/components/errors/FeatureErrorBoundary';
 import { useInterviewPrep } from '@/hooks/useInterviewPrep';
+import { interviewQuestions } from '@/lib/mockData';
 
 export default function InterviewPrepPage() {
   const [practicedQuestions, setPracticedQuestions] = useState<string[]>([]);

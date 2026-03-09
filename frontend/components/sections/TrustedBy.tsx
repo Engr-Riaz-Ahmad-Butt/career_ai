@@ -1,4 +1,4 @@
-import { TRUSTED_UNIVERSITIES } from "@/constants";
+import { TRUSTED_UNIVERSITIES } from '@/constants/landing.constants';
 
 export default function TrustedBy() {
     return (

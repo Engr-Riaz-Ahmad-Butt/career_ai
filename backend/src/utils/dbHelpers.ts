@@ -2,8 +2,8 @@
  * Common database query patterns
  */
 
-import prisma from '../config/database';
-import { NotFoundError } from './errorHandler';
+import prisma from '@/config/database';
+import { NotFoundError } from '@/utils/errorHandler';
 
 /**
  * Transaction wrapper with automatic rollback on error

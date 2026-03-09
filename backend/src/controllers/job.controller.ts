@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
-import { asyncHandler } from '../middleware/error';
-import { getJobQueueService } from '../services/job-queue.service';
-import { successResponse, errorResponse, jobStatusResponse } from '../utils/apiResponse';
+import { asyncHandler } from '@/middleware/error';
+import { getJobQueueService } from '@/services/job-queue.service';
+import { successResponse, errorResponse, jobStatusResponse } from '@/utils/apiResponse';
 
 const queue = getJobQueueService();
 

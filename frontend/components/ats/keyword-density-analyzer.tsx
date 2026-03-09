@@ -1,11 +1,13 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { AlertCircle, CheckCircle2, TrendingUp } from 'lucide-react';
+
 import { Badge } from '@/components/ui/badge';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { KeywordAnalysis } from '@/lib/atsAnalyzer';
-import { AlertCircle, CheckCircle2, TrendingUp } from 'lucide-react';
+
 
 interface KeywordDensityAnalyzerProps {
   keywords: KeywordAnalysis[];

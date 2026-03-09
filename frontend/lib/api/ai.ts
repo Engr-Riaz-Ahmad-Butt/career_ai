@@ -1,4 +1,4 @@
-import api from '../api-client';
+import api from '@/lib/api/client';
 
 export const aiApi = {
     enhanceResume: (resumeId: string, section?: string) =>

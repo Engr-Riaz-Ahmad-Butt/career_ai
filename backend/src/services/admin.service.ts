@@ -1,6 +1,6 @@
-import prisma from '../config/database';
+import prisma from '@/config/database';
 import { Plan, Prisma } from '@prisma/client';
-import { ValidationError } from '../utils/errorHandler';
+import { ValidationError } from '@/utils/errorHandler';
 
 interface GetUsersOptions {
     readonly page: number;

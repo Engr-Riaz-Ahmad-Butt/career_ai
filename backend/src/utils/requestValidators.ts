@@ -2,7 +2,7 @@
  * Request validation utilities to eliminate duplicate checks in controllers
  */
 
-import { UnauthorizedError, ValidationError } from './errorHandler';
+import { UnauthorizedError, ValidationError } from '@/utils/errorHandler';
 
 /**
  * Validate user authentication (userId exists)

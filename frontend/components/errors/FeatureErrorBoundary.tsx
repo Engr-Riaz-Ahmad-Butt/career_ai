@@ -1,9 +1,11 @@
 'use client';
 
-import React from 'react';
-import { ErrorFallback } from './ErrorFallback';
 import * as Sentry from '@sentry/nextjs';
+import React from 'react';
+
 import { useAuthStore } from '@/store/authStore';
+
+import { ErrorFallback } from './ErrorFallback';
 
 interface FeatureErrorBoundaryState {
     hasError: boolean;

@@ -3,9 +3,9 @@
 import { useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Upload, Sparkles, ArrowLeft, ArrowRight, CheckCircle2, AlertTriangle, Lightbulb, Check, X } from 'lucide-react';
-import { InlineLoading } from '@/components/shared';
+import { InlineLoading } from '@/components/shared/LoadingSpinner';
 import { Button } from '@/components/ui/button';
-import { WizardData } from './ManualBuilderWizard';
+import { WizardData } from '@/components/resume/ManualBuilderWizard';
 
 interface Suggestion {
     id: string;

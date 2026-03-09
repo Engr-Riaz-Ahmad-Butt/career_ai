@@ -1,5 +1,5 @@
-import axios from 'axios';
 import * as Sentry from '@sentry/nextjs';
+import axios from 'axios';
 
 interface ApiErrorPayload {
   message?: string;

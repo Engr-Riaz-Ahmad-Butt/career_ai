@@ -1,9 +1,3 @@
-import React from 'react';
-import { Card } from '@/components/ui/card';
-import { Label } from '@/components/ui/label';
-import { Slider } from '@/components/ui/slider';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import {
     Type,
     Palette,
@@ -18,12 +12,19 @@ import {
     Redo2,
     Settings2
 } from 'lucide-react';
+import React from 'react';
+
 import {
     Accordion,
     AccordionContent,
     AccordionItem,
     AccordionTrigger
 } from '@/components/ui/accordion';
+import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Slider } from '@/components/ui/slider';
 
 interface DesignPanelsProps {
     styling: any;

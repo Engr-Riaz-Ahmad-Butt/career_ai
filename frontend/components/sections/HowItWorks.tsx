@@ -1,4 +1,4 @@
-import { HOW_IT_WORKS_STEPS } from "@/constants";
+import { HOW_IT_WORKS_STEPS } from '@/constants/landing.constants';
 import { cn } from "@/lib/utils";
 
 export default function HowItWorks() {

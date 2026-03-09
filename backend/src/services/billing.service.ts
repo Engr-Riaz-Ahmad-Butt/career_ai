@@ -1,5 +1,5 @@
-import prisma from '../config/database';
-import { createHttpError } from '../utils/errorHandler';
+import prisma from '@/config/database';
+import { createHttpError } from '@/utils/errorHandler';
 
 // Stripe is optional — only initialize if env is set
 let stripe: any = null;

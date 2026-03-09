@@ -1,4 +1,4 @@
-import api from '../api-client';
+import api from '@/lib/api/client';
 
 export const creditsApi = {
     getBalance: () => api.get('/credits/balance').then((res) => res.data),

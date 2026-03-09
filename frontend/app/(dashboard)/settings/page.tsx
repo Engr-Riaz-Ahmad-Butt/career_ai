@@ -1,20 +1,15 @@
 'use client';
 
-import { useState } from 'react';
-import { motion } from 'framer-motion';
-import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Switch } from '@/components/ui/switch';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { useAuthStore, type User as AuthUser } from '@/store/authStore';
+import { message } from 'antd';
+import { motion } from 'framer-motion';
+import { User as UserIcon, Lock, Bell, Zap, CheckCircle2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { useAuth } from '@/hooks/use-auth';
-import { usePasswordChangeMutation, useProfileUpdateMutation } from '@/hooks/useAccountSettings';
-import { updateProfileSchema, changePasswordSchema } from '@/lib/validation';
+import { useState } from 'react';
+import { useForm } from 'react-hook-form';
 import { z } from 'zod';
+
+import { FeatureErrorBoundary } from '@/components/errors/FeatureErrorBoundary';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -24,9 +19,17 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/AlertDialog';
-import { User as UserIcon, Lock, Bell, Zap, CheckCircle2 } from 'lucide-react';
-import { message } from 'antd';
-import { FeatureErrorBoundary } from '@/components/errors/FeatureErrorBoundary';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Switch } from '@/components/ui/switch';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { useAuth } from '@/hooks/use-auth';
+import { usePasswordChangeMutation, useProfileUpdateMutation } from '@/hooks/useAccountSettings';
+import { updateProfileSchema, changePasswordSchema } from '@/lib/validation';
+import { useAuthStore, type User as AuthUser } from '@/store/authStore';
+
+
 
 type ProfileData = z.infer<typeof updateProfileSchema>;
 type PasswordData = z.infer<typeof changePasswordSchema>;

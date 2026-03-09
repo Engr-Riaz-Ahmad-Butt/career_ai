@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { ResumeData, ResumeTemplate, ResumeExperience, ResumeEducation, ResumeSkills, ResumeStyling } from '@/types';
+import { ResumeData, ResumeTemplate, ResumeExperience, ResumeEducation, ResumeSkills, ResumeStyling } from '@/types/resume';
 
 interface DocumentState {
   currentResume: ResumeData | null;
@@ -144,3 +144,4 @@ export const useDocumentStore = create<DocumentState>((set) => ({
 
   clear: () => set({ currentResume: null, isDirty: false, lastSaved: null }),
 }));
+

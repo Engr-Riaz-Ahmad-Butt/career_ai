@@ -1,16 +1,16 @@
 import { Router } from 'express';
-import { authenticate, requireCredits } from '../middleware/auth';
+import { authenticate, requireCredits } from '@/middleware/auth';
 import {
   enhanceResume, scoreAts, getSuggestions, extractKeywords, fixGrammar, improveText
-} from '../controllers/ai.controller';
+} from '@/controllers/ai.controller';
 import {
   generateCoverLetter, generateSOP, generateMotivationLetter,
   generateStudyPlan, generateFinancialLetter, generateBio,
-} from '../controllers/document.controller';
-import { tailorResume } from '../controllers/tailoring.controller';
-import { generateSession, submitFeedback } from '../controllers/interview.controller';
-import { analyzeCommunicationAI } from '../controllers/communication.controller';
-import { validate } from '../middleware/validate';
+} from '@/controllers/document.controller';
+import { tailorResume } from '@/controllers/tailoring.controller';
+import { generateSession, submitFeedback } from '@/controllers/interview.controller';
+import { analyzeCommunicationAI } from '@/controllers/communication.controller';
+import { validate } from '@/middleware/validate';
 import {
   enhanceResumeSchema,
   tailorResumeSchema,
@@ -19,7 +19,7 @@ import {
   extractKeywordsSchema,
   fixGrammarSchema,
   improveTextSchema
-} from '../utils/validation';
+} from '@/utils/validation';
 
 const router = Router();
 router.use(authenticate);

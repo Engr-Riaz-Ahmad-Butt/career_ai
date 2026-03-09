@@ -1,5 +1,5 @@
-import prisma from '../config/database';
-import { createHttpError } from '../utils/errorHandler';
+import prisma from '@/config/database';
+import { createHttpError } from '@/utils/errorHandler';
 
 // Legacy service — kept for any older routes still referencing it.
 // New code should use UserService in user.service.ts instead.

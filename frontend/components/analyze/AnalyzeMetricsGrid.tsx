@@ -1,8 +1,9 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { Card } from '@/components/ui/card';
+
 import { ScoreCircle } from '@/components/common/ScoreCircle';
+import { Card } from '@/components/ui/card';
 import type { AnalysisMetric } from '@/types/atsAnalysis.types';
 
 interface AnalyzeMetricsGridProps {

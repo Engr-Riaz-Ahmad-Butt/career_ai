@@ -1,13 +1,11 @@
-// ─── Navigation ───────────────────────────────────────────────────────────────
-
+// Navigation
 export interface NavLink {
   name: string;
   href: string;
 }
 
-// ─── Features Section ─────────────────────────────────────────────────────────
-
-export type FeatureColor = "blue" | "green" | "purple" | "orange" | "cyan" | "red";
+// Landing feature sections
+export type FeatureColor = 'blue' | 'green' | 'purple' | 'orange' | 'cyan' | 'red';
 
 export interface Feature {
   icon: string;
@@ -17,8 +15,6 @@ export interface Feature {
   badge?: string;
 }
 
-// ─── How It Works Section ─────────────────────────────────────────────────────
-
 export interface HowItWorksStep {
   num: string;
   title: string;
@@ -27,8 +23,6 @@ export interface HowItWorksStep {
   border: string;
   color: string;
 }
-
-// ─── Testimonials Section ─────────────────────────────────────────────────────
 
 export interface Testimonial {
   stars: string;
@@ -40,16 +34,13 @@ export interface Testimonial {
   gradient: string;
 }
 
-export * from './resume';
-
+// Cross-feature shared data types
 export interface Document {
   id: string;
   title: string;
   category: string;
   lastModified: Date;
 }
-
-// ResumeData and related types are exported from ./resume
 
 export interface TailorResult {
   atsScore: number;

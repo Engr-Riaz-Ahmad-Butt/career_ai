@@ -3,11 +3,11 @@ import {
     listDocuments, getDocument, updateDocument, deleteDocument, generateDocPdf, duplicateDocument,
     generateCoverLetter, regenerateCoverLetter,
     generateSOP, generateMotivationLetter, generateStudyPlan, generateFinancialLetter, generateBio,
-} from '../controllers/document.controller';
-import { authenticate, requireCredits, requireCreditsForAction } from '../middleware/auth';
+} from '@/controllers/document.controller';
+import { authenticate, requireCredits, requireCreditsForAction } from '@/middleware/auth';
 
 // ── AI Generation endpoints ───────────────────────────────────────────────
-import { validate } from '../middleware/validate';
+import { validate } from '@/middleware/validate';
 import {
     coverLetterSchema,
     sopSchema,
@@ -18,7 +18,7 @@ import {
     createDocumentSchema,
     updateDocumentSchema,
     paginationSchema
-} from '../utils/validation';
+} from '@/utils/validation';
 
 const router = Router();
 router.use(authenticate);

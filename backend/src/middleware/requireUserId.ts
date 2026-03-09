@@ -4,7 +4,7 @@
  */
 
 import { RequestHandler } from 'express';
-import { UnauthorizedError } from '../utils/errorHandler';
+import { UnauthorizedError } from '@/utils/errorHandler';
 
 /**
  * Require authenticated user with valid userId

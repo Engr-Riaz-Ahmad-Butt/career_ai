@@ -1,4 +1,4 @@
-import api from '../api-client';
+import api from '@/lib/api/client';
 
 export const templatesApi = {
     getResumeTemplates: () => api.get('/templates/resume').then((res) => res.data),

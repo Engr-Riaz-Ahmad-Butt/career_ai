@@ -1,4 +1,4 @@
-import { ResumeTemplate } from '@/types';
+import { ResumeTemplate } from '@/types/resume';
 
 export const resumeTemplates: ResumeTemplate[] = [
   {
@@ -156,3 +156,4 @@ export const getTemplatesByCategory = (
 ): ResumeTemplate[] => {
   return resumeTemplates.filter((template) => template.category === category);
 };
+

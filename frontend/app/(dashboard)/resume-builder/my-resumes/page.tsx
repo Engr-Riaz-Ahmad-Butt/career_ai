@@ -1,7 +1,8 @@
 'use client';
 
-import { ResumeBuilder } from '@/components/resume/ResumeBuilder';
 import { Suspense } from 'react';
+
+import { ResumeBuilder } from '@/components/resume/ResumeBuilder';
 
 /**
  * For now, we reuse the main ResumeBuilderPage logic 

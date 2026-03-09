@@ -1,13 +1,13 @@
 import { Request, Response } from 'express';
-import { AuthService } from '../services/auth.service';
+import { AuthService } from '@/services/auth.service';
 import {
   signupSchema,
   loginSchema,
   forgotPasswordSchema,
   resetPasswordSchema
-} from '../utils/validation';
-import { successResponse, errorResponse } from '../utils/apiResponse';
-import { asyncHandler } from '../middleware/error';
+} from '@/utils/validation';
+import { successResponse, errorResponse } from '@/utils/apiResponse';
+import { asyncHandler } from '@/middleware/error';
 
 const authService = new AuthService();
 

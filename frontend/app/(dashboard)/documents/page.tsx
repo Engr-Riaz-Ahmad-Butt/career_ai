@@ -1,11 +1,12 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import Link from 'next/link';
-import { Button } from '@/components/ui/button';
 import { FileText, Download, Edit, Plus } from 'lucide-react';
-import { LoadingState } from '@/components/shared';
+import Link from 'next/link';
+
 import { FeatureErrorBoundary } from '@/components/errors/FeatureErrorBoundary';
+import { LoadingState } from '@/components/shared/LoadingSpinner';
+import { Button } from '@/components/ui/button';
 import { useDocumentsLibrary } from '@/hooks/useDocumentsLibrary';
 
 const containerVariants = {

@@ -1,9 +1,10 @@
 'use client';
 
+import { AlertCircle, Inbox } from 'lucide-react';
+
+import { LoadingSpinner } from '@/components/shared/LoadingSpinner';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { AlertCircle, Inbox } from 'lucide-react';
-import { LoadingSpinner } from '@/components/shared';
 
 type AnalyzeStateCardVariant = 'loading' | 'error' | 'empty';
 

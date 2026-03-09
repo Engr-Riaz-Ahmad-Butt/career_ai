@@ -9,7 +9,7 @@
  *   await invalidateAllForUser(userId);
  */
 
-import { getCacheService, CacheService } from './cache.service';
+import { getCacheService, CacheService } from '@/services/cache.service';
 
 const cache = getCacheService();
 

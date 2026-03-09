@@ -1,4 +1,4 @@
-import api from '../api-client';
+import api from '@/lib/api/client';
 
 export const dashboardApi = {
     getDashboard: () => api.get('/dashboard').then((res) => res.data),

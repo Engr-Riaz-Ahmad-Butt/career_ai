@@ -1,13 +1,15 @@
 'use client';
 
-import { useState } from 'react';
 import { motion } from 'framer-motion';
+import { Zap, TrendingUp, BookOpen } from 'lucide-react';
+import { useState } from 'react';
+
 import { GapAnalyzer } from '@/components/skill-gap/GapAnalyzer';
 import { Roadmap } from '@/components/skill-gap/roadmap';
-import { generateRoadmap, getSkillGaps } from '@/lib/skillGapData';
 import { Card, CardContent } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Zap, TrendingUp, BookOpen } from 'lucide-react';
+import { generateRoadmap, getSkillGaps } from '@/lib/skillGapData';
+
 
 export default function SkillGapPage() {
   const [analyzed, setAnalyzed] = useState(false);

@@ -1,11 +1,6 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import Link from 'next/link';
-import { Button } from '@/components/ui/button';
-import { StatsCard } from '@/components/common/StatsCard';
-import { useJobTrackerStore } from '@/store/jobTrackerStore';
-import { useAuthStore } from '@/store/authStore';
 import {
   BarChart3,
   FileText,
@@ -20,6 +15,12 @@ import {
   Clock,
   Sparkles,
 } from 'lucide-react';
+import Link from 'next/link';
+
+import { StatsCard } from '@/components/common/StatsCard';
+import { Button } from '@/components/ui/button';
+import { useAuthStore } from '@/store/authStore';
+import { useJobTrackerStore } from '@/store/jobTrackerStore';
 
 const containerVariants = {
   hidden: { opacity: 0 },

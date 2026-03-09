@@ -1,6 +1,8 @@
 'use client';
 
 import { motion } from 'framer-motion';
+import { Globe } from 'lucide-react';
+
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -8,9 +10,8 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/DropdownMenu';
-import { useLanguageStore } from '@/store/languageStore';
 import { supportedLanguages } from '@/lib/languages';
-import { Globe } from 'lucide-react';
+import { useLanguageStore } from '@/store/languageStore';
 
 export function LanguageSelector() {
   const currentLanguage = useLanguageStore((state) => state.currentLanguage);

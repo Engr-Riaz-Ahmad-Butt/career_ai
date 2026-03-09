@@ -1,16 +1,12 @@
 'use client';
 
-import { useState, useCallback, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
     User, Briefcase, GraduationCap, Code, FolderOpen,
     ArrowRight, ArrowLeft, Plus, Trash2, Sparkles, Save, CheckCircle2, Github, Globe, Linkedin
 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { Card } from '@/components/ui/card';
+import { useState, useCallback, useRef, useEffect } from 'react';
+
 import {
     ClassicProfessionalPreview,
     ModernTechPreview,
@@ -21,8 +17,13 @@ import {
     AcademicStructuredPreview,
     GradientModernPreview,
 } from '@/components/resume/TemplatePreview';
+import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
 import { resumeTemplates } from '@/lib/resumeTemplates';
-import { ResumeTemplate } from '@/types';
+import { ResumeTemplate } from '@/types/resume';
 
 const PREVIEW_MAP: Record<string, React.ComponentType<any>> = {
     'classic-professional': ClassicProfessionalPreview,
@@ -624,3 +625,4 @@ export function ManualBuilderWizard({ initialData, selectedTemplate, onComplete,
         </div>
     );
 }
+

@@ -1,10 +1,11 @@
 'use client';
 
-import { Button } from '@/components/ui/button';
-import { Progress } from '@/components/ui/progress';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Radio } from 'lucide-react';
-import { LoadingSpinner } from '@/components/shared';
+
+import { LoadingSpinner } from '@/components/shared/LoadingSpinner';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Progress } from '@/components/ui/progress';
 import type { StreamChunk } from '@/lib/api/endpoints/stream.api';
 
 interface AIStreamProgressLabels {

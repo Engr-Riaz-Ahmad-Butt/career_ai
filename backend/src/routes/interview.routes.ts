@@ -1,8 +1,8 @@
 import { Router } from 'express';
-import { authenticate, requireCredits, requireCreditsForAction } from '../middleware/auth';
-import { generateSession, listSessions, getSession, submitFeedback, deleteSession } from '../controllers/interview.controller';
-import { validate } from '../middleware/validate';
-import { generateInterviewSchema, interviewFeedbackSchema, paginationSchema } from '../utils/validation';
+import { authenticate, requireCredits, requireCreditsForAction } from '@/middleware/auth';
+import { generateSession, listSessions, getSession, submitFeedback, deleteSession } from '@/controllers/interview.controller';
+import { validate } from '@/middleware/validate';
+import { generateInterviewSchema, interviewFeedbackSchema, paginationSchema } from '@/utils/validation';
 
 const router = Router();
 router.use(authenticate);

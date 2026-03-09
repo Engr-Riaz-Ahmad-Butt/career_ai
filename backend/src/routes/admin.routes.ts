@@ -1,6 +1,6 @@
 import { Router } from 'express';
-import { authenticate, requireAdmin } from '../middleware/auth';
-import prisma from '../config/database';
+import { authenticate, requireAdmin } from '@/middleware/auth';
+import prisma from '@/config/database';
 import { z } from 'zod';
 import nodemailer from 'nodemailer';
 

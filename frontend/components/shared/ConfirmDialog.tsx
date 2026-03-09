@@ -3,10 +3,12 @@
  * Works with useConfirm hook for imperative API
  */
 
-import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Button } from '@/components/ui/button';
 import { X, AlertTriangle } from 'lucide-react';
+import React from 'react';
+
+import { Button } from '@/components/ui/button';
+
 
 export interface ConfirmDialogProps {
   isOpen: boolean;

@@ -1,12 +1,13 @@
 'use client';
 
-import Link from 'next/link';
-import { Button } from '@/components/ui/button';
-import { FileText, Plus, Clock, ArrowRight } from 'lucide-react';
 import { motion } from 'framer-motion';
-import type { ResumeData } from '@/types';
+import { FileText, Plus, Clock, ArrowRight } from 'lucide-react';
+import Link from 'next/link';
 
+import { Button } from '@/components/ui/button';
 import { useResumes } from '@/hooks/use-resumes';
+import type { ResumeData } from '@/types/resume';
+
 
 export default function ResumesPage() {
     const { data: resumesResponse, isLoading } = useResumes();
@@ -81,3 +82,4 @@ export default function ResumesPage() {
         </div>
     );
 }
+

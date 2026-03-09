@@ -1,5 +1,6 @@
-import { ChangeEvent, DragEvent, useRef, useState } from 'react';
 import { Upload, File, X } from 'lucide-react';
+import { ChangeEvent, DragEvent, useRef, useState } from 'react';
+
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 

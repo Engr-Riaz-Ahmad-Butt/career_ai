@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect } from 'react';
+
 import { useAuthRefresh } from '@/hooks/useAuthRefresh';
 
 /**

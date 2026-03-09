@@ -1,11 +1,12 @@
 'use client';
 
-import { useState } from 'react';
 import { motion } from 'framer-motion';
-import Link from 'next/link';
-import { Button } from '@/components/ui/button';
 import { Check } from 'lucide-react';
-import { LoadingState } from '@/components/shared';
+import Link from 'next/link';
+import { useState } from 'react';
+
+import { LoadingState } from '@/components/shared/LoadingSpinner';
+import { Button } from '@/components/ui/button';
 import { usePricingPlans } from '@/hooks/usePricingPlans';
 
 export default function PricingPage() {

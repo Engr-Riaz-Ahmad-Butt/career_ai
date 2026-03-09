@@ -1,7 +1,8 @@
 'use client';
 
-import { ResumeData, ResumeTemplate } from '@/types';
 import { resumeTemplates } from '@/lib/resumeTemplates';
+import { ResumeData, ResumeTemplate } from '@/types/resume';
+
 import {
   ClassicProfessionalPreview,
   ModernTechPreview,
@@ -54,3 +55,4 @@ export function TemplateRenderer({ resume, zoom = 1 }: TemplateRendererProps) {
     </div>
   );
 }
+

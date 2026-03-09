@@ -1,10 +1,12 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { visaSponsorshipData } from '@/lib/visaScholarshipData';
 import { CheckCircle2, AlertCircle, Clock, DollarSign } from 'lucide-react';
+
+import { Badge } from '@/components/ui/badge';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { visaSponsorshipData } from '@/lib/visaScholarshipData';
+
 
 const item = {
   hidden: { opacity: 0, y: 20 },

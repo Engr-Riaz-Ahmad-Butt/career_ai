@@ -1,7 +1,17 @@
 'use client';
 
-import { useState } from 'react';
 import { motion } from 'framer-motion';
+import { ExternalLink, MoreVertical, Trash2, Edit2 } from 'lucide-react';
+import { useState } from 'react';
+
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/DropdownMenu';
 import {
   Table,
   TableBody,
@@ -10,17 +20,8 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/DropdownMenu';
-import { useJobTrackerStore } from '@/store/jobTrackerStore';
 import { JobApplication, getStatusColor, getStatusIcon } from '@/lib/jobTrackerData';
-import { ExternalLink, MoreVertical, Trash2, Edit2 } from 'lucide-react';
+import { useJobTrackerStore } from '@/store/jobTrackerStore';
 
 interface JobTableProps {
   onSelectJob?: (job: JobApplication) => void;

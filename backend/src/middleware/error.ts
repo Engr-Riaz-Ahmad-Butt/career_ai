@@ -10,7 +10,7 @@ import {
   NotFoundError,
   UnauthorizedError,
   ValidationError,
-} from '../utils/errorHandler';
+} from '@/utils/errorHandler';
 
 function fromZod(error: ZodError): ValidationError {
   return new ValidationError('Validation error', {

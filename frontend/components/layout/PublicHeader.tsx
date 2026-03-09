@@ -1,10 +1,11 @@
 'use client';
 
-import { useState } from 'react';
-import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { Menu, X, Zap } from 'lucide-react';
+import Link from 'next/link';
 import { useTheme } from 'next-themes';
+import { useState } from 'react';
+
 import { Button } from '@/components/ui/button';
 
 export function PublicHeader() {

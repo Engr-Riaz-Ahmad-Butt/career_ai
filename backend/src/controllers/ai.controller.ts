@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
-import { AIService } from '../services/ai/aiService';
-import { asyncHandler } from '../middleware/error';
-import { getCacheService } from '../services/cache.service';
+import { AIService } from '@/services/ai/aiService';
+import { asyncHandler } from '@/middleware/error';
+import { getCacheService } from '@/services/cache.service';
 const cache = getCacheService();
 
 const ai = new AIService();

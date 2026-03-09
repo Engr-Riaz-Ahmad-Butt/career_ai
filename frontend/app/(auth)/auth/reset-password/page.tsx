@@ -1,19 +1,19 @@
 'use client';
 
-import { useState, Suspense } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { motion } from 'framer-motion';
+import { Zap, Lock, CheckCircle2, AlertCircle } from 'lucide-react';
 import Link from 'next/link';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { useState, Suspense } from 'react';
+import { useForm } from 'react-hook-form';
+import { z } from 'zod';
+
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Zap, Lock, CheckCircle2, AlertCircle } from 'lucide-react';
-
-import { z } from 'zod';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { resetPasswordSchema } from '@/lib/validation';
 import { useAuth } from '@/hooks/use-auth';
+import { resetPasswordSchema } from '@/lib/validation';
 
 type ResetPasswordData = z.infer<typeof resetPasswordSchema>;
 

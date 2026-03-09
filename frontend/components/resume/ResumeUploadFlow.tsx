@@ -2,10 +2,11 @@
 
 import { motion, AnimatePresence } from 'framer-motion';
 import { Upload, FileText, CheckCircle2, ArrowRight, AlertCircle } from 'lucide-react';
-import { LoadingSpinner } from '@/components/shared';
+
+import { LoadingSpinner } from '@/components/shared/LoadingSpinner';
 import { Button } from '@/components/ui/button';
-import { Progress } from '@/components/ui/progress';
 import { Card } from '@/components/ui/card';
+import { Progress } from '@/components/ui/progress';
 import { useResumeUploadFlow } from '@/hooks/useResumeUploadFlow';
 import type {
     ExtractedResumeExperience,

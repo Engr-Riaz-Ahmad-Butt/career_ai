@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
-import { AIService } from '../services/ai/aiService';
-import prisma from '../config/database';
-import { asyncHandler } from '../middleware/error';
+import { AIService } from '@/services/ai/aiService';
+import prisma from '@/config/database';
+import { asyncHandler } from '@/middleware/error';
 
 const ai = new AIService();
 

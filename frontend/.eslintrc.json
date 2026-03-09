@@ -1,9 +1,62 @@
 {
   "extends": ["next/core-web-vitals"],
+  "plugins": ["import"],
   "rules": {
     "react/no-unescaped-entities": "off",
     "react-hooks/exhaustive-deps": "warn",
-    "@next/next/no-img-element": "warn"
+    "@next/next/no-img-element": "warn",
+    "import/order": [
+      "warn",
+      {
+        "groups": ["builtin", "external", "internal", "parent", "sibling", "index", "type"],
+        "pathGroups": [
+          {
+            "pattern": "@/**",
+            "group": "internal",
+            "position": "before"
+          }
+        ],
+        "pathGroupsExcludedImportTypes": ["builtin"],
+        "newlines-between": "always",
+        "alphabetize": {
+          "order": "asc",
+          "caseInsensitive": true
+        }
+      }
+    ],
+    "no-restricted-imports": [
+      "error",
+      {
+        "paths": [
+          {
+            "name": "@/hooks",
+            "message": "Avoid barrel imports. Use explicit file imports."
+          },
+          {
+            "name": "@/components/shared",
+            "message": "Avoid barrel imports. Use explicit file imports."
+          },
+          {
+            "name": "@/constants",
+            "message": "Avoid barrel imports. Use explicit file imports."
+          },
+          {
+            "name": "@/types",
+            "message": "Avoid barrel imports. Use explicit file imports."
+          }
+        ],
+        "patterns": [
+          {
+            "group": ["**/index", "**/index.*"],
+            "message": "Avoid barrel imports. Use explicit file imports."
+          },
+          {
+            "group": ["../*", "../../*", "../../../*", "../../../../*"],
+            "message": "Use absolute imports with @ alias."
+          }
+        ]
+      }
+    ]
   }
 }
 

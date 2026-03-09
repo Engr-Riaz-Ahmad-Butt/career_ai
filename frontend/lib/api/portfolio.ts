@@ -1,6 +1,7 @@
-import api from '../apiClient';
-import { generatePortfolioSchema } from '../validation';
 import { z } from 'zod';
+
+import api from '@/lib/apiClient';
+import { generatePortfolioSchema } from '@/lib/validation';
 
 type GeneratePortfolioInput = z.infer<typeof generatePortfolioSchema>;
 

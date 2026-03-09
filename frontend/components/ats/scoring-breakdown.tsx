@@ -1,10 +1,11 @@
 'use client';
 
 import { motion } from 'framer-motion';
+import { CheckCircle2, AlertCircle } from 'lucide-react';
+
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { ATSScoreBreakdown } from '@/lib/atsAnalyzer';
-import { CheckCircle2, AlertCircle } from 'lucide-react';
 
 interface ScoringBreakdownProps {
   breakdown: ATSScoreBreakdown;

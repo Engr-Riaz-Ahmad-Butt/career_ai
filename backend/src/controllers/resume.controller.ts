@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
-import { ResumeService } from '../services/resume.service';
-import { asyncHandler } from '../middleware/error';
-import { cacheInvalidations } from '../services/cache-invalidation.service';
+import { ResumeService } from '@/services/resume.service';
+import { asyncHandler } from '@/middleware/error';
+import { cacheInvalidations } from '@/services/cache-invalidation.service';
 
 const resumeService = new ResumeService();
 

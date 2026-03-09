@@ -1,12 +1,12 @@
 import { Request, Response, NextFunction } from 'express';
-import { verifyAccessToken } from '../utils/jwt';
-import prisma from '../config/database';
-import { CREDIT_COSTS, getCreditCost, CreditActionType, PLAN_MULTIPLIERS } from '../constants/creditCosts';
+import { verifyAccessToken } from '@/utils/jwt';
+import prisma from '@/config/database';
+import { CREDIT_COSTS, getCreditCost, CreditActionType, PLAN_MULTIPLIERS } from '@/constants/creditCosts';
 import {
   ForbiddenError,
   InsufficientCreditsError,
   UnauthorizedError,
-} from '../utils/errorHandler';
+} from '@/utils/errorHandler';
 /**
  * NEW: Require user to have credits for a specific AI action.
  * Automatically calculates cost based on plan multiplier.

@@ -1,6 +1,7 @@
 'use client';
 
 import { Bar } from '@ant-design/plots';
+
 import { skillDistribution } from '@/lib/analyticsData';
 
 interface DistributionData {

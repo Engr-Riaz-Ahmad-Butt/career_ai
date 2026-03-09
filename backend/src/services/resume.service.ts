@@ -1,7 +1,7 @@
-import prisma from '../config/database';
-import { createHttpError } from '../utils/errorHandler';
-import { findResourceByIdOrThrow, paginateQuery } from '../utils/dbHelpers';
-import aiService from './ai/aiService';
+import prisma from '@/config/database';
+import { createHttpError } from '@/utils/errorHandler';
+import { findResourceByIdOrThrow, paginateQuery } from '@/utils/dbHelpers';
+import aiService from '@/services/ai/aiService';
 import pdf from 'pdf-parse';
 import mammoth from 'mammoth';
 import { z } from 'zod';

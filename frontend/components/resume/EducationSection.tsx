@@ -1,14 +1,16 @@
 'use client';
 
-import { useForm, useFieldArray } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { Trash2, Plus, GraduationCap } from 'lucide-react';
+import { useEffect } from 'react';
+import { useForm, useFieldArray } from 'react-hook-form';
+import { z } from 'zod';
+
+import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Button } from '@/components/ui/button';
-import { Trash2, Plus, GraduationCap } from 'lucide-react';
 import { educationSchema } from '@/lib/validation';
-import { z } from 'zod';
-import { useEffect } from 'react';
+
 
 type EducationData = z.infer<typeof educationSchema>;
 

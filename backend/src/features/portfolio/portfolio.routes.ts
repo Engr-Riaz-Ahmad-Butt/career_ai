@@ -1,11 +1,15 @@
 import { Router } from 'express';
-import { authenticate, requireCredits, requireCreditsForAction } from '../middleware/auth';
+import { authenticate, requireCreditsForAction } from '@/middleware/auth';
+import { validate } from '@/middleware/validate';
+import { generatePortfolioSchema, updatePortfolioSchema } from '@/utils/validation';
 import {
-    generatePortfolio, listPortfolios, getPortfolio,
-    updatePortfolio, deployPortfolio, deletePortfolio
-} from '../controllers/portfolio.controller';
-import { validate } from '../middleware/validate';
-import { generatePortfolioSchema, updatePortfolioSchema } from '../utils/validation';
+    deletePortfolio,
+    deployPortfolio,
+    generatePortfolio,
+    getPortfolio,
+    listPortfolios,
+    updatePortfolio,
+} from '@/features/portfolio/portfolio.controller';
 
 const router = Router();
 router.use(authenticate);

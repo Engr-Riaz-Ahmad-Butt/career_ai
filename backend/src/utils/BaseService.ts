@@ -3,7 +3,7 @@
  * Extend this for consistent service structure
  */
 
-import { NotFoundError, ValidationError } from './errorHandler';
+import { NotFoundError, ValidationError } from '@/utils/errorHandler';
 
 export abstract class BaseService<T = any> {
   protected abstract entityName: string;

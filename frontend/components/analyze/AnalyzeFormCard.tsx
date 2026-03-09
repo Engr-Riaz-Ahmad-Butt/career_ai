@@ -1,10 +1,11 @@
 'use client';
 
 import { Zap } from 'lucide-react';
-import { LoadingSpinner } from '@/components/shared';
+
+import { LoadingSpinner } from '@/components/shared/LoadingSpinner';
 import { Button } from '@/components/ui/button';
-import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Textarea } from '@/components/ui/textarea';
 import type { ResumeOption } from '@/types/atsAnalysis.types';
 
 interface AnalyzeFormLabels {

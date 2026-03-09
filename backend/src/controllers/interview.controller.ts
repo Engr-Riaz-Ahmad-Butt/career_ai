@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
-import { InterviewService } from '../services/interview.service';
-import { asyncHandler } from '../middleware/error';
+import { InterviewService } from '@/services/interview.service';
+import { asyncHandler } from '@/middleware/error';
 
 
 const interviewService = new InterviewService();

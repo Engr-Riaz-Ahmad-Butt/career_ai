@@ -1,6 +1,7 @@
-import api from '../apiClient';
-import { createResumeSchema, ResumeParams } from '../validation';
 import { z } from 'zod';
+
+import api from '@/lib/apiClient';
+import { createResumeSchema, ResumeParams } from '@/lib/validation';
 
 type CreateResumeInput = z.infer<typeof createResumeSchema>;
 

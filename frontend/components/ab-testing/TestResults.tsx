@@ -1,11 +1,13 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { TrendingUp, Trophy, AlertCircle, Trash2 } from 'lucide-react';
+
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { ABTestResult } from '@/lib/abTestingData';
-import { TrendingUp, Trophy, AlertCircle, Trash2 } from 'lucide-react';
+
 
 interface TestResultsProps {
   results: ABTestResult[];

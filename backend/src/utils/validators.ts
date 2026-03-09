@@ -2,7 +2,7 @@
  * Common validation utilities to reduce duplication
  */
 
-import { ValidationError } from './errorHandler';
+import { ValidationError } from '@/utils/errorHandler';
 
 /**
  * Validate required fields exist and are not empty

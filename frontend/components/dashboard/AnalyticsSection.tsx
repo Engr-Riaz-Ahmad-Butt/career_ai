@@ -1,13 +1,15 @@
 'use client';
 
 import { motion } from 'framer-motion';
+import { TrendingUp, BarChart3, Zap, Target } from 'lucide-react';
+
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+
 import { ApplicationChart } from './application-chart';
 import { InterviewRateChart } from './interview-rate-chart';
 import { ResumeScoreChart } from './resume-score-chart';
 import { SkillDistributionChart } from './skill-distribution-chart';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { TrendingUp, BarChart3, Zap, Target } from 'lucide-react';
 
 interface AnalyticsSectionProps {
   metrics?: any;

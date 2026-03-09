@@ -1,10 +1,12 @@
 'use client';
 
-import Link from 'next/link';
-import { Button } from '@/components/ui/button';
-import { Mail, Plus, Clock, ArrowRight } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { Mail, Plus, Clock, ArrowRight } from 'lucide-react';
+import Link from 'next/link';
+
 import { FeatureErrorBoundary } from '@/components/errors/FeatureErrorBoundary';
+import { Button } from '@/components/ui/button';
+
 
 // Mock data — replace with real API
 const coverLetters = [

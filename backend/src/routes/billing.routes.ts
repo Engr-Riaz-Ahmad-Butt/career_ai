@@ -1,11 +1,11 @@
 import { Router } from 'express';
-import { authenticate } from '../middleware/auth';
+import { authenticate } from '@/middleware/auth';
 import {
     getPlans, createCheckout, createPortal, getSubscription,
     cancelSubscription, reactivateSubscription, purchaseCredits, listInvoices, handleWebhook,
-} from '../controllers/billing.controller';
-import { validate } from '../middleware/validate';
-import { checkoutSchema, purchaseCreditsSchema, paginationSchema } from '../utils/validation';
+} from '@/controllers/billing.controller';
+import { validate } from '@/middleware/validate';
+import { checkoutSchema, purchaseCreditsSchema, paginationSchema } from '@/utils/validation';
 
 const router = Router();
 

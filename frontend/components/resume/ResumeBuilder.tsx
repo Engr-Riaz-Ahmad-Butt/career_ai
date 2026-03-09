@@ -1,22 +1,7 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { message } from 'antd';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import {
-    Accordion,
-    AccordionContent,
-    AccordionItem,
-    AccordionTrigger,
-} from '@/components/ui/accordion';
-import { TemplateSelector } from '@/components/resume/TemplateSelector';
-import { TemplateRenderer } from '@/components/resume/TemplateRenderer';
-import { useDocumentStore } from '@/store/documentStore';
-import { resumeTemplates } from '@/lib/resumeTemplates';
-import { ResumeData, ResumeTemplate, CVMode } from '@/types';
 import {
     Plus,
     Trash2,
@@ -31,11 +16,31 @@ import {
     ChevronLeft,
     Loader2
 } from 'lucide-react';
-import { Card } from '@/components/ui/card';
-import { LoadingSpinner } from '@/components/shared/LoadingSpinner';
-import { ResumeOptimizer } from '@/components/resume/ResumeOptimizer';
+import { useSearchParams } from 'next/navigation';
+import { useState, useEffect } from 'react';
+
+import { ComponentErrorBoundary } from '@/components/errors/ComponentErrorBoundary';
+import { ATSScorePanel } from '@/components/resume/ATSScorePanel';
+import { ContactSection } from '@/components/resume/ContactSection';
+import { CVModeSelector } from '@/components/resume/CVModeSelector';
 import { DesignPanels } from '@/components/resume/DesignPanels';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { EducationSection } from '@/components/resume/EducationSection';
+import { ExperienceSection } from '@/components/resume/ExperienceSection';
+import { ManualBuilderWizard, WizardData } from '@/components/resume/ManualBuilderWizard';
+import { ResumeOptimizer } from '@/components/resume/ResumeOptimizer';
+import { SummarySection } from '@/components/resume/SummarySection';
+import { TemplateGallery } from '@/components/resume/TemplateGallery';
+import { TemplateRenderer } from '@/components/resume/TemplateRenderer';
+import { TemplateSelector } from '@/components/resume/TemplateSelector';
+import { LoadingSpinner } from '@/components/shared/LoadingSpinner';
+import {
+    Accordion,
+    AccordionContent,
+    AccordionItem,
+    AccordionTrigger,
+} from '@/components/ui/accordion';
+import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -43,23 +48,19 @@ import {
     DropdownMenuTrigger,
     DropdownMenuSeparator,
 } from '@/components/ui/DropdownMenu';
-import { message } from 'antd';
-import { useUIStore } from '@/store/uiStore';
-import { useSearchParams } from 'next/navigation';
-import { useResumes, useResume, useCreateResume, useUpdateResume, useDeleteResume } from '@/hooks/use-resumes';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Textarea } from '@/components/ui/textarea';
+import { AIGenerateMode } from '@/features/resume/components/AIGenerateMode';
+import { ImproveCVMode } from '@/features/resume/components/ImproveCVMode';
+import { PromptToCVMode } from '@/features/resume/components/PromptToCVMode';
 import { useDebounce } from '@/hooks/use-debounce';
-import { CVModeSelector } from '@/components/resume/CVModeSelector';
-import { ManualBuilderWizard, WizardData } from '@/components/resume/ManualBuilderWizard';
-import { AIGenerateMode } from '@/components/resume/AIGenerateMode';
-import { ImproveCVMode } from '@/components/resume/ImproveCVMode';
-import { PromptToCVMode } from '@/components/resume/PromptToCVMode';
-import { TemplateGallery } from '@/components/resume/TemplateGallery';
-import { ATSScorePanel } from '@/components/resume/ATSScorePanel';
-import { ContactSection } from '@/components/resume/ContactSection';
-import { SummarySection } from '@/components/resume/SummarySection';
-import { ExperienceSection } from '@/components/resume/ExperienceSection';
-import { EducationSection } from '@/components/resume/EducationSection';
-import { ComponentErrorBoundary } from '@/components/errors/ComponentErrorBoundary';
+import { useResumes, useResume, useCreateResume, useUpdateResume, useDeleteResume } from '@/hooks/use-resumes';
+import { resumeTemplates } from '@/lib/resumeTemplates';
+import { useDocumentStore } from '@/store/documentStore';
+import { useUIStore } from '@/store/uiStore';
+import { ResumeData, ResumeTemplate, CVMode } from '@/types/resume';
 
 export type FlowState =
     | 'mode-selection'

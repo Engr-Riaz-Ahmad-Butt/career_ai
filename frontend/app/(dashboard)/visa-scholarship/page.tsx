@@ -1,11 +1,12 @@
 'use client';
 
 import { motion } from 'framer-motion';
+import { Briefcase, Award, FileText } from 'lucide-react';
+
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { VisaGuide } from '@/components/visa/VisaGuide';
 import { FinancialProofGenerator } from '@/components/visa/FinancialProofGenerator';
-import { Briefcase, Award, FileText } from 'lucide-react';
+import { VisaGuide } from '@/components/visa/VisaGuide';
 
 const container = {
   hidden: { opacity: 0 },

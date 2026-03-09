@@ -1,10 +1,11 @@
 'use client';
 
 import { motion } from 'framer-motion';
+import { TrendingUp, Target, Award, Zap } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useCareerGrowthStore } from '@/store/careerGrowthStore';
-import { TrendingUp, Target, Award, Zap } from 'lucide-react';
 
 const container = {
   hidden: { opacity: 0 },

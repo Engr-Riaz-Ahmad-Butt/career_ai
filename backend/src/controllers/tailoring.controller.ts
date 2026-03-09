@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
-import { TailoringService } from '../services/tailoring.service';
-import { asyncHandler } from '../middleware/error';
+import { TailoringService } from '@/services/tailoring.service';
+import { asyncHandler } from '@/middleware/error';
 
 const tailoringService = new TailoringService();
 

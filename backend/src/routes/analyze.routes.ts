@@ -1,8 +1,8 @@
 import { Router } from 'express';
-import { authenticate, requireCredits } from '../middleware/auth';
-import { analyzeCommunicationAI, listAnalyses, getAnalysis } from '../controllers/communication.controller';
-import { validate } from '../middleware/validate';
-import { analyzeCommunicationSchema, paginationSchema } from '../utils/validation';
+import { authenticate, requireCredits } from '@/middleware/auth';
+import { analyzeCommunicationAI, listAnalyses, getAnalysis } from '@/controllers/communication.controller';
+import { validate } from '@/middleware/validate';
+import { analyzeCommunicationSchema, paginationSchema } from '@/utils/validation';
 
 const router = Router();
 router.use(authenticate);

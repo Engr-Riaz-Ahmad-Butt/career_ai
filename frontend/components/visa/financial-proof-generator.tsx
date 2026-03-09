@@ -1,14 +1,16 @@
 'use client';
 
-import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Download, FileText, Plus } from 'lucide-react';
+import { useState } from 'react';
+
 import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { generateFinancialProofLetter, FinancialProof } from '@/lib/visaScholarshipData';
 import { useVisaStore } from '@/store/visaStore';
-import { Download, FileText, Plus } from 'lucide-react';
+
 
 export function FinancialProofGenerator() {
   const [formData, setFormData] = useState({

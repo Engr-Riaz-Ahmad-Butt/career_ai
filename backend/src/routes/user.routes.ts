@@ -8,11 +8,11 @@ import {
     getCredits,
     getUsage,
     getReferrals,
-} from '../controllers/user.controller';
-import { authenticate } from '../middleware/auth';
-import { uploadAvatar as avatarUpload } from '../middleware/upload';
-import { validate } from '../middleware/validate';
-import { userUpdateProfileSchema, userChangePasswordSchema } from '../utils/validation';
+} from '@/controllers/user.controller';
+import { authenticate } from '@/middleware/auth';
+import { uploadAvatar as avatarUpload } from '@/middleware/upload';
+import { validate } from '@/middleware/validate';
+import { userUpdateProfileSchema, userChangePasswordSchema } from '@/utils/validation';
 
 const router = Router();
 

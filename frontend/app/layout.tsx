@@ -1,7 +1,13 @@
-import type { Metadata } from "next";
+
 import { Space_Grotesk, Inter } from "next/font/google";
+
 import AuthProvider from "@/components/auth/AuthProvider";
-import "../styles/globals.css";
+import { RootErrorBoundary } from "@/components/errors/RootErrorBoundary";
+import QueryProvider from "@/components/providers/QueryProvider";
+import { ThemeProvider } from "@/components/providers/ThemeProvider";
+
+import type { Metadata } from "next";
+import "@/styles/globals.css";
 
 const spaceGrotesk = Space_Grotesk({
   subsets: ["latin"],
@@ -28,13 +34,6 @@ export const metadata: Metadata = {
     "AI resume",
   ],
 };
-
-import { ThemeProvider } from "@/components/providers/ThemeProvider";
-
-import QueryProvider from "@/components/providers/QueryProvider";
-
-import { RootErrorBoundary } from "@/components/errors/RootErrorBoundary";
-
 export default function RootLayout({
   children,
 }: {

@@ -3,13 +3,12 @@
 import { useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { MessageSquare, Sparkles, ArrowRight, ArrowLeft, FileText } from 'lucide-react';
-import { InlineLoading } from '@/components/shared';
-import { LoadingSpinner } from '@/components/shared/LoadingSpinner';
+import { InlineLoading, LoadingSpinner } from '@/components/shared/LoadingSpinner';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
-import { useAsync } from '@/hooks';
-import { WizardData } from './ManualBuilderWizard';
+import { useAsync } from '@/hooks/use-async';
+import { WizardData } from '@/components/resume/ManualBuilderWizard';
 
 interface PromptToCVModeProps {
     onComplete: (data: Partial<WizardData>) => void;

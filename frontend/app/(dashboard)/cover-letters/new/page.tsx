@@ -1,9 +1,10 @@
 'use client';
 
-import Link from 'next/link';
-import { Button } from '@/components/ui/button';
 import { Mail, ArrowLeft } from 'lucide-react';
+import Link from 'next/link';
+
 import { FeatureErrorBoundary } from '@/components/errors/FeatureErrorBoundary';
+import { Button } from '@/components/ui/button';
 
 export default function NewCoverLetterPage() {
     return (

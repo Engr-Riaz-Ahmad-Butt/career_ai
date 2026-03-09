@@ -1,14 +1,16 @@
 'use client';
 
-import { useState } from 'react';
 import { motion } from 'framer-motion';
+import { ExternalLink, Calendar, DollarSign, TrendingUp, FileText, MessageSquare } from 'lucide-react';
+import { useState } from 'react';
+
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { useJobTrackerStore } from '@/store/jobTrackerStore';
 import { JobApplication, getStatusColor, getStatusIcon } from '@/lib/jobTrackerData';
-import { ExternalLink, Calendar, DollarSign, TrendingUp, FileText, MessageSquare } from 'lucide-react';
+import { useJobTrackerStore } from '@/store/jobTrackerStore';
+
 import { InterviewNotes } from './interview-notes';
 
 interface JobDetailProps {

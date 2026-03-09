@@ -1,15 +1,16 @@
 'use client';
 
-import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Button } from '@/components/ui/button';
-import { Textarea } from '@/components/ui/textarea';
-import { Label } from '@/components/ui/label';
-import { ScoreCircle } from '@/components/common/ScoreCircle';
-import { KeywordTag } from '@/components/common/KeywordTag';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Zap, Copy, Check } from 'lucide-react';
+import { useState } from 'react';
+
+import { KeywordTag } from '@/components/common/KeywordTag';
+import { ScoreCircle } from '@/components/common/ScoreCircle';
 import { FeatureErrorBoundary } from '@/components/errors/FeatureErrorBoundary';
+import { Button } from '@/components/ui/button';
+import { Label } from '@/components/ui/label';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Textarea } from '@/components/ui/textarea';
 
 export default function TailorPage() {
   const [jobDescription, setJobDescription] = useState('');

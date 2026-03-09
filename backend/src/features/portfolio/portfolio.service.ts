@@ -1,6 +1,6 @@
-import prisma from '../config/database';
 import { PortfolioTheme } from '@prisma/client';
-import { ValidationError } from '../utils/errorHandler';
+import prisma from '@/config/database';
+import { ValidationError } from '@/utils/errorHandler';
 
 // ── Request Interfaces ────────────────────────────────────────────────────
 

@@ -1,10 +1,11 @@
 'use client';
 
 import { motion } from 'framer-motion';
+import { Sparkles } from 'lucide-react';
+
 import { ABTestCreator } from '@/components/ab-testing/TestCreator';
 import { TestResults } from '@/components/ab-testing/TestResults';
 import { useABTestStore } from '@/store/abTestStore';
-import { Sparkles } from 'lucide-react';
 
 const container = {
   hidden: { opacity: 0 },

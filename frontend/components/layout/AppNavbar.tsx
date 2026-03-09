@@ -1,11 +1,12 @@
 'use client';
 
+import { motion } from 'framer-motion';
+import { Menu, Search, Bell, Settings, LogOut, ChevronLeft, ChevronRight } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 import { useTheme } from 'next-themes';
-import { useUIStore } from '@/store/uiStore';
-import { useAuthStore } from '@/store/authStore';
-import { Input } from '@/components/ui/input';
+import { useEffect, useState } from 'react';
+
 import { Button } from '@/components/ui/button';
-import { useAuth } from '@/hooks/use-auth';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -13,10 +14,10 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/DropdownMenu';
-import { Menu, Search, Bell, Settings, LogOut, ChevronLeft, ChevronRight } from 'lucide-react';
-import { motion } from 'framer-motion';
-import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { Input } from '@/components/ui/input';
+import { useAuth } from '@/hooks/use-auth';
+import { useAuthStore } from '@/store/authStore';
+import { useUIStore } from '@/store/uiStore';
 
 export function AppNavbar() {
   const [mounted, setMounted] = useState(false);

@@ -1,6 +1,7 @@
 'use client';
 
 import { Check, CheckCircle2, Copy, FileText, Sparkles } from 'lucide-react';
+
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import type { ResumeImprovement } from '@/types/resumeOptimizer.types';

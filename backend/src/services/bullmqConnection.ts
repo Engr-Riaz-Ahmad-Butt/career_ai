@@ -1,6 +1,6 @@
 import { ConnectionOptions } from 'bullmq';
-import { env } from '../config/env';
-import { InternalError } from '../utils/errorHandler';
+import { env } from '@/config/env';
+import { InternalError } from '@/utils/errorHandler';
 
 export function getBullMqConnectionOptions(): ConnectionOptions {
   if (!env.REDIS_URL) {

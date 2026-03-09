@@ -1,14 +1,14 @@
 import { Job, JobState, Queue } from 'bullmq';
-import { env } from '../config/env';
-import { createHttpError } from '../utils/errorHandler';
-import { getBullMqConnectionOptions } from './bullmqConnection';
+import { env } from '@/config/env';
+import { createHttpError } from '@/utils/errorHandler';
+import { getBullMqConnectionOptions } from '@/services/bullmqConnection';
 import {
   JOB_NAMES,
   JOB_QUEUE_NAME,
   QueueJobStatus,
   ResumeAtsScoreJobPayload,
   ResumePdfJobPayload,
-} from './job.types';
+} from '@/services/job.types';
 
 interface EnqueueResult {
   jobId: string;

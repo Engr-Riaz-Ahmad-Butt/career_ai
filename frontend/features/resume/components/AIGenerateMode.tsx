@@ -3,13 +3,13 @@
 import { useState, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { Upload, Sparkles, ArrowLeft, ArrowRight, FileText, User, CheckCircle2 } from 'lucide-react';
-import { LoadingSpinner, InlineLoading } from '@/components/shared';
+import { LoadingSpinner, InlineLoading } from '@/components/shared/LoadingSpinner';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Card } from '@/components/ui/card';
-import { WizardData } from './ManualBuilderWizard';
+import { WizardData } from '@/components/resume/ManualBuilderWizard';
 
 interface AIGenerateModeProps {
     onComplete: (data: Partial<WizardData>) => void;

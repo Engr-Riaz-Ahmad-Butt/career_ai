@@ -1,9 +1,10 @@
 'use client';
 
 import { motion } from 'framer-motion';
+import { Calendar, User, MessageCircle } from 'lucide-react';
+
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { InterviewNote } from '@/lib/jobTrackerData';
-import { Calendar, User, MessageCircle } from 'lucide-react';
 
 interface InterviewNotesProps {
   jobId: string;

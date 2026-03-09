@@ -1,12 +1,6 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import Link from 'next/link';
-import { usePathname } from 'next/navigation';
-import { useUIStore } from '@/store/uiStore';
-import { useAuthStore } from '@/store/authStore';
-import { useAuth } from '@/hooks/use-auth';
-import { useState } from 'react';
 import {
   LayoutDashboard,
   FileText,
@@ -23,6 +17,14 @@ import {
   ChevronDown,
   Mic,
 } from 'lucide-react';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+import { useState } from 'react';
+
+import { useAuth } from '@/hooks/use-auth';
+import { useAuthStore } from '@/store/authStore';
+import { useUIStore } from '@/store/uiStore';
+
 
 type SubItem = { href: string; label: string };
 type NavItem = {

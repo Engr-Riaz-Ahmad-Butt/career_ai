@@ -1,4 +1,4 @@
-import { TESTIMONIALS } from "@/constants";
+import { TESTIMONIALS } from '@/constants/landing.constants';
 
 export default function Testimonials() {
     return (

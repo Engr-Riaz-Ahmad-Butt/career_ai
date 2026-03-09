@@ -1,8 +1,9 @@
 'use client';
 
-import { resumeTemplates } from '@/lib/resumeTemplates';
-import { ResumeData, ResumeTemplate, ResumeExperience, ResumeEducation, ResumeCertification, ResumeLanguage, ResumeProject } from '@/types';
 import React from 'react';
+
+import { resumeTemplates } from '@/lib/resumeTemplates';
+import { ResumeData, ResumeTemplate, ResumeExperience, ResumeEducation, ResumeCertification, ResumeLanguage, ResumeProject } from '@/types/resume';
 
 interface TemplatePreviewProps {
   template: ResumeTemplate;
@@ -829,3 +830,4 @@ export function GradientModernPreview({ template, data = SAMPLE_DATA }: Template
     </ResumeContainer>
   );
 }
+

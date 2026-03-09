@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
-import { CreditsService } from '../services/credits.service';
-import { asyncHandler } from '../middleware/error';
+import { CreditsService } from '@/services/credits.service';
+import { asyncHandler } from '@/middleware/error';
 
 const creditsService = new CreditsService();
 

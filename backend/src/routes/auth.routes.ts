@@ -9,15 +9,15 @@ import {
   resetPassword,
   verifyEmail,
   resendVerification,
-} from '../controllers/auth.controller';
-import { authenticate } from '../middleware/auth';
-import { validate } from '../middleware/validate';
+} from '@/controllers/auth.controller';
+import { authenticate } from '@/middleware/auth';
+import { validate } from '@/middleware/validate';
 import {
   signupSchema,
   loginSchema,
   forgotPasswordSchema,
   resetPasswordSchema
-} from '../utils/validation';
+} from '@/utils/validation';
 
 const router = Router();
 

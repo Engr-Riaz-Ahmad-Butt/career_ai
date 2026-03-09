@@ -1,6 +1,5 @@
 'use client';
 
-import { Card } from '@/components/ui/card';
 import {
   Bar,
   BarChart,
@@ -13,6 +12,8 @@ import {
   XAxis,
   YAxis,
 } from 'recharts';
+
+import { Card } from '@/components/ui/card';
 import type { AnalysisKeyword } from '@/types/atsAnalysis.types';
 
 interface AnalyzeKeywordChartsLabels {

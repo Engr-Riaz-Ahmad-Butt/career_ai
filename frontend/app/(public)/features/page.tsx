@@ -1,6 +1,5 @@
 'use client';
 
-import React from "react";
 import { motion, useScroll, useTransform } from "framer-motion";
 import {
   FileText,
@@ -19,8 +18,10 @@ import {
   MousePointer2,
   CheckCircle2,
 } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import Link from "next/link";
+import React from "react";
+
+import { Button } from "@/components/ui/button";
 
 const FEATURES = [
   {

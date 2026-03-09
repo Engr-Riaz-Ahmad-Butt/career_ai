@@ -2,9 +2,10 @@
 
 import { motion, useInView } from "framer-motion";
 import { useRef } from "react";
+
+import { FEATURES } from '@/constants/landing.constants';
 import { cn } from "@/lib/utils";
-import { FEATURES } from "@/constants";
-import type { Feature } from "@/types";
+import type { Feature } from '@/types/site.types';
 
 const colorClasses: Record<string, string> = {
   blue: "bg-[rgba(59,130,246,0.15)] shadow-[0_4px_12px_rgba(59,130,246,0.2)]",
@@ -103,3 +104,4 @@ export default function Features() {
     </section>
   );
 }
+

@@ -1,12 +1,14 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
+import { Calendar, DollarSign, BookOpen, Award, ExternalLink } from 'lucide-react';
+
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { SkillRoadmap } from '@/lib/skillGapData';
-import { Calendar, DollarSign, BookOpen, Award, ExternalLink } from 'lucide-react';
+
 
 interface RoadmapProps {
   roadmaps: SkillRoadmap[];

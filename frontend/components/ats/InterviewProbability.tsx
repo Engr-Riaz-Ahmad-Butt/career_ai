@@ -1,9 +1,10 @@
 'use client';
 
 import { motion } from 'framer-motion';
+import { TrendingUp, ZapOff, AlertCircle, CheckCircle2 } from 'lucide-react';
+
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
-import { TrendingUp, ZapOff, AlertCircle, CheckCircle2 } from 'lucide-react';
 
 interface InterviewProbabilityProps {
   probability: number;

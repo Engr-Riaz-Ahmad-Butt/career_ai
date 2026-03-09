@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
-import { profileService } from '../services/profile.service';
-import { asyncHandler } from '../middleware/error';
+import { profileService } from '@/services/profile.service';
+import { asyncHandler } from '@/middleware/error';
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
 

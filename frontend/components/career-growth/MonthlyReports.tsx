@@ -1,11 +1,13 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Download, TrendingUp, Award, Book, Zap } from 'lucide-react';
+
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useCareerGrowthStore, MonthlyReport } from '@/store/careerGrowthStore';
-import { Download, TrendingUp, Award, Book, Zap } from 'lucide-react';
+
 
 const item = {
   hidden: { opacity: 0, y: 20 },

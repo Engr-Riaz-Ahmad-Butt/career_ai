@@ -4,8 +4,9 @@
  */
 
 import React from 'react';
-import { LoadingState } from './LoadingSpinner';
+
 import { EmptyState } from './EmptyState';
+import { LoadingState } from './LoadingSpinner';
 
 export interface AsyncBoundaryProps<T> {
   isLoading: boolean;

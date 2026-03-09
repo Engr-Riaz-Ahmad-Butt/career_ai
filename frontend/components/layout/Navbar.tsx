@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 
-import ThemeToggle from "../ui/ThemeToggle";
+import ThemeToggle from '@/components/ui/ThemeToggle';
 
 export default function Navbar() {
   const pathname = usePathname();
@@ -23,7 +23,7 @@ export default function Navbar() {
 
       <Link
         href="/"
-        className="relative z-[1] font-[var(--font-d)] font-bold text-[22px] bg-gradient-to-r from-[#60a5fa] via-[#22d3ee] to-[#10b981] bg-clip-text text-transparent cursor-pointer tracking-[-0.5px] transition-all duration-300 hover:translate-y-[-1px] hover:brightness-120"
+        className="relative z-[1] font-[var(--font-d)] text-[22px] bg-gradient-to-r from-[#60a5fa] via-[#22d3ee] to-[#10b981] bg-clip-text text-transparent cursor-pointer tracking-[-0.5px] transition-all duration-300 hover:translate-y-[-1px] hover:brightness-120"
       >
         CareerForge AI
       </Link>

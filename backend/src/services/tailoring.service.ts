@@ -1,6 +1,6 @@
-import prisma from '../config/database';
-import { createHttpError } from '../utils/errorHandler';
-import { findResourceByIdOrThrow, paginateQuery } from '../utils/dbHelpers';
+import prisma from '@/config/database';
+import { createHttpError } from '@/utils/errorHandler';
+import { findResourceByIdOrThrow, paginateQuery } from '@/utils/dbHelpers';
 
 export class TailoringService {
 

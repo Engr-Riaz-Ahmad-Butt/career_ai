@@ -2,10 +2,10 @@ import { Router } from 'express';
 import {
     getCurrentUser,
     updateProfile,
-} from '../controllers/profile.controller';
-import { authenticate } from '../middleware/auth';
-import { validate } from '../middleware/validate';
-import { updateProfileSchema } from '../utils/validation';
+} from '@/controllers/profile.controller';
+import { authenticate } from '@/middleware/auth';
+import { validate } from '@/middleware/validate';
+import { updateProfileSchema } from '@/utils/validation';
 
 const router = Router();
 

@@ -1,10 +1,14 @@
 'use client';
 
 import { motion, AnimatePresence } from 'framer-motion';
-import { Button } from '@/components/ui/button';
+import { X, Check } from 'lucide-react';
+import * as React from 'react';
+
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { resumeTemplates } from '@/lib/resumeTemplates';
-import { ResumeTemplate } from '@/types';
+import { ResumeTemplate } from '@/types/resume';
+
 import {
   ClassicProfessionalPreview,
   ModernTechPreview,
@@ -15,7 +19,7 @@ import {
   AcademicStructuredPreview,
   GradientModernPreview,
 } from './template-preview';
-import { X, Check } from 'lucide-react';
+
 
 interface TemplateSelectorProps {
   isOpen: boolean;
@@ -212,4 +216,4 @@ export function TemplateSelector({
   );
 }
 
-import * as React from 'react';
+

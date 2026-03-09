@@ -1,8 +1,8 @@
-import { generateContent, generateStructuredContent, MODELS } from '../../config/gemini';
-import PROMPTS from './prompts';
-import ENHANCED_PROMPTS from './enhancedPrompts';
-import prisma from '../../config/database';
-import { NotFoundError, ValidationError } from '../../utils/errorHandler';
+import { generateContent, generateStructuredContent, MODELS } from '@/config/gemini';
+import PROMPTS from '@/services/ai/prompts';
+import ENHANCED_PROMPTS from '@/services/ai/enhancedPrompts';
+import prisma from '@/config/database';
+import { NotFoundError, ValidationError } from '@/utils/errorHandler';
 
 // Use enhanced prompts for better results
 const USE_ENHANCED_PROMPTS = process.env.USE_ENHANCED_PROMPTS !== 'false';

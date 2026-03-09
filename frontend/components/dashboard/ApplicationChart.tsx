@@ -1,8 +1,9 @@
 'use client';
 
 import { Line } from '@ant-design/plots';
-import { applicationTrend } from '@/lib/analyticsData';
 import { useMemo } from 'react';
+
+import { applicationTrend } from '@/lib/analyticsData';
 
 export function ApplicationChart() {
   const data = useMemo(() => {

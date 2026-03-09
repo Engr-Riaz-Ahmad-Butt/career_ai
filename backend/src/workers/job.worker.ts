@@ -1,14 +1,14 @@
 import { Worker } from 'bullmq';
-import { env } from '../config/env';
-import { ResumeService } from '../services/resume.service';
-import { AIService } from '../services/ai/aiService';
-import { getBullMqConnectionOptions } from '../services/bullmq-connection';
+import { env } from '@/config/env';
+import { ResumeService } from '@/services/resume.service';
+import { AIService } from '@/services/ai/aiService';
+import { getBullMqConnectionOptions } from '@/services/bullmq-connection';
 import {
   JOB_NAMES,
   JOB_QUEUE_NAME,
   ResumeAtsScoreJobPayload,
   ResumePdfJobPayload,
-} from '../services/job.types';
+} from '@/services/job.types';
 
 let workerInstance: Worker | null = null;
 

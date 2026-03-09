@@ -1,6 +1,6 @@
-import prisma from '../config/database';
-import { AIService } from './ai/aiService';
-import { createHttpError, ValidationError } from '../utils/errorHandler';
+import prisma from '@/config/database';
+import { AIService } from '@/services/ai/aiService';
+import { createHttpError, ValidationError } from '@/utils/errorHandler';
 
 const ai = new AIService();
 

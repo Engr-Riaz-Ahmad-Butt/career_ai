@@ -1,7 +1,8 @@
 'use client';
 
 import { Sparkles } from 'lucide-react';
-import { LoadingSpinner } from '@/components/shared';
+
+import { LoadingSpinner } from '@/components/shared/LoadingSpinner';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';

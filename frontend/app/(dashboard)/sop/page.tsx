@@ -1,9 +1,10 @@
 'use client';
 
-import Link from 'next/link';
-import { Button } from '@/components/ui/button';
-import { GraduationCap, Plus, Clock, ArrowRight } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { GraduationCap, Plus, Clock, ArrowRight } from 'lucide-react';
+import Link from 'next/link';
+
+import { Button } from '@/components/ui/button';
 
 const sops = [
     { id: '1', title: 'Masters SOP – MIT', updatedAt: '2026-02-20' },

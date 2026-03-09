@@ -5,8 +5,8 @@ import {
   getJobStatus,
   listMyJobs,
   jobQueueHealth,
-} from '../controllers/job.controller';
-import { authenticate, requireCreditsForAction } from '../middleware/auth';
+} from '@/controllers/job.controller';
+import { authenticate, requireCreditsForAction } from '@/middleware/auth';
 
 const router = Router();
 

@@ -1,11 +1,12 @@
 "use client";
 
-import Link from "next/link";
 import { motion, useScroll, useTransform } from "framer-motion";
 import { Sparkles, ArrowRight, Play, FileText, CheckCircle2, TrendingUp, ShieldCheck } from "lucide-react";
+import Link from "next/link";
 import { useRef } from "react";
-import Typewriter from "../ui/Typewriter";
-import { SITE_CONFIG } from "@/constants";
+
+import Typewriter from '@/components/ui/Typewriter';
+import { SITE_CONFIG } from '@/constants/landing.constants';
 
 export default function Hero() {
   const containerRef = useRef(null);

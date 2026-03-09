@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
-import { adminService } from '../services/admin.service';
-import { emailService } from '../services/email.service';
-import { asyncHandler } from '../middleware/error';
+import { adminService } from '@/services/admin.service';
+import { emailService } from '@/services/email.service';
+import { asyncHandler } from '@/middleware/error';
 
 import { Plan } from '@prisma/client';
 

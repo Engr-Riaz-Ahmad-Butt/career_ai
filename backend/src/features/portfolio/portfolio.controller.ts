@@ -1,7 +1,7 @@
-import { Request, Response } from 'express';
-import { PortfolioService } from '../services/portfolio.service';
-import { asyncHandler } from '../middleware/error';
-import { requireAuth, requireId } from '../utils/requestValidators';
+import { PortfolioService } from '@/features/portfolio/portfolio.service';
+import { asyncHandler } from '@/middleware/error';
+import { requireAuth, requireId } from '@/utils/requestValidators';
+import type { Request, Response } from 'express';
 
 const portfolioService = new PortfolioService();
 

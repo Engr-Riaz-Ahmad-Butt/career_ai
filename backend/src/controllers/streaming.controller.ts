@@ -21,7 +21,7 @@ import {
   streamATSScoring,
   streamDocumentGeneration,
   streamInterviewGeneration,
-} from '../services/streaming.service';
+} from '@/services/streaming.service';
 
 /**
  * Stream resume enhancement with real-time progress

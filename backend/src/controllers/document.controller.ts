@@ -1,8 +1,8 @@
 import { Request, Response } from 'express';
-import { DocumentService } from '../services/document.service';
-import { AIService } from '../services/ai/aiService';
-import { asyncHandler } from '../middleware/error';
-import prisma from '../config/database';
+import { DocumentService } from '@/services/document.service';
+import { AIService } from '@/services/ai/aiService';
+import { asyncHandler } from '@/middleware/error';
+import prisma from '@/config/database';
 
 const docService = new DocumentService();
 const aiService = new AIService();

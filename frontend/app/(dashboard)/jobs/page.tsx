@@ -1,21 +1,22 @@
 'use client';
 
-import { useState } from 'react';
 import { motion } from 'framer-motion';
+import { Plus, BarChart3, TrendingUp } from 'lucide-react';
+import { useState } from 'react';
+
+import { FeatureErrorBoundary } from '@/components/errors/FeatureErrorBoundary';
+import { JobDetail } from '@/components/job-tracker/JobDetail';
+import { JobTable } from '@/components/job-tracker/JobTable';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { JobTable } from '@/components/job-tracker/JobTable';
-import { JobDetail } from '@/components/job-tracker/JobDetail';
-import { useJobTrackerStore } from '@/store/jobTrackerStore';
-import { JobApplication } from '@/lib/jobTrackerData';
 import {
   Tabs,
   TabsContent,
   TabsList,
   TabsTrigger,
 } from '@/components/ui/tabs';
-import { Plus, BarChart3, TrendingUp } from 'lucide-react';
-import { FeatureErrorBoundary } from '@/components/errors/FeatureErrorBoundary';
+import { JobApplication } from '@/lib/jobTrackerData';
+import { useJobTrackerStore } from '@/store/jobTrackerStore';
 
 export default function JobsPage() {
   const [selectedJob, setSelectedJob] = useState<JobApplication | null>(null);

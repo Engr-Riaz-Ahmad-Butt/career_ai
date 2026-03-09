@@ -1,6 +1,7 @@
 'use client';
 
 import { Pie } from '@ant-design/plots';
+
 import { applicationsByStatus } from '@/lib/analyticsData';
 
 export function InterviewRateChart() {

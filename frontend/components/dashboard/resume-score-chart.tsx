@@ -1,8 +1,9 @@
 'use client';
 
 import { Line } from '@ant-design/plots';
-import { resumeScoreTrend } from '@/lib/analyticsData';
 import { useMemo } from 'react';
+
+import { resumeScoreTrend } from '@/lib/analyticsData';
 
 export function ResumeScoreChart() {
   const data = useMemo(() => {

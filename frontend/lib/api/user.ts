@@ -1,6 +1,7 @@
-import api from '../apiClient';
 import { z } from 'zod';
-import { updateProfileSchema, changePasswordSchema } from '../validation';
+
+import api from '@/lib/apiClient';
+import { changePasswordSchema, updateProfileSchema } from '@/lib/validation';
 
 type UpdateProfileInput = z.infer<typeof updateProfileSchema>;
 type ChangePasswordInput = z.infer<typeof changePasswordSchema>;

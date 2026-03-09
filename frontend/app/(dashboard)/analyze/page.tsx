@@ -1,11 +1,11 @@
 'use client';
 
-import { FeatureErrorBoundary } from '@/components/errors/FeatureErrorBoundary';
-import { AIStreamProgress } from '@/components/common/AiStreamProgress';
 import { AnalyzeFormCard } from '@/components/analyze/AnalyzeFormCard';
 import { AnalyzePageHeader } from '@/components/analyze/AnalyzePageHeader';
 import { AnalyzeResultsSection } from '@/components/analyze/AnalyzeResultsSection';
 import { AnalyzeStateCard } from '@/components/analyze/AnalyzeStateCard';
+import { AIStreamProgress } from '@/components/common/AiStreamProgress';
+import { FeatureErrorBoundary } from '@/components/errors/FeatureErrorBoundary';
 import { ATS_CHART_COLORS, ANALYZE_PAGE_COPY } from '@/constants/analyze.constants';
 import { useAtsAnalysis } from '@/hooks/useAtsAnalysis';
 

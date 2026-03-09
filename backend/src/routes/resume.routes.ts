@@ -3,18 +3,18 @@ import {
   listResumes, createResume, getResume, updateResume, deleteResume,
   duplicateResume, generatePdf, listVersions, restoreVersion, uploadResume,
   extractResume, optimizeResume,
-} from '../controllers/resume.controller';
-import { tailorResume, getTailorHistory, getTailored, deleteTailored } from '../controllers/tailoring.controller';
-import { enhanceResume, scoreAts } from '../controllers/ai.controller';
-import { authenticate, requireCreditsForAction } from '../middleware/auth';
-import { uploadResume as resumeUpload } from '../middleware/upload';
-import { validate } from '../middleware/validate';
+} from '@/controllers/resume.controller';
+import { tailorResume, getTailorHistory, getTailored, deleteTailored } from '@/controllers/tailoring.controller';
+import { enhanceResume, scoreAts } from '@/controllers/ai.controller';
+import { authenticate, requireCreditsForAction } from '@/middleware/auth';
+import { uploadResume as resumeUpload } from '@/middleware/upload';
+import { validate } from '@/middleware/validate';
 import {
   createResumeSchema,
   updateResumeSchema,
   tailorResumeSchema,
   paginationSchema
-} from '../utils/validation';
+} from '@/utils/validation';
 
 const router = Router();
 router.use(authenticate);

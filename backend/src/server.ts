@@ -8,31 +8,31 @@ import cookieParser from 'cookie-parser';
 import 'express-async-errors';
 
 // Centralized env config — validates all env vars at startup
-import { env } from './config/env';
-import prisma from './config/database';
+import { env } from '@/config/env';
+import prisma from '@/config/database';
 
 // Routes
-import authRoutes from './routes/auth.routes';
-import userRoutes from './routes/user.routes';
-import resumeRoutes from './routes/resume.routes';
-import documentRoutes from './routes/document.routes';
-import aiRoutes from './routes/ai.routes';
-import dashboardRoutes from './routes/dashboard.routes';
-import interviewRoutes from './routes/interview.routes';
-import billingRoutes from './routes/billing.routes';
-import creditsRoutes from './routes/credits.routes';
-import templatesRoutes from './routes/templates.routes';
-import portfolioRoutes from './routes/portfolio.routes';
-import adminRoutes from './routes/admin.routes';
-import analyzeRoutes from './routes/analyze.routes';
-import streamRoutes from './routes/stream.routes';
-import jobRoutes from './routes/job.routes';
+import authRoutes from '@/routes/auth.routes';
+import userRoutes from '@/routes/user.routes';
+import resumeRoutes from '@/routes/resume.routes';
+import documentRoutes from '@/routes/document.routes';
+import aiRoutes from '@/routes/ai.routes';
+import dashboardRoutes from '@/routes/dashboard.routes';
+import interviewRoutes from '@/routes/interview.routes';
+import billingRoutes from '@/routes/billing.routes';
+import creditsRoutes from '@/routes/credits.routes';
+import templatesRoutes from '@/routes/templates.routes';
+import portfolioRoutes from '@/features/portfolio/portfolio.routes';
+import adminRoutes from '@/routes/admin.routes';
+import analyzeRoutes from '@/routes/analyze.routes';
+import streamRoutes from '@/routes/stream.routes';
+import jobRoutes from '@/routes/job.routes';
 
 // Middleware
-import { errorHandler, notFound } from './middleware/error';
-import { requestIdMiddleware } from './middleware/requestId.middleware';
-import { startJobWorker, stopJobWorker } from './workers/job.worker';
-import { getJobQueueService } from './services/job-queue.service';
+import { errorHandler, notFound } from '@/middleware/error';
+import { requestIdMiddleware } from '@/middleware/requestId.middleware';
+import { startJobWorker, stopJobWorker } from '@/workers/job.worker';
+import { getJobQueueService } from '@/services/job-queue.service';
 
 const app: Application = express();
 

@@ -1,14 +1,15 @@
-import api from '../apiClient';
-import {
-    generateCoverLetterSchema,
-    generateSOPSchema,
-    generateMotivationLetterSchema,
-    generateStudyPlanSchema,
-    generateFinancialLetterSchema,
-    generateBioSchema,
-    DocumentParams,
-} from '../validation';
 import { z } from 'zod';
+
+import api from '@/lib/apiClient';
+import {
+    DocumentParams,
+    generateBioSchema,
+    generateCoverLetterSchema,
+    generateFinancialLetterSchema,
+    generateMotivationLetterSchema,
+    generateSOPSchema,
+    generateStudyPlanSchema,
+} from '@/lib/validation';
 
 type GenerateCoverLetterInput = z.infer<typeof generateCoverLetterSchema>;
 type GenerateSOPInput = z.infer<typeof generateSOPSchema>;

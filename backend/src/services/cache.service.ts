@@ -12,7 +12,7 @@
  */
 
 import { createClient, RedisClientType } from 'redis';
-import { env } from '../config/env';
+import { env } from '@/config/env';
 
 export interface CacheOptions {
   ttl?: number; // Time to live in seconds

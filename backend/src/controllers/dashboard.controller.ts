@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
-import { DashboardService } from '../services/dashboard.service';
-import { asyncHandler } from '../middleware/error';
+import { DashboardService } from '@/services/dashboard.service';
+import { asyncHandler } from '@/middleware/error';
 
 const dashboardService = new DashboardService();
 

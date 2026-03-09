@@ -1,4 +1,4 @@
-import type { NavLink, Feature, HowItWorksStep, Testimonial } from "@/types";
+import type { Feature, HowItWorksStep, NavLink, Testimonial } from '@/types/site.types';
 
 // ─── Site Config ──────────────────────────────────────────────────────────────
 
@@ -187,3 +187,4 @@ export const HERO_AVATARS = [
     { initial: "LT", gradient: "linear-gradient(135deg,#f59e0b,#d97706)" },
     { initial: "DP", gradient: "linear-gradient(135deg,#22d3ee,#0891b2)" },
 ];
+

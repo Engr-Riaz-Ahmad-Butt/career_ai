@@ -1,15 +1,16 @@
 'use client';
 
-import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Textarea } from '@/components/ui/textarea';
-import { Badge } from '@/components/ui/badge';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { useSkillStore } from '@/store/skillStore';
-import { getSkillGaps, jobRequiredSkills } from '@/lib/skillGapData';
 import { CheckCircle2, AlertCircle, Zap } from 'lucide-react';
+import { useState } from 'react';
+
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Textarea } from '@/components/ui/textarea';
+import { getSkillGaps, jobRequiredSkills } from '@/lib/skillGapData';
+import { useSkillStore } from '@/store/skillStore';
 
 interface GapAnalyzerProps {
   onAnalyze?: () => void;

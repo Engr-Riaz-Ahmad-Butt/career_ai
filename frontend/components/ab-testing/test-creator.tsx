@@ -1,14 +1,16 @@
 'use client';
 
-import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Textarea } from '@/components/ui/textarea';
-import { Label } from '@/components/ui/label';
-import { useABTestStore } from '@/store/abTestStore';
-import { ABTestVariant } from '@/lib/abTestingData';
 import { Sparkles, Plus } from 'lucide-react';
+import { useState } from 'react';
+
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { ABTestVariant } from '@/lib/abTestingData';
+import { useABTestStore } from '@/store/abTestStore';
+
 
 export function ABTestCreator() {
   const [step, setStep] = useState(0);

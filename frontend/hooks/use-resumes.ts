@@ -6,7 +6,7 @@ import {
     resumeApi,
 } from '@/lib/api/endpoints/resume.api';
 import { useAuthStore } from '@/store/authStore';
-import type { ResumeData } from '@/types';
+import type { ResumeData } from '@/types/resume';
 import { queryKeys } from '@/lib/queryKeys';
 import { STALE_TIMES, GC_TIMES } from '@/lib/queryConfig';
 import { message } from 'antd';
@@ -211,3 +211,4 @@ export function useRestoreVersion() {
         },
     });
 }
+

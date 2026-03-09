@@ -5,8 +5,8 @@ import {
   streamGenerateDocument,
   streamGenerateInterview,
   streamPing,
-} from '../controllers/streaming.controller';
-import { authenticateStream, requireCreditsForAction } from '../middleware/auth';
+} from '@/controllers/streaming.controller';
+import { authenticateStream, requireCreditsForAction } from '@/middleware/auth';
 
 const router = Router();
 

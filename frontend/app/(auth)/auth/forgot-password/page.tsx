@@ -1,17 +1,18 @@
 'use client';
 
-import { useState } from 'react';
-import { motion } from 'framer-motion';
-import Link from 'next/link';
-import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { motion } from 'framer-motion';
+import { Zap, ArrowLeft, Mail, CheckCircle2, AlertCircle } from 'lucide-react';
+import Link from 'next/link';
+import { useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { z } from 'zod';
+
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Zap, ArrowLeft, Mail, CheckCircle2, AlertCircle } from 'lucide-react';
-import { forgotPasswordSchema } from '@/lib/validation';
-import { z } from 'zod';
 import { useAuth } from '@/hooks/use-auth';
+import { forgotPasswordSchema } from '@/lib/validation';
 
 type ForgotPasswordFormData = z.infer<typeof forgotPasswordSchema>;
 

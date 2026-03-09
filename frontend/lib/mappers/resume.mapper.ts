@@ -1,5 +1,5 @@
 import type { Resume as BackendResume } from '@/lib/api/endpoints/resume.api';
-import type { ResumeData } from '@/types';
+import type { ResumeData } from '@/types/resume';
 
 // Helper function to safely extract typed values
 function extractPersonalInfo(data: unknown): Record<string, unknown> {
@@ -61,4 +61,5 @@ export function toResumeData(resume: BackendResume, userId: string | undefined):
     updatedAt: resume.updatedAt,
   };
 }
+
 

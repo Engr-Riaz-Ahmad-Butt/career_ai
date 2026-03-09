@@ -1,6 +1,6 @@
-import prisma from '../config/database';
-import { hashPassword, comparePassword } from '../utils/password';
-import { createHttpError } from '../utils/errorHandler';
+import prisma from '@/config/database';
+import { hashPassword, comparePassword } from '@/utils/password';
+import { createHttpError } from '@/utils/errorHandler';
 
 export class UserService {
 

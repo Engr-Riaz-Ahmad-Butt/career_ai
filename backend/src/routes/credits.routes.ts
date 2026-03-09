@@ -1,8 +1,8 @@
 import { Router } from 'express';
-import { authenticate } from '../middleware/auth';
-import { getBalance, getHistory, applyReferral, getCosts } from '../controllers/credits.controller';
-import { validate } from '../middleware/validate';
-import { referralSchema, paginationSchema } from '../utils/validation';
+import { authenticate } from '@/middleware/auth';
+import { getBalance, getHistory, applyReferral, getCosts } from '@/controllers/credits.controller';
+import { validate } from '@/middleware/validate';
+import { referralSchema, paginationSchema } from '@/utils/validation';
 
 const router = Router();
 

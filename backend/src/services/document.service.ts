@@ -1,5 +1,5 @@
-import prisma from '../config/database';
-import { createHttpError } from '../utils/errorHandler';
+import prisma from '@/config/database';
+import { createHttpError } from '@/utils/errorHandler';
 import { DocumentType, DocumentStatus } from '@prisma/client';
 
 // ─── Types & Interfaces ──────────────────────────────────────────────────

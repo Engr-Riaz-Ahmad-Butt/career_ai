@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
-import { BillingService, PLANS } from '../services/billing.service';
-import { asyncHandler } from '../middleware/error';
+import { BillingService, PLANS } from '@/services/billing.service';
+import { asyncHandler } from '@/middleware/error';
 
 const billingService = new BillingService();
 

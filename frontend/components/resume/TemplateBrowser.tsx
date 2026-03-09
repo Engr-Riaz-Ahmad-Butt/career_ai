@@ -1,11 +1,13 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { resumeTemplates } from '@/lib/resumeTemplates';
-import { ResumeTemplate } from '@/types';
 import { Eye } from 'lucide-react';
+
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { resumeTemplates } from '@/lib/resumeTemplates';
+import { ResumeTemplate } from '@/types/resume';
+
 
 interface TemplateBrowserProps {
   onSelectTemplate?: (template: ResumeTemplate) => void;
@@ -128,3 +130,4 @@ export function TemplateBrowser({
     </div>
   );
 }
+

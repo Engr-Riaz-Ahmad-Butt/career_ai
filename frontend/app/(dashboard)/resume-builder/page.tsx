@@ -1,8 +1,9 @@
 'use client';
 
-import { ResumeBuilder } from '@/components/resume/ResumeBuilder';
 import { Suspense } from 'react';
+
 import { FeatureErrorBoundary } from '@/components/errors/FeatureErrorBoundary';
+import { ResumeBuilder } from '@/components/resume/ResumeBuilder';
 
 export default function ResumeBuilderPage() {
   return (

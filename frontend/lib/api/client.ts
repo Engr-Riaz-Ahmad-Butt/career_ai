@@ -9,8 +9,9 @@
  */
 
 import axios, { AxiosRequestConfig } from 'axios';
-import { useAuthStore } from '@/store/authStore';
+
 import { captureClientError } from '@/lib/errorHandling';
+import { useAuthStore } from '@/store/authStore';
 
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:5000/api/v1';
 

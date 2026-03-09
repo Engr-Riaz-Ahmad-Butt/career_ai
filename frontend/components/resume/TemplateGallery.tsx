@@ -1,11 +1,9 @@
 'use client';
 
-import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Check, Crown, ChevronRight } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { resumeTemplates } from '@/lib/resumeTemplates';
-import { ResumeTemplate } from '@/types';
+import { useState } from 'react';
+
 import {
     ClassicProfessionalPreview,
     ModernTechPreview,
@@ -16,7 +14,10 @@ import {
     AcademicStructuredPreview,
     GradientModernPreview,
 } from '@/components/resume/TemplatePreview';
-import { ResumeData } from '@/types';
+import { Button } from '@/components/ui/button';
+import { resumeTemplates } from '@/lib/resumeTemplates';
+import { ResumeTemplate } from '@/types/resume';
+import { ResumeData } from '@/types/resume';
 
 type FilterStyle = 'all' | 'ats-friendly' | 'modern' | 'creative' | 'executive' | 'simple';
 
@@ -179,3 +180,4 @@ export function TemplateGallery({ selectedTemplate, onSelect, onContinue, previe
         </div>
     );
 }
+
