@@ -1,12 +1,95 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { resumeApi, CreateResumeRequest, UpdateResumeRequest } from '@/lib/api/endpoints/resume.api';
+import { QueryClient, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import {
+    CreateResumeRequest,
+    Resume,
+    UpdateResumeRequest,
+    resumeApi,
+} from '@/lib/api/endpoints/resume.api';
 import { useAuthStore } from '@/store/authStore';
 import type { ResumeData } from '@/types';
 import { queryKeys } from '@/lib/queryKeys';
 import { STALE_TIMES, GC_TIMES } from '@/lib/queryConfig';
 import { message } from 'antd';
 import { toResumeData } from '@/lib/mappers/resume.mapper';
-import { resumeInvalidations, userInvalidations } from '@/lib/api/invalidations';
+import { resumeInvalidations } from '@/lib/api/invalidations';
+
+interface ApiErrorLike {
+    readonly response?: { readonly data?: { readonly message?: string } };
+}
+
+interface UpdateResumeInput {
+    readonly id: string;
+    readonly data: UpdateResumeRequest;
+}
+
+interface RestoreVersionInput {
+    readonly id: string;
+    readonly versionId: string;
+}
+
+interface UpdateResumeContext {
+    readonly snapshot?: ResumeData;
+}
+
+type InvalidationKey = readonly unknown[];
+
+function getCurrentUserId(): string | undefined {
+    return useAuthStore.getState().user?.id;
+}
+
+function mapResumeToView(resume: Resume): ResumeData {
+    return toResumeData(resume, getCurrentUserId());
+}
+
+function showMutationError(error: ApiErrorLike, fallbackMessage: string): void {
+    message.error(error.response?.data?.message ?? fallbackMessage);
+}
+
+function invalidateKeys(queryClient: QueryClient, keys: readonly InvalidationKey[]): void {
+    keys.forEach((queryKey) => {
+        void queryClient.invalidateQueries({ queryKey });
+    });
+}
+
+function mergePersonalInfo(
+    current: ResumeData['personalInfo'],
+    next?: UpdateResumeRequest['personalInfo']
+): ResumeData['personalInfo'] {
+    if (!next) return current;
+    return { ...current, ...(next as Partial<ResumeData['personalInfo']>) };
+}
+
+function buildOptimisticResume(current: ResumeData, update: UpdateResumeRequest): ResumeData {
+    return {
+        ...current,
+        ...(update as Partial<ResumeData>),
+        personalInfo: mergePersonalInfo(current.personalInfo, update.personalInfo),
+    };
+}
+
+async function applyOptimisticUpdate(
+    queryClient: QueryClient,
+    input: UpdateResumeInput
+): Promise<UpdateResumeContext> {
+    await queryClient.cancelQueries({ queryKey: queryKeys.resumes.byId(input.id) });
+    const snapshot = queryClient.getQueryData<ResumeData>(queryKeys.resumes.byId(input.id));
+
+    queryClient.setQueryData<ResumeData>(queryKeys.resumes.byId(input.id), (existing) => {
+        if (!existing) return existing;
+        return buildOptimisticResume(existing, input.data);
+    });
+
+    return { snapshot };
+}
+
+function rollbackOptimisticUpdate(
+    queryClient: QueryClient,
+    id: string,
+    context?: UpdateResumeContext
+): void {
+    if (!context?.snapshot) return;
+    queryClient.setQueryData(queryKeys.resumes.byId(id), context.snapshot);
+}
 
 // ── Queries ────────────────────────────────────────────────────────────────
 
@@ -14,9 +97,8 @@ export function useResumes() {
     return useQuery({
         queryKey: queryKeys.resumes.all(),
         queryFn: async () => {
-            const userId = useAuthStore.getState().user?.id;
             const result = await resumeApi.list();
-            return { ...result, data: result.data.map((r) => toResumeData(r, userId)) };
+            return { ...result, data: result.data.map(mapResumeToView) };
         },
         staleTime: STALE_TIMES.RESUME_LIST,
         gcTime: GC_TIMES.RESUME_LIST,
@@ -27,11 +109,11 @@ export function useResume(id: string | null) {
     return useQuery({
         queryKey: queryKeys.resumes.byId(id ?? ''),
         queryFn: async () => {
-            const userId = useAuthStore.getState().user?.id;
-            const resume = await resumeApi.getById(id!);
-            return toResumeData(resume, userId);
+            if (!id) throw new Error('Resume ID is required');
+            const resume = await resumeApi.getById(id);
+            return mapResumeToView(resume);
         },
-        enabled: !!id,
+        enabled: Boolean(id),
         staleTime: STALE_TIMES.RESUME_DETAIL,
         gcTime: GC_TIMES.RESUME_DETAIL,
     });
@@ -40,8 +122,11 @@ export function useResume(id: string | null) {
 export function useResumeVersions(id: string | null) {
     return useQuery({
         queryKey: queryKeys.resumes.versions(id ?? ''),
-        queryFn: () => resumeApi.getVersions(id!),
-        enabled: !!id,
+        queryFn: () => {
+            if (!id) throw new Error('Resume ID is required');
+            return resumeApi.getVersions(id);
+        },
+        enabled: Boolean(id),
         staleTime: STALE_TIMES.VERSION_HISTORY,
         gcTime: GC_TIMES.VERSION_HISTORY,
     });
@@ -53,20 +138,13 @@ export function useCreateResume() {
     const queryClient = useQueryClient();
 
     return useMutation({
-        mutationFn: async (data: CreateResumeRequest) => {
-            const userId = useAuthStore.getState().user?.id;
-            const resume = await resumeApi.create(data);
-            return toResumeData(resume, userId);
-        },
+        mutationFn: async (data: CreateResumeRequest) => mapResumeToView(await resumeApi.create(data)),
         onSuccess: () => {
-            const keysToInvalidate = resumeInvalidations.afterCreate();
-            keysToInvalidate.forEach(key => {
-                queryClient.invalidateQueries({ queryKey: key });
-            });
+            invalidateKeys(queryClient, resumeInvalidations.afterCreate());
             message.success('Resume created successfully');
         },
-        onError: (error: { response?: { data?: { message?: string } } }) => {
-            message.error(error.response?.data?.message ?? 'Failed to create resume');
+        onError: (error: ApiErrorLike) => {
+            showMutationError(error, 'Failed to create resume');
         },
     });
 }
@@ -75,47 +153,15 @@ export function useUpdateResume() {
     const queryClient = useQueryClient();
 
     return useMutation({
-        mutationFn: ({ id, data }: { id: string; data: UpdateResumeRequest }) =>
-            resumeApi.update(id, data).then((r) => toResumeData(r, useAuthStore.getState().user?.id)),
-
-        // Optimistic update: modify the cache immediately for instant UI feel
-        onMutate: async ({ id, data }) => {
-            // Cancel any in-flight fetches to avoid race conditions
-            await queryClient.cancelQueries({ queryKey: queryKeys.resumes.byId(id) });
-
-            // Snapshot the current value for rollback
-            const snapshot = queryClient.getQueryData<ResumeData>(queryKeys.resumes.byId(id));
-
-            // Optimistically update the cache
-            queryClient.setQueryData<ResumeData>(queryKeys.resumes.byId(id), (old) => {
-                if (!old) return old;
-                return {
-                    ...old,
-                    ...(data as any),
-                    personalInfo: data.personalInfo
-                        ? { ...old.personalInfo, ...(data.personalInfo as any) }
-                        : old.personalInfo,
-                };
-            });
-
-            return { snapshot };
-        },
-
+        mutationFn: async ({ id, data }: UpdateResumeInput) => mapResumeToView(await resumeApi.update(id, data)),
+        onMutate: (input) => applyOptimisticUpdate(queryClient, input),
         onSuccess: (updatedResume, { id }) => {
-            // Replace with server truth
             queryClient.setQueryData(queryKeys.resumes.byId(id), updatedResume);
-            const keysToInvalidate = resumeInvalidations.afterUpdate(id);
-            keysToInvalidate.forEach(key => {
-                queryClient.invalidateQueries({ queryKey: key });
-            });
+            invalidateKeys(queryClient, resumeInvalidations.afterUpdate(id));
         },
-
-        onError: (error: { response?: { data?: { message?: string } } }, { id }, context) => {
-            // Rollback to snapshot on failure
-            if (context?.snapshot) {
-                queryClient.setQueryData(queryKeys.resumes.byId(id), context.snapshot);
-            }
-            message.error(error.response?.data?.message ?? 'Failed to update resume');
+        onError: (error: ApiErrorLike, { id }, context) => {
+            rollbackOptimisticUpdate(queryClient, id, context);
+            showMutationError(error, 'Failed to update resume');
         },
     });
 }
@@ -125,15 +171,12 @@ export function useDeleteResume() {
 
     return useMutation({
         mutationFn: (id: string) => resumeApi.delete(id),
-        onSuccess: () => {
-            const keysToInvalidate = resumeInvalidations.afterDelete('');
-            keysToInvalidate.forEach(key => {
-                queryClient.invalidateQueries({ queryKey: key });
-            });
+        onSuccess: (_, id) => {
+            invalidateKeys(queryClient, resumeInvalidations.afterDelete(id));
             message.success('Resume deleted');
         },
-        onError: (error: { response?: { data?: { message?: string } } }) => {
-            message.error(error.response?.data?.message ?? 'Failed to delete resume');
+        onError: (error: ApiErrorLike) => {
+            showMutationError(error, 'Failed to delete resume');
         },
     });
 }
@@ -142,17 +185,13 @@ export function useDuplicateResume() {
     const queryClient = useQueryClient();
 
     return useMutation({
-        mutationFn: (id: string) =>
-            resumeApi.duplicate(id).then((r) => toResumeData(r, useAuthStore.getState().user?.id)),
+        mutationFn: async (id: string) => mapResumeToView(await resumeApi.duplicate(id)),
         onSuccess: () => {
-            const keysToInvalidate = resumeInvalidations.afterDuplicate();
-            keysToInvalidate.forEach(key => {
-                queryClient.invalidateQueries({ queryKey: key });
-            });
+            invalidateKeys(queryClient, resumeInvalidations.afterDuplicate());
             message.success('Resume duplicated');
         },
-        onError: (error: { response?: { data?: { message?: string } } }) => {
-            message.error(error.response?.data?.message ?? 'Failed to duplicate resume');
+        onError: (error: ApiErrorLike) => {
+            showMutationError(error, 'Failed to duplicate resume');
         },
     });
 }
@@ -161,17 +200,14 @@ export function useRestoreVersion() {
     const queryClient = useQueryClient();
 
     return useMutation({
-        mutationFn: ({ id, versionId }: { id: string; versionId: string }) =>
-            resumeApi.restoreVersion(id, versionId).then((r) => toResumeData(r, useAuthStore.getState().user?.id)),
+        mutationFn: async ({ id, versionId }: RestoreVersionInput) =>
+            mapResumeToView(await resumeApi.restoreVersion(id, versionId)),
         onSuccess: (_, { id }) => {
-            const keysToInvalidate = resumeInvalidations.afterVersionRestore(id);
-            keysToInvalidate.forEach(key => {
-                queryClient.invalidateQueries({ queryKey: key });
-            });
+            invalidateKeys(queryClient, resumeInvalidations.afterVersionRestore(id));
             message.success('Version restored');
         },
-        onError: (error: { response?: { data?: { message?: string } } }) => {
-            message.error(error.response?.data?.message ?? 'Failed to restore version');
+        onError: (error: ApiErrorLike) => {
+            showMutationError(error, 'Failed to restore version');
         },
     });
 }

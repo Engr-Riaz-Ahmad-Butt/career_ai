@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { Dispatch, SetStateAction, useEffect, useState } from 'react';
 import { message } from 'antd';
 import { useQuery } from '@tanstack/react-query';
 import {
@@ -38,6 +38,37 @@ interface UseAtsAnalysisResult {
   readonly retryLoadResumes: () => void;
 }
 
+interface AnalysisStateSetter {
+  readonly setAnalysisState: Dispatch<SetStateAction<AtsAnalysisAsyncState>>;
+}
+
+interface AtsInput {
+  readonly selectedResumeId: string;
+  readonly jobDescription: string;
+}
+
+interface StartBackgroundAnalysisOptions extends AnalysisStateSetter, AtsInput {
+  readonly setActiveJobId: Dispatch<SetStateAction<string | null>>;
+  readonly mutate: ReturnType<typeof useResumeAtsScoreJob>['mutate'];
+}
+
+interface StartLiveAnalysisOptions extends AnalysisStateSetter, AtsInput {
+  readonly startAtsScoreStream: (resumeId: string, jobDescription: string) => void;
+}
+
+interface StopLiveAnalysisOptions extends AnalysisStateSetter {
+  readonly closeStream: () => void;
+  readonly currentState: AtsAnalysisAsyncState;
+}
+
+interface ResumesQueryState {
+  readonly resumes: readonly ResumeOption[];
+  readonly isResumesLoading: boolean;
+  readonly resumesError: string | null;
+  readonly hasNoResumes: boolean;
+  readonly retryLoadResumes: () => void;
+}
+
 function toResumeOptions(resumes: readonly { id: string; title: string }[]): readonly ResumeOption[] {
   return resumes.map((resume) => ({
     id: resume.id,
@@ -49,12 +80,20 @@ function isProcessingStatus(status: string | undefined): boolean {
   return status === 'processing';
 }
 
-export function useAtsAnalysis(): UseAtsAnalysisResult {
-  const [selectedResumeId, setSelectedResumeId] = useState('');
-  const [jobDescription, setJobDescription] = useState('');
-  const [analysisState, setAnalysisState] = useState<AtsAnalysisAsyncState>({ status: 'idle' });
-  const [activeJobId, setActiveJobId] = useState<string | null>(null);
+function hasValidAnalysisInput(input: AtsInput): boolean {
+  return Boolean(input.selectedResumeId) && input.jobDescription.trim().length >= MIN_JOB_DESCRIPTION_LENGTH;
+}
 
+function canStartAtsAnalysis(options: {
+  selectedResumeId: string;
+  jobDescription: string;
+  isBackgroundAnalyzing: boolean;
+  isStreaming: boolean;
+}): boolean {
+  return hasValidAnalysisInput(options) && !options.isBackgroundAnalyzing && !options.isStreaming;
+}
+
+function useResumesQueryState(): ResumesQueryState {
   const resumesQuery = useQuery({
     queryKey: queryKeys.resumes.all(),
     queryFn: () => resumeApi.list(),
@@ -62,15 +101,28 @@ export function useAtsAnalysis(): UseAtsAnalysisResult {
     gcTime: GC_TIMES.RESUME_LIST,
   });
 
-  const analyzeMutation = useResumeAtsScoreJob();
-  const jobStatusQuery = useJobStatus(activeJobId);
-  const { isStreaming, latestChunk, error: streamError, startAtsScoreStream, closeStream } = useAIStream();
+  const resumes = toResumeOptions(resumesQuery.data?.data ?? []);
+  const resumesError = resumesQuery.error instanceof Error ? resumesQuery.error.message : null;
+  const hasNoResumes = resumesQuery.isSuccess && resumes.length === 0;
 
+  return {
+    resumes,
+    isResumesLoading: resumesQuery.isLoading,
+    resumesError,
+    hasNoResumes,
+    retryLoadResumes: () => {
+      void resumesQuery.refetch();
+    },
+  };
+}
+
+function useBackgroundJobEffects(
+  jobData: ReturnType<typeof useJobStatus>['data'],
+  setAnalysisState: Dispatch<SetStateAction<AtsAnalysisAsyncState>>,
+  setActiveJobId: Dispatch<SetStateAction<string | null>>
+): void {
   useEffect(() => {
-    const jobData = jobStatusQuery.data;
-    if (!jobData) {
-      return;
-    }
+    if (!jobData) return;
 
     if (jobData.status === 'complete') {
       setAnalysisState({ status: 'success', data: transformAtsAnalysisPayload(jobData.result) });
@@ -85,8 +137,14 @@ export function useAtsAnalysis(): UseAtsAnalysisResult {
       setActiveJobId(null);
       message.error(errorMessage);
     }
-  }, [jobStatusQuery.data]);
+  }, [jobData, setAnalysisState, setActiveJobId]);
+}
 
+function useStreamEffects(
+  latestChunk: StreamChunk | null,
+  streamError: string | null,
+  setAnalysisState: Dispatch<SetStateAction<AtsAnalysisAsyncState>>
+): void {
   useEffect(() => {
     if (latestChunk?.type === 'data') {
       setAnalysisState({ status: 'success', data: transformAtsAnalysisPayload(latestChunk.data) });
@@ -98,83 +156,110 @@ export function useAtsAnalysis(): UseAtsAnalysisResult {
       const errorMessage = latestChunk.message ?? ANALYZE_PAGE_COPY.messages.streamFailed;
       setAnalysisState({ status: 'error', error: errorMessage });
     }
-  }, [latestChunk]);
+  }, [latestChunk, setAnalysisState]);
 
   useEffect(() => {
-    if (!streamError) {
-      return;
-    }
-
+    if (!streamError) return;
     setAnalysisState({ status: 'error', error: streamError });
-  }, [streamError]);
+  }, [streamError, setAnalysisState]);
+}
 
-  function handleBackgroundAnalysis(): void {
-    if (!selectedResumeId || jobDescription.trim().length < MIN_JOB_DESCRIPTION_LENGTH) {
-      return;
-    }
+function startBackgroundAnalysis(options: StartBackgroundAnalysisOptions): void {
+  if (!hasValidAnalysisInput(options)) return;
 
-    setAnalysisState({ status: 'loading', mode: 'background' });
-
-    analyzeMutation.mutate(
-      {
-        resumeId: selectedResumeId,
-        jobDescription,
-        returnSuggestions: true,
+  options.setAnalysisState({ status: 'loading', mode: 'background' });
+  options.mutate(
+    {
+      resumeId: options.selectedResumeId,
+      jobDescription: options.jobDescription,
+      returnSuggestions: true,
+    },
+    {
+      onSuccess: (job) => {
+        options.setActiveJobId(job.jobId);
+        message.info(ANALYZE_PAGE_COPY.messages.queued);
       },
-      {
-        onSuccess: (job) => {
-          setActiveJobId(job.jobId);
-          message.info(ANALYZE_PAGE_COPY.messages.queued);
-        },
-        onError: () => {
-          setAnalysisState({ status: 'error', error: ANALYZE_PAGE_COPY.messages.queueFailed });
-          message.error(ANALYZE_PAGE_COPY.messages.queueFailed);
-        },
-      }
-    );
-  }
-
-  function handleLiveAnalysis(): void {
-    if (!selectedResumeId || jobDescription.trim().length < MIN_JOB_DESCRIPTION_LENGTH) {
-      return;
+      onError: () => {
+        options.setAnalysisState({ status: 'error', error: ANALYZE_PAGE_COPY.messages.queueFailed });
+        message.error(ANALYZE_PAGE_COPY.messages.queueFailed);
+      },
     }
+  );
+}
 
-    setAnalysisState({ status: 'loading', mode: 'stream' });
-    startAtsScoreStream(selectedResumeId, jobDescription);
+function startLiveAnalysis(options: StartLiveAnalysisOptions): void {
+  if (!hasValidAnalysisInput(options)) return;
+  options.setAnalysisState({ status: 'loading', mode: 'stream' });
+  options.startAtsScoreStream(options.selectedResumeId, options.jobDescription);
+}
+
+function stopLiveAnalysis(options: StopLiveAnalysisOptions): void {
+  options.closeStream();
+  if (options.currentState.status === 'loading' && options.currentState.mode === 'stream') {
+    options.setAnalysisState({ status: 'idle' });
   }
+}
 
-  function handleStopStream(): void {
-    closeStream();
+export function useAtsAnalysis(): UseAtsAnalysisResult {
+  const [selectedResumeId, setSelectedResumeId] = useState('');
+  const [jobDescription, setJobDescription] = useState('');
+  const [analysisState, setAnalysisState] = useState<AtsAnalysisAsyncState>({ status: 'idle' });
+  const [activeJobId, setActiveJobId] = useState<string | null>(null);
 
-    if (analysisState.status === 'loading' && analysisState.mode === 'stream') {
-      setAnalysisState({ status: 'idle' });
-    }
-  }
+  const resumesState = useResumesQueryState();
 
-  const resumes = toResumeOptions(resumesQuery.data?.data ?? []);
+  const analyzeMutation = useResumeAtsScoreJob();
+  const jobStatusQuery = useJobStatus(activeJobId);
+  const { isStreaming, latestChunk, error: streamError, startAtsScoreStream, closeStream } = useAIStream();
+
+  useBackgroundJobEffects(jobStatusQuery.data, setAnalysisState, setActiveJobId);
+  useStreamEffects(latestChunk, streamError, setAnalysisState);
+
   const isBackgroundAnalyzing =
     analyzeMutation.isPending ||
     isProcessingStatus(jobStatusQuery.data?.status);
 
-  const canStartAnalysis =
-    Boolean(selectedResumeId) &&
-    jobDescription.trim().length >= MIN_JOB_DESCRIPTION_LENGTH &&
-    !isBackgroundAnalyzing &&
-    !isStreaming;
+  const canStartAnalysis = canStartAtsAnalysis({
+    selectedResumeId,
+    jobDescription,
+    isBackgroundAnalyzing,
+    isStreaming,
+  });
 
-  const resumesError = resumesQuery.error instanceof Error ? resumesQuery.error.message : null;
-  const hasNoResumes = resumesQuery.isSuccess && resumes.length === 0;
+  const handleBackgroundAnalysis = () =>
+    startBackgroundAnalysis({
+      selectedResumeId,
+      jobDescription,
+      setAnalysisState,
+      setActiveJobId,
+      mutate: analyzeMutation.mutate,
+    });
+
+  const handleLiveAnalysis = () =>
+    startLiveAnalysis({
+      selectedResumeId,
+      jobDescription,
+      setAnalysisState,
+      startAtsScoreStream,
+    });
+
+  const handleStopStream = () =>
+    stopLiveAnalysis({
+      currentState: analysisState,
+      closeStream,
+      setAnalysisState,
+    });
 
   return {
     analysisState,
-    resumes,
+    resumes: resumesState.resumes,
     selectedResumeId,
     jobDescription,
     isBackgroundAnalyzing,
     isStreamAnalyzing: isStreaming,
-    isResumesLoading: resumesQuery.isLoading,
-    resumesError,
-    hasNoResumes,
+    isResumesLoading: resumesState.isResumesLoading,
+    resumesError: resumesState.resumesError,
+    hasNoResumes: resumesState.hasNoResumes,
     streamError,
     latestChunk,
     canStartAnalysis,
@@ -183,8 +268,6 @@ export function useAtsAnalysis(): UseAtsAnalysisResult {
     handleBackgroundAnalysis,
     handleLiveAnalysis,
     handleStopStream,
-    retryLoadResumes: () => {
-      void resumesQuery.refetch();
-    },
+    retryLoadResumes: resumesState.retryLoadResumes,
   };
 }

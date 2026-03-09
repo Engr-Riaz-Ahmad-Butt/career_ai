@@ -1,63 +1,63 @@
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { QueryClient, useMutation, useQueryClient } from '@tanstack/react-query';
 import { authApi } from '@/lib/api/auth';
 import { useAuthStore } from '@/store/authStore';
+import type { AuthResponse } from '@/lib/api/endpoints/auth.api';
+
+interface ResetPasswordInput {
+    readonly token: string;
+    readonly newPassword: string;
+}
+
+function applyAuthSuccess(
+    payload: AuthResponse,
+    setAccessToken: (token: string) => void,
+    setUser: (user: AuthResponse['user']) => void
+): void {
+    setAccessToken(payload.accessToken);
+    setUser(payload.user);
+}
+
+function applyLogoutSuccess(clearAuth: () => void, queryClient: QueryClient): void {
+    clearAuth();
+    queryClient.clear();
+}
+
+function isPendingMutations(states: readonly boolean[]): boolean {
+    return states.some(Boolean);
+}
 
 export const useAuth = () => {
     const queryClient = useQueryClient();
     const { setUser, setAccessToken, clearAuth } = useAuthStore();
 
-    const signupMutation = useMutation({
+    const signup = useMutation({
         mutationFn: authApi.register,
-        onSuccess: ({ accessToken, user }) => {
-            setAccessToken(accessToken);
-            setUser(user);
-        },
+        onSuccess: (payload) => applyAuthSuccess(payload, setAccessToken, setUser),
     });
-
-    const loginMutation = useMutation({
+    const login = useMutation({
         mutationFn: authApi.login,
-        onSuccess: ({ accessToken, user }) => {
-            setAccessToken(accessToken);
-            setUser(user);
-        },
+        onSuccess: (payload) => applyAuthSuccess(payload, setAccessToken, setUser),
     });
-
-    const googleAuthMutation = useMutation({
+    const googleAuth = useMutation({
         mutationFn: authApi.googleAuth,
-        onSuccess: ({ accessToken, user }) => {
-            setAccessToken(accessToken);
-            setUser(user);
-        },
+        onSuccess: (payload) => applyAuthSuccess(payload, setAccessToken, setUser),
     });
-
-    const forgotPasswordMutation = useMutation({
-        mutationFn: authApi.forgotPassword,
+    const forgotPassword = useMutation({ mutationFn: authApi.forgotPassword });
+    const resetPassword = useMutation({
+        mutationFn: (input: ResetPasswordInput) => authApi.resetPassword(input.token, input.newPassword),
     });
-
-    const resetPasswordMutation = useMutation({
-        mutationFn: ({ token, newPassword }: { token: string; newPassword: string }) =>
-            authApi.resetPassword(token, newPassword),
-    });
-
-    const logoutMutation = useMutation({
+    const logout = useMutation({
         mutationFn: authApi.logout,
-        onSuccess: () => {
-            clearAuth();
-            queryClient.clear();
-        },
+        onSuccess: () => applyLogoutSuccess(clearAuth, queryClient),
     });
 
     return {
-        signup: signupMutation,
-        login: loginMutation,
-        googleAuth: googleAuthMutation,
-        forgotPassword: forgotPasswordMutation,
-        resetPassword: resetPasswordMutation,
-        logout: logoutMutation,
-        isLoading:
-            signupMutation.isPending ||
-            loginMutation.isPending ||
-            googleAuthMutation.isPending ||
-            logoutMutation.isPending,
+        signup,
+        login,
+        googleAuth,
+        forgotPassword,
+        resetPassword,
+        logout,
+        isLoading: isPendingMutations([signup.isPending, login.isPending, googleAuth.isPending, logout.isPending]),
     };
 };
