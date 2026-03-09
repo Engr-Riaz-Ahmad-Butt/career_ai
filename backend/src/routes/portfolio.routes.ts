@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { authenticate, requireCredits } from '../middleware/auth';
+import { authenticate, requireCredits, requireCreditsForAction } from '../middleware/auth';
 import {
     generatePortfolio, listPortfolios, getPortfolio,
     updatePortfolio, deployPortfolio, deletePortfolio
@@ -11,7 +11,7 @@ const router = Router();
 router.use(authenticate);
 
 // POST /portfolio/generate
-router.post('/generate', validate(generatePortfolioSchema), requireCredits(5), generatePortfolio);
+router.post('/generate', validate(generatePortfolioSchema), requireCreditsForAction('PORTFOLIO_GENERATE'), generatePortfolio);
 
 // GET /portfolio
 router.get('/', listPortfolios);
