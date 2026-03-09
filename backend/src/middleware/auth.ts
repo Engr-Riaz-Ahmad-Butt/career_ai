@@ -41,28 +41,70 @@ export const requireCreditsForAction = (action: CreditActionType) => {
   };
 };
 
+async function loadActiveUserFromToken(token: string) {
+  const decoded = verifyAccessToken(token);
+
+  const user = await prisma.user.findUnique({
+    where: { id: decoded.userId },
+    select: { id: true, email: true, plan: true, isActive: true, deletedAt: true },
+  });
+
+  if (!user || !user.isActive || user.deletedAt) {
+    throw new Error('User not found or inactive');
+  }
+
+  return user;
+}
+
+function readBearerToken(req: Request): string | null {
+  const authHeader = req.headers.authorization;
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    return null;
+  }
+  return authHeader.substring(7);
+}
+
+function readQueryToken(req: Request): string | null {
+  const token = req.query?.token;
+  if (typeof token === 'string' && token.trim().length > 0) {
+    return token;
+  }
+  return null;
+}
+
 /**
  * Authenticate JWT bearer token and attach req.user.
  */
 export const authenticate = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const authHeader = req.headers.authorization;
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    const token = readBearerToken(req);
+    if (!token) {
       return res.status(401).json({ success: false, message: 'No token provided' });
     }
 
-    const token = authHeader.substring(7);
-    const decoded = verifyAccessToken(token);
+    const user = await loadActiveUserFromToken(token);
+    req.user = { userId: user.id, email: user.email, plan: user.plan };
+    next();
+  } catch {
+    return res.status(401).json({ success: false, message: 'Invalid or expired token' });
+  }
+};
 
-    const user = await prisma.user.findUnique({
-      where: { id: decoded.userId },
-      select: { id: true, email: true, plan: true, isActive: true, deletedAt: true },
-    });
+/**
+ * Stream authentication.
+ * Supports:
+ * 1) Authorization: Bearer <token>
+ * 2) token query parameter (needed for EventSource)
+ */
+export const authenticateStream = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const token = readBearerToken(req) ?? readQueryToken(req);
 
-    if (!user || !user.isActive || user.deletedAt) {
-      return res.status(401).json({ success: false, message: 'User not found or inactive' });
+    if (!token) {
+      return res.status(401).json({ success: false, message: 'No token provided' });
     }
 
+    const user = await loadActiveUserFromToken(token);
     req.user = { userId: user.id, email: user.email, plan: user.plan };
     next();
   } catch {

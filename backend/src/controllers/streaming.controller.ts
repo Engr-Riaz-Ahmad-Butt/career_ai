@@ -40,12 +40,11 @@ export const streamEnhanceResume = (req: Request, res: Response) => {
 
 /**
  * Stream ATS scoring with real-time feedback
- * POST /stream/ats-score/:resumeId
- * Body: { jobDescription: string }
+ * GET /stream/ats-score/:resumeId?jobDescription=...
  */
 export const streamATSScore = (req: Request, res: Response) => {
   const { resumeId } = req.params;
-  const { jobDescription } = req.body as { jobDescription: string };
+  const { jobDescription } = req.query as { jobDescription?: string };
 
   if (!jobDescription) {
     return res.status(400).json({ success: false, message: 'Job description required' });

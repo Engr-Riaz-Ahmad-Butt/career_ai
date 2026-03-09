@@ -57,6 +57,9 @@ const envSchema = z.object({
 
     // Redis (optional)
     REDIS_URL: z.string().optional(),
+
+    // Background workers
+    ENABLE_EMBEDDED_WORKER: z.enum(['true', 'false']).default('true'),
 });
 
 // ── Parse & Export ────────────────────────────────────────────────────────

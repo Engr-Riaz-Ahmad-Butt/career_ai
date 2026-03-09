@@ -1,155 +1,185 @@
-import crypto from 'crypto';
+import { Job, JobState, Queue } from 'bullmq';
+import { env } from '../config/env';
+import { ApiError } from '../middleware/error';
+import { getBullMqConnectionOptions } from './bullmq-connection';
+import {
+  JOB_NAMES,
+  JOB_QUEUE_NAME,
+  QueueJobStatus,
+  ResumeAtsScoreJobPayload,
+  ResumePdfJobPayload,
+} from './job.types';
 
-export type JobStatus = 'processing' | 'complete' | 'failed';
-
-export interface JobRecord<T = unknown> {
+interface EnqueueResult {
   jobId: string;
-  type: string;
-  status: JobStatus;
-  payload: unknown;
-  result: T | null;
-  error: string | null;
-  createdAt: string;
-  completedAt: string | null;
-  userId?: string;
-}
-
-interface EnqueueOptions {
-  userId?: string;
-  timeoutMs?: number;
+  status: 'processing';
 }
 
 class JobQueueService {
-  private readonly jobs = new Map<string, JobRecord<unknown>>();
-  private readonly maxJobs = 1000;
-  private readonly defaultTimeoutMs = 5 * 60 * 1000;
+  private queue: Queue | null = null;
+  private enabled = false;
 
-  enqueue<T>(
-    type: string,
-    payload: unknown,
-    worker: () => Promise<T>,
-    options: EnqueueOptions = {}
-  ): JobRecord<T> {
-    const jobId = crypto.randomUUID();
-    const now = new Date().toISOString();
+  constructor() {
+    if (!env.REDIS_URL) {
+      console.warn('WARNING: REDIS_URL not configured. Background jobs are disabled.');
+      return;
+    }
 
-    const job: JobRecord<T> = {
-      jobId,
-      type,
-      status: 'processing',
-      payload,
-      result: null,
-      error: null,
-      createdAt: now,
-      completedAt: null,
-      userId: options.userId,
-    };
-
-    this.jobs.set(jobId, job as JobRecord<unknown>);
-
-    const timeoutMs = options.timeoutMs ?? this.defaultTimeoutMs;
-    setImmediate(() => {
-      void this.processJob(jobId, worker, timeoutMs);
+    this.queue = new Queue(JOB_QUEUE_NAME, {
+      connection: getBullMqConnectionOptions(),
+      defaultJobOptions: {
+        attempts: 1,
+        removeOnComplete: { count: 500 },
+        removeOnFail: { count: 500 },
+      },
     });
 
-    this.trimIfNeeded();
-    return job;
+    this.enabled = true;
   }
 
-  getJob<T = unknown>(jobId: string): JobRecord<T> | null {
-    const job = this.jobs.get(jobId);
-    return (job as JobRecord<T> | undefined) ?? null;
+  isEnabled(): boolean {
+    return this.enabled;
   }
 
-  listUserJobs(userId: string, limit = 20): JobRecord[] {
-    return Array.from(this.jobs.values())
-      .filter((job) => job.userId === userId)
-      .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
-      .slice(0, limit);
-  }
+  async enqueueResumePdfJob(userId: string, resumeId: string): Promise<EnqueueResult> {
+    this.ensureEnabled();
 
-  getStats() {
-    const allJobs = Array.from(this.jobs.values());
+    const payload: ResumePdfJobPayload = { userId, resumeId };
+    const job = await this.queue!.add(JOB_NAMES.RESUME_PDF, payload);
+
     return {
-      total: allJobs.length,
-      processing: allJobs.filter((j) => j.status === 'processing').length,
-      complete: allJobs.filter((j) => j.status === 'complete').length,
-      failed: allJobs.filter((j) => j.status === 'failed').length,
+      jobId: job.id!,
+      status: 'processing',
     };
   }
 
-  cleanupCompleted(maxAgeMs = 24 * 60 * 60 * 1000): number {
-    const now = Date.now();
-    let removed = 0;
+  async enqueueResumeAtsScoreJob(
+    userId: string,
+    resumeId: string,
+    jobDescription: string,
+    returnSuggestions: boolean
+  ): Promise<EnqueueResult> {
+    this.ensureEnabled();
 
-    for (const [jobId, job] of this.jobs.entries()) {
-      if (job.status === 'processing' || !job.completedAt) {
-        continue;
-      }
+    const payload: ResumeAtsScoreJobPayload = {
+      userId,
+      resumeId,
+      jobDescription,
+      returnSuggestions,
+    };
 
-      const completedAt = new Date(job.completedAt).getTime();
-      if (now - completedAt > maxAgeMs) {
-        this.jobs.delete(jobId);
-        removed += 1;
-      }
-    }
+    const job = await this.queue!.add(JOB_NAMES.RESUME_ATS_SCORE, payload);
 
-    return removed;
+    return {
+      jobId: job.id!,
+      status: 'processing',
+    };
   }
 
-  private async processJob<T>(jobId: string, worker: () => Promise<T>, timeoutMs: number): Promise<void> {
-    const job = this.jobs.get(jobId) as JobRecord<T> | undefined;
+  async getJob(jobId: string): Promise<QueueJobStatus | null> {
+    this.ensureEnabled();
+
+    const job = await this.queue!.getJob(jobId);
     if (!job) {
-      return;
+      return null;
     }
 
-    try {
-      const result = await Promise.race([
-        worker(),
-        new Promise<never>((_, reject) => {
-          setTimeout(() => reject(new Error('Job timed out')), timeoutMs);
-        }),
-      ]);
+    return this.toQueueJobStatus(job);
+  }
 
-      job.status = 'complete';
-      job.result = result;
-      job.completedAt = new Date().toISOString();
-    } catch (error) {
-      job.status = 'failed';
-      job.error = error instanceof Error ? error.message : 'Unknown job error';
-      job.completedAt = new Date().toISOString();
+  async listUserJobs(userId: string, limit = 20): Promise<QueueJobStatus[]> {
+    this.ensureEnabled();
+
+    const jobs = await this.queue!.getJobs(
+      ['active', 'waiting', 'delayed', 'completed', 'failed', 'paused', 'prioritized'],
+      0,
+      Math.max(limit * 8, 100),
+      true
+    );
+
+    const userJobs = jobs
+      .filter((job) => (job.data as Partial<ResumePdfJobPayload>)?.userId === userId)
+      .slice(0, limit);
+
+    return Promise.all(userJobs.map((job) => this.toQueueJobStatus(job)));
+  }
+
+  async getStats(): Promise<{ total: number; processing: number; complete: number; failed: number }> {
+    this.ensureEnabled();
+
+    const counts = await this.queue!.getJobCounts(
+      'waiting',
+      'active',
+      'completed',
+      'failed',
+      'delayed',
+      'paused',
+      'prioritized'
+    );
+
+    const processing =
+      counts.waiting + counts.active + counts.delayed + counts.paused + counts.prioritized;
+    const complete = counts.completed;
+    const failed = counts.failed;
+
+    return {
+      total: processing + complete + failed,
+      processing,
+      complete,
+      failed,
+    };
+  }
+
+  async cleanupCompleted(maxAgeMs = 24 * 60 * 60 * 1000): Promise<number> {
+    this.ensureEnabled();
+
+    const completed = await this.queue!.clean(maxAgeMs, 1000, 'completed');
+    const failed = await this.queue!.clean(maxAgeMs, 1000, 'failed');
+
+    return completed.length + failed.length;
+  }
+
+  async close(): Promise<void> {
+    if (this.queue) {
+      await this.queue.close();
     }
   }
 
-  private trimIfNeeded(): void {
-    if (this.jobs.size <= this.maxJobs) {
-      return;
+  private ensureEnabled() {
+    if (!this.enabled || !this.queue) {
+      throw new ApiError(503, 'Background jobs unavailable. Configure REDIS_URL.');
+    }
+  }
+
+  private async toQueueJobStatus(job: Job): Promise<QueueJobStatus> {
+    const state = await job.getState();
+    const status = this.mapStateToStatus(state);
+
+    return {
+      jobId: job.id!,
+      type: job.name as QueueJobStatus['type'],
+      status,
+      result: (job.returnvalue as unknown) ?? null,
+      error: job.failedReason ?? null,
+      createdAt: new Date(job.timestamp).toISOString(),
+      completedAt:
+        status === 'complete' || status === 'failed'
+          ? new Date(job.finishedOn ?? Date.now()).toISOString()
+          : null,
+      userId: (job.data as Partial<ResumePdfJobPayload>)?.userId,
+    };
+  }
+
+  private mapStateToStatus(state: JobState | 'unknown'): 'processing' | 'complete' | 'failed' {
+    if (state === 'completed') {
+      return 'complete';
     }
 
-    const ordered = Array.from(this.jobs.values()).sort((a, b) => a.createdAt.localeCompare(b.createdAt));
-    const overflow = this.jobs.size - this.maxJobs;
-
-    let removed = 0;
-    for (const job of ordered) {
-      if (removed >= overflow) {
-        break;
-      }
-
-      if (job.status !== 'processing') {
-        this.jobs.delete(job.jobId);
-        removed += 1;
-      }
+    if (state === 'failed') {
+      return 'failed';
     }
 
-    if (removed < overflow) {
-      for (const job of ordered) {
-        if (removed >= overflow) {
-          break;
-        }
-        this.jobs.delete(job.jobId);
-        removed += 1;
-      }
-    }
+    return 'processing';
   }
 }
 

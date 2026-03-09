@@ -31,6 +31,8 @@ import jobRoutes from './routes/job.routes';
 // Middleware
 import { errorHandler, notFound } from './middleware/error';
 import { requestIdMiddleware } from './middleware/requestId.middleware';
+import { startJobWorker, stopJobWorker } from './workers/job.worker';
+import { getJobQueueService } from './services/job-queue.service';
 
 const app: Application = express();
 
@@ -138,6 +140,7 @@ app.use(errorHandler);
 // ── Start Server ───────────────────────────────────────────────────────────
 
 let server: ReturnType<typeof app.listen> | null = null;
+let embeddedWorkerStarted = false;
 
 async function gracefulShutdown(signal: string) {
   console.log(`\n⏳ Received ${signal}. Shutting down gracefully...`);
@@ -146,6 +149,22 @@ async function gracefulShutdown(signal: string) {
     server.close(() => {
       console.log('   ✅ HTTP server closed');
     });
+  }
+
+  try {
+    if (embeddedWorkerStarted) {
+      await stopJobWorker();
+      console.log('   ✅ Embedded job worker stopped');
+    }
+  } catch (err) {
+    console.error('   ❌ Error stopping job worker:', err);
+  }
+
+  try {
+    await getJobQueueService().close();
+    console.log('   ✅ Job queue connection closed');
+  } catch (err) {
+    console.error('   ❌ Error closing job queue connection:', err);
   }
 
   try {
@@ -159,6 +178,14 @@ async function gracefulShutdown(signal: string) {
 }
 
 if (require.main === module) {
+  const shouldStartEmbeddedWorker =
+    Boolean(env.REDIS_URL) && env.ENABLE_EMBEDDED_WORKER === 'true';
+
+  if (shouldStartEmbeddedWorker) {
+    const worker = startJobWorker();
+    embeddedWorkerStarted = Boolean(worker);
+  }
+
   server = app.listen(env.PORT, () => {
     console.log(`
   🚀 CareerAI API Server
@@ -167,6 +194,7 @@ if (require.main === module) {
   🌍 Environment: ${env.NODE_ENV}
   🔗 Health:      http://localhost:${env.PORT}/health
   📚 API v1:      http://localhost:${env.PORT}/api/v1
+  🔧 Worker:      ${shouldStartEmbeddedWorker ? 'embedded' : 'external/off'}
   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
     `);
   });

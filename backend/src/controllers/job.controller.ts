@@ -1,13 +1,9 @@
 import { Request, Response } from 'express';
-import { ResumeService } from '../services/resume.service';
-import { AIService } from '../services/ai/aiService';
 import { asyncHandler } from '../middleware/error';
 import { getJobQueueService } from '../services/job-queue.service';
 import { successResponse, errorResponse, jobStatusResponse } from '../utils/apiResponse';
 
 const queue = getJobQueueService();
-const resumeService = new ResumeService();
-const aiService = new AIService();
 
 function normalizeResult(result: unknown): Record<string, any> | null {
   if (result === null || result === undefined) {
@@ -25,12 +21,7 @@ export const enqueueResumePdfJob = asyncHandler(async (req: Request, res: Respon
   const userId = req.user!.userId;
   const resumeId = req.params.id;
 
-  const job = queue.enqueue(
-    'resume_pdf',
-    { resumeId },
-    async () => resumeService.generatePdf(userId, resumeId),
-    { userId, timeoutMs: 2 * 60 * 1000 }
-  );
+  const job = await queue.enqueueResumePdfJob(userId, resumeId);
 
   res.status(202).json(
     successResponse({ jobId: job.jobId, status: job.status }, 'Resume PDF generation started')
@@ -51,11 +42,11 @@ export const enqueueAtsScoreJob = asyncHandler(async (req: Request, res: Respons
       .json(errorResponse('Job description is required', 'VALIDATION_ERROR'));
   }
 
-  const job = queue.enqueue(
-    'resume_ats_score',
-    { resumeId },
-    async () => aiService.scoreATS(userId, resumeId, jobDescription, returnSuggestions),
-    { userId, timeoutMs: 3 * 60 * 1000 }
+  const job = await queue.enqueueResumeAtsScoreJob(
+    userId,
+    resumeId,
+    jobDescription,
+    returnSuggestions
   );
 
   res.status(202).json(
@@ -64,7 +55,7 @@ export const enqueueAtsScoreJob = asyncHandler(async (req: Request, res: Respons
 });
 
 export const getJobStatus = asyncHandler(async (req: Request, res: Response) => {
-  const job = queue.getJob(req.params.jobId);
+  const job = await queue.getJob(req.params.jobId);
 
   if (!job) {
     return res.status(404).json(errorResponse('Job not found', 'JOB_NOT_FOUND'));
@@ -87,7 +78,7 @@ export const getJobStatus = asyncHandler(async (req: Request, res: Response) => 
 });
 
 export const listMyJobs = asyncHandler(async (req: Request, res: Response) => {
-  const jobs = queue.listUserJobs(req.user!.userId, 20);
+  const jobs = await queue.listUserJobs(req.user!.userId, 20);
 
   res.json(
     successResponse({ jobs }, 'Recent jobs fetched successfully')
@@ -95,8 +86,8 @@ export const listMyJobs = asyncHandler(async (req: Request, res: Response) => {
 });
 
 export const jobQueueHealth = asyncHandler(async (_req: Request, res: Response) => {
-  const cleaned = queue.cleanupCompleted();
-  const stats = queue.getStats();
+  const cleaned = await queue.cleanupCompleted();
+  const stats = await queue.getStats();
 
   res.json(
     successResponse({ stats, cleaned }, 'Job queue healthy')

@@ -4,18 +4,20 @@ import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { ScoreCircle } from '@/components/common/score-circle';
 import { resumeAnalysis } from '@/lib/mock-data';
-import { useQuery, useMutation } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import { resumeApi } from '@/lib/api/endpoints/resume.api';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
-import { Zap, Loader2, Search, FileSearch } from 'lucide-react';
-import { useState } from 'react';
-import { Input } from '@/components/ui/input';
+import { Zap, Loader2 } from 'lucide-react';
+import { useEffect, useState } from 'react';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { FeatureErrorBoundary } from '@/components/errors/FeatureErrorBoundary';
 import { message } from 'antd';
 import { queryKeys } from '@/lib/query-keys';
 import { STALE_TIMES, GC_TIMES } from '@/lib/query-config';
+import { useResumeAtsScoreJob, useJobStatus } from '@/hooks/use-job-poller';
+import { useAIStream } from '@/hooks/use-ai-stream';
+import { AIStreamProgress } from '@/components/common/ai-stream-progress';
 
 const keywordData = [
   { name: 'JavaScript', value: 45 },
@@ -30,6 +32,7 @@ export default function AnalyzePage() {
   const [jobDescription, setJobDescription] = useState('');
   const [selectedResumeId, setSelectedResumeId] = useState<string>('');
   const [analysisResult, setAnalysisResult] = useState<any>(null);
+  const [activeJobId, setActiveJobId] = useState<string | null>(null);
 
   const { data: resumesData, isLoading: resumesLoading } = useQuery({
     queryKey: queryKeys.resumes.all(),
@@ -38,21 +41,67 @@ export default function AnalyzePage() {
     gcTime: GC_TIMES.RESUME_LIST,
   });
 
-  const analyzeMutation = useMutation({
-    mutationFn: () =>
-      resumeApi.getAtsScore(selectedResumeId, {
+  const analyzeMutation = useResumeAtsScoreJob();
+  const jobStatusQuery = useJobStatus(activeJobId);
+
+  const {
+    isStreaming,
+    latestChunk,
+    error: streamError,
+    startAtsScoreStream,
+    closeStream,
+  } = useAIStream();
+
+  useEffect(() => {
+    if (!jobStatusQuery.data) {
+      return;
+    }
+
+    if (jobStatusQuery.data.status === 'complete') {
+      setAnalysisResult(jobStatusQuery.data.result);
+      message.success('ATS analysis complete');
+      setActiveJobId(null);
+    }
+
+    if (jobStatusQuery.data.status === 'failed') {
+      message.error(jobStatusQuery.data.error ?? 'ATS analysis failed');
+      setActiveJobId(null);
+    }
+  }, [jobStatusQuery.data]);
+
+  useEffect(() => {
+    if (latestChunk?.type === 'data' && latestChunk.data) {
+      setAnalysisResult(latestChunk.data);
+    }
+  }, [latestChunk]);
+
+  const runBackgroundAnalysis = () => {
+    analyzeMutation.mutate(
+      {
+        resumeId: selectedResumeId,
         jobDescription,
         returnSuggestions: true,
-      }),
-    onSuccess: (data: any) => {
-      setAnalysisResult(data);
-    },
-    onError: (error) => {
-      message.error('Failed to analyze resume. Please try again.');
-    }
-  });
+      },
+      {
+        onSuccess: (job) => {
+          setActiveJobId(job.jobId);
+          message.info('ATS analysis queued. Polling for result...');
+        },
+        onError: () => {
+          message.error('Failed to queue ATS analysis');
+        },
+      }
+    );
+  };
+
+  const runLiveAnalysis = () => {
+    startAtsScoreStream(selectedResumeId, jobDescription);
+  };
 
   const resumes = resumesData?.data || [];
+  const isAnalyzing =
+    analyzeMutation.isPending ||
+    jobStatusQuery.data?.status === 'processing';
   const metrics = analysisResult?.score ? [
     { label: 'Overall Score', score: analysisResult.score },
     { label: 'Keyword Match', score: analysisResult.keywordMatch || 0 },
@@ -127,23 +176,46 @@ export default function AnalyzePage() {
                 className="min-h-[150px]"
               />
             </div>
-            <Button
-              className="bg-indigo-600 hover:bg-indigo-700 h-11 px-8"
-              disabled={!selectedResumeId || jobDescription.length < 50 || analyzeMutation.isPending}
-              onClick={() => analyzeMutation.mutate()}
-            >
-              {analyzeMutation.isPending ? (
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              ) : (
-                <Zap className="mr-2 h-4 w-4" />
-              )}
-              Analyze Now
-            </Button>
+            <div className="flex flex-wrap gap-3">
+              <Button
+                className="bg-indigo-600 hover:bg-indigo-700 h-11 px-8"
+                disabled={!selectedResumeId || jobDescription.length < 50 || isAnalyzing}
+                onClick={runBackgroundAnalysis}
+              >
+                {isAnalyzing ? (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                ) : (
+                  <Zap className="mr-2 h-4 w-4" />
+                )}
+                Analyze In Background
+              </Button>
+
+              <Button
+                variant="outline"
+                className="h-11 px-8"
+                disabled={!selectedResumeId || jobDescription.length < 50 || isStreaming}
+                onClick={runLiveAnalysis}
+              >
+                {isStreaming ? (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                ) : (
+                  <Zap className="mr-2 h-4 w-4" />
+                )}
+                Live Stream Analysis
+              </Button>
+            </div>
           </CardContent>
         </Card>
 
+        <AIStreamProgress
+          isStreaming={isStreaming}
+          latestChunk={latestChunk}
+          error={streamError}
+          onStop={closeStream}
+        />
+
         {/* Results Sections (Shown always with mock/real data) */}
-        <div className={analyzeMutation.isPending ? 'opacity-50 pointer-events-none' : ''}>
+        <div className={isAnalyzing ? 'opacity-50 pointer-events-none' : ''}>
           {/* Scores Grid */}
           <motion.div
             initial={{ opacity: 0 }}

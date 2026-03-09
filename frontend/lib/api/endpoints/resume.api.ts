@@ -86,7 +86,7 @@ export interface ResumeVersionSummary {
 export interface JobStatusResponse {
   jobId: string;
   status: 'processing' | 'complete' | 'failed';
-  result: { url: string } | null;
+  result: Record<string, unknown> | null;
   error: string | null;
   createdAt: string;
   completedAt: string | null;
@@ -131,12 +131,11 @@ export const resumeApi = {
       .then((r) => r.data.data.resume);
   },
 
-  /** POST /resumes/:id/pdf */
+  /** POST /jobs/resume/:id/pdf */
   generatePdf: (
-    id: string,
-    templateId?: string
-  ): Promise<{ pdfUrl: string; expiresAt: string } | { jobId: string; status: string }> =>
-    apiClient.post(`/resumes/${id}/pdf`, templateId ? { templateId } : {}).then((r) => r.data.data),
+    id: string
+  ): Promise<{ jobId: string; status: 'processing' }> =>
+    apiClient.post(`/jobs/resume/${id}/pdf`).then((r) => r.data.data),
 
   /** GET /jobs/:jobId — poll for job status (BullMQ flow) */
   getPdfStatus: (jobId: string): Promise<JobStatusResponse> =>
