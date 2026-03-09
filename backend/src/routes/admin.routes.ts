@@ -4,6 +4,7 @@ import { PAGINATION } from '@/constants/pagination';
 import prisma from '@/config/database';
 import { z } from 'zod';
 import nodemailer from 'nodemailer';
+import { logger } from '@/utils/logger';
 
 const router = Router();
 router.use(authenticate, requireAdmin);
@@ -142,7 +143,11 @@ router.post('/broadcast', async (req, res) => {
     // Fire-and-forget email blast
     // In production: use a queue (BullMQ/SQS) + email service
     const emails = users.map(u => u.email).join(',');
-    console.log(`[ADMIN BROADCAST] Sending "${subject}" to ${users.length} users in segment "${segment}"`);
+    logger.info(`Admin broadcast queued`, { 
+      subject, 
+      recipientCount: users.length, 
+      segment 
+    });
 
     res.json({ success: true, message: `Broadcast queued for ${users.length} users`, data: { recipientCount: users.length } });
 });
