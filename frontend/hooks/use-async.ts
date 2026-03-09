@@ -3,17 +3,17 @@ import { useState, useCallback, useEffect } from 'react';
 export type AsyncStatus = 'idle' | 'loading' | 'success' | 'error';
 
 export interface AsyncState<T> {
-  data: T | null;
-  error: Error | null;
-  status: AsyncStatus;
-  isLoading: boolean;
-  isSuccess: boolean;
-  isError: boolean;
-  isIdle: boolean;
+  readonly data: T | null;
+  readonly error: Error | null;
+  readonly status: AsyncStatus;
+  readonly isLoading: boolean;
+  readonly isSuccess: boolean;
+  readonly isError: boolean;
+  readonly isIdle: boolean;
 }
 
 export interface UseAsyncReturn<T> extends AsyncState<T> {
-  execute: (...args: any[]) => Promise<T | undefined>;
+  execute: (...args: unknown[]) => Promise<T | undefined>;
   reset: () => void;
   setData: (data: T | null) => void;
 }
@@ -32,7 +32,7 @@ export interface UseAsyncReturn<T> extends AsyncState<T> {
  * ```
  */
 export function useAsync<T>(
-  asyncFunction: (...args: any[]) => Promise<T>,
+  asyncFunction: (...args: unknown[]) => Promise<T>,
   immediate = false
 ): UseAsyncReturn<T> {
   const [data, setData] = useState<T | null>(null);
@@ -40,7 +40,7 @@ export function useAsync<T>(
   const [status, setStatus] = useState<AsyncStatus>('idle');
 
   const execute = useCallback(
-    async (...args: any[]): Promise<T | undefined> => {
+    async (...args: unknown[]): Promise<T | undefined> => {
       setStatus('loading');
       setError(null);
 

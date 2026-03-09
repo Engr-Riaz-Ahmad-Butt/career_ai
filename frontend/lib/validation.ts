@@ -109,3 +109,107 @@ export const changePasswordSchema = z.object({
     message: "Passwords don't match",
     path: ["confirmPassword"],
 });
+
+// API Query Params
+export const getResumesParamsSchema = z.object({
+    page: z.number().positive().optional(),
+    limit: z.number().positive().optional(),
+    search: z.string().optional(),
+    sortBy: z.string().optional(),
+    order: z.enum(['asc', 'desc']).optional(),
+}).strict();
+
+export const getDocumentsParamsSchema = z.object({
+    page: z.number().positive().optional(),
+    limit: z.number().positive().optional(),
+    type: z.string().optional(),
+    search: z.string().optional(),
+    sortBy: z.string().optional(),
+    order: z.enum(['asc', 'desc']).optional(),
+}).strict();
+
+export const getSettingsParamsSchema = z.object({
+    category: z.string().optional(),
+}).strict();
+
+type ResumeParams = z.infer<typeof getResumesParamsSchema>;
+type DocumentParams = z.infer<typeof getDocumentsParamsSchema>;
+type SettingsParams = z.infer<typeof getSettingsParamsSchema>;
+
+// Document Schemas
+export const generateCoverLetterSchema = z.object({
+    resumeId: z.string().min(1, 'Resume ID is required'),
+    jobDescription: z.string().min(10, 'Job description is required'),
+    companyName: z.string().optional(),
+    targetRole: z.string().optional(),
+});
+
+export const generateSOPSchema = z.object({
+    resumeId: z.string().min(1, 'Resume ID is required'),
+    programName: z.string().min(1, 'Program name is required'),
+    targetRole: z.string().optional(),
+    motivation: z.string().optional(),
+});
+
+export const generateMotivationLetterSchema = z.object({
+    resumeId: z.string().min(1, 'Resume ID is required'),
+    companyName: z.string().min(1, 'Company name is required'),
+    targetRole: z.string().optional(),
+    motivation: z.string().optional(),
+});
+
+export const generateStudyPlanSchema = z.object({
+    resumeId: z.string().min(1, 'Resume ID is required'),
+    programName: z.string().min(1, 'Program name is required'),
+    duration: z.number().positive().optional(),
+});
+
+export const generateFinancialLetterSchema = z.object({
+    resumeId: z.string().min(1, 'Resume ID is required'),
+    amount: z.number().positive(),
+    currency: z.string().min(1),
+});
+
+export const generateBioSchema = z.object({
+    resumeId: z.string().min(1, 'Resume ID is required'),
+    platform: z.enum(['linkedin', 'twitter', 'instagram']).optional(),
+});
+
+// Portfolio Schemas
+export const generatePortfolioSchema = z.object({
+    resumeId: z.string().min(1, 'Resume ID is required'),
+    projectIds: z.array(z.string()).optional(),
+    theme: z.string().optional(),
+});
+
+// AI Schemas
+export const generateResumeSchema = z.object({
+    jobTitle: z.string().min(1, 'Job title is required'),
+    experience: z.string().min(10).optional(),
+    skills: z.array(z.string()).optional(),
+    education: z.string().optional(),
+});
+
+export const tailorResumeSchema = z.object({
+    resumeId: z.string().min(1, 'Resume ID is required'),
+    jobDescription: z.string().min(10, 'Job description is required'),
+});
+
+export const improveResumeSchema = z.object({
+    resumeId: z.string().min(1, 'Resume ID is required'),
+    focusArea: z.enum(['keywords', 'formatting', 'content']).optional(),
+});
+
+export const analyzeATSSchema = z.object({
+    resumeId: z.string().min(1, 'Resume ID is required'),
+    jobDescription: z.string().optional(),
+});
+
+export const generateInterviewPrepSchema = z.object({
+    resumeId: z.string().min(1, 'Resume ID is required'),
+    jobDescription: z.string().min(10, 'Job description is required'),
+    jobTitle: z.string().min(1, 'Job title is required'),
+    numberOfQuestions: z.number().positive().optional().default(10),
+});
+
+export type { ResumeParams, DocumentParams, SettingsParams };

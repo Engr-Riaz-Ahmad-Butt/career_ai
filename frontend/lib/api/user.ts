@@ -1,10 +1,15 @@
-import api from '../api-client';
+import api from '../apiClient';
+import { z } from 'zod';
+import { updateProfileSchema, changePasswordSchema } from '../validation';
+
+type UpdateProfileInput = z.infer<typeof updateProfileSchema>;
+type ChangePasswordInput = z.infer<typeof changePasswordSchema>;
 
 export const userApi = {
     getMe: () => api.get('/users/me').then((res) => res.data),
-    updateMe: (data: any) => api.put('/users/me', data).then((res) => res.data),
+    updateMe: (data: UpdateProfileInput) => api.put('/users/me', data).then((res) => res.data),
     deleteMe: () => api.delete('/users/me').then((res) => res.data),
-    changePassword: (data: any) => api.put('/users/me/password', data).then((res) => res.data),
+    changePassword: (data: ChangePasswordInput) => api.put('/users/me/password', data).then((res) => res.data),
     uploadAvatar: (file: File) => {
         const formData = new FormData();
         formData.append('file', file);

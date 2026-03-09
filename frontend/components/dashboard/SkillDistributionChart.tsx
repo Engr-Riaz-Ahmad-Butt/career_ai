@@ -3,6 +3,11 @@
 import { Bar } from '@ant-design/plots';
 import { skillDistribution } from '@/lib/analyticsData';
 
+interface DistributionData {
+  readonly name: string;
+  readonly value: number;
+}
+
 export function SkillDistributionChart() {
   const config = {
     data: skillDistribution,
@@ -11,7 +16,7 @@ export function SkillDistributionChart() {
     height: 250,
     animate: { enter: { type: 'fadeIn' } },
     label: {
-      text: (d: any) => `${d.value}%`,
+      text: (d: DistributionData) => `${d.value}%`,
       position: 'right',
       style: { fill: '#6b7280' },
     },

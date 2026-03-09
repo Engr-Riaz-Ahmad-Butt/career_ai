@@ -13,6 +13,12 @@ interface AccordionContextValue {
 
 const AccordionContext = React.createContext<AccordionContextValue | undefined>(undefined)
 
+interface AccordionItemContextValue {
+    value: string
+}
+
+const AccordionItemContext = React.createContext<AccordionItemContextValue | undefined>(undefined)
+
 export const Accordion = ({
     children,
     type = "single",
@@ -64,12 +70,17 @@ export const AccordionTrigger = ({
     className?: string
 }) => {
     const context = React.useContext(AccordionContext)
-    const itemValue = (React.useContext(AccordionItemContext) as any)?.value
+    const itemContext = React.useContext(AccordionItemContext)
+    const itemValue = itemContext?.value ?? undefined
     const isOpen = context?.value === itemValue
 
     return (
         <button
-            onClick={() => context?.onValueChange(itemValue)}
+            onClick={() => {
+                if (itemValue !== undefined) {
+                    context?.onValueChange(itemValue)
+                }
+            }}
             className={cn(
                 "flex flex-1 items-center justify-between py-4 font-medium transition-all hover:underline w-full text-left",
                 className
@@ -115,7 +126,8 @@ export const AccordionContent = ({
     className?: string
 }) => {
     const context = React.useContext(AccordionContext)
-    const itemValue = (React.useContext(AccordionItemContext) as any)?.value
+    const itemContext = React.useContext(AccordionItemContext)
+    const itemValue = itemContext?.value ?? undefined
     const isOpen = context?.value === itemValue
 
     return (
