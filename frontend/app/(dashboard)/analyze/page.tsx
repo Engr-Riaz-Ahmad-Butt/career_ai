@@ -1,7 +1,7 @@
 'use client';
 
 import { FeatureErrorBoundary } from '@/components/errors/FeatureErrorBoundary';
-import { AIStreamProgress } from '@/components/common/ai-stream-progress';
+import { AIStreamProgress } from '@/components/common/AiStreamProgress';
 import { AnalyzeFormCard } from '@/components/analyze/AnalyzeFormCard';
 import { AnalyzePageHeader } from '@/components/analyze/AnalyzePageHeader';
 import { AnalyzeResultsSection } from '@/components/analyze/AnalyzeResultsSection';

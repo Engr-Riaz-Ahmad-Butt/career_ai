@@ -3,7 +3,7 @@
 import { motion } from 'framer-motion';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { StatsCard } from '@/components/common/stats-card';
+import { StatsCard } from '@/components/common/StatsCard';
 import { useJobTrackerStore } from '@/store/jobTrackerStore';
 import { useAuthStore } from '@/store/authStore';
 import {

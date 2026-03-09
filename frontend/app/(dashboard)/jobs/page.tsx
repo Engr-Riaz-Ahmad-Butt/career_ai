@@ -4,10 +4,10 @@ import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { JobTable } from '@/components/job-tracker/job-table';
-import { JobDetail } from '@/components/job-tracker/job-detail';
+import { JobTable } from '@/components/job-tracker/JobTable';
+import { JobDetail } from '@/components/job-tracker/JobDetail';
 import { useJobTrackerStore } from '@/store/jobTrackerStore';
-import { JobApplication } from '@/lib/job-tracker-data';
+import { JobApplication } from '@/lib/jobTrackerData';
 import {
   Tabs,
   TabsContent,

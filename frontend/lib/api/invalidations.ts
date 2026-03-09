@@ -9,7 +9,7 @@
  * or stale data will persist and confuse users.
  */
 
-import { queryKeys } from '@/lib/query-keys';
+import { queryKeys } from '@/lib/queryKeys';
 
 /**
  * Resume mutations

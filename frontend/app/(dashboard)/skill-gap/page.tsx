@@ -2,9 +2,9 @@
 
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { GapAnalyzer } from '@/components/skill-gap/gap-analyzer';
+import { GapAnalyzer } from '@/components/skill-gap/GapAnalyzer';
 import { Roadmap } from '@/components/skill-gap/roadmap';
-import { generateRoadmap, getSkillGaps } from '@/lib/skill-gap-data';
+import { generateRoadmap, getSkillGaps } from '@/lib/skillGapData';
 import { Card, CardContent } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Zap, TrendingUp, BookOpen } from 'lucide-react';

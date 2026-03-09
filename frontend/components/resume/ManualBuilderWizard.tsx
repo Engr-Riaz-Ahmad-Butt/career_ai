@@ -20,8 +20,8 @@ import {
     StartupVibrantPreview,
     AcademicStructuredPreview,
     GradientModernPreview,
-} from '@/components/resume/template-preview';
-import { resumeTemplates } from '@/lib/resume-templates';
+} from '@/components/resume/TemplatePreview';
+import { resumeTemplates } from '@/lib/resumeTemplates';
 import { ResumeTemplate } from '@/types';
 
 const PREVIEW_MAP: Record<string, React.ComponentType<any>> = {

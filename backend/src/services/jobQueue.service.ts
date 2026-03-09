@@ -1,7 +1,7 @@
 import { Job, JobState, Queue } from 'bullmq';
 import { env } from '../config/env';
 import { ApiError } from '../middleware/error';
-import { getBullMqConnectionOptions } from './bullmq-connection';
+import { getBullMqConnectionOptions } from './bullmqConnection';
 import {
   JOB_NAMES,
   JOB_QUEUE_NAME,

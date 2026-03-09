@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Check, Crown, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { resumeTemplates } from '@/lib/resume-templates';
+import { resumeTemplates } from '@/lib/resumeTemplates';
 import { ResumeTemplate } from '@/types';
 import {
     ClassicProfessionalPreview,
@@ -15,7 +15,7 @@ import {
     StartupVibrantPreview,
     AcademicStructuredPreview,
     GradientModernPreview,
-} from '@/components/resume/template-preview';
+} from '@/components/resume/TemplatePreview';
 import { ResumeData } from '@/types';
 
 type FilterStyle = 'all' | 'ats-friendly' | 'modern' | 'creative' | 'executive' | 'simple';

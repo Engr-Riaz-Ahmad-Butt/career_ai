@@ -1,5 +1,5 @@
 import { useMutation } from '@tanstack/react-query';
-import api from '@/lib/api-client';
+import api from '@/lib/apiClient';
 
 export const aiApi = {
     generateResume: (data: any) => api.post('/ai/generate-resume', data).then((res) => res.data),

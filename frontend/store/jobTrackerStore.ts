@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { JobApplication, InterviewNote, mockJobApplications } from '@/lib/job-tracker-data';
+import { JobApplication, InterviewNote, mockJobApplications } from '@/lib/jobTrackerData';
 
 interface JobStats {
   total: number;

@@ -4,6 +4,7 @@ import { useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { MessageSquare, Sparkles, ArrowRight, ArrowLeft, FileText } from 'lucide-react';
 import { InlineLoading } from '@/components/shared';
+import { LoadingSpinner } from '@/components/shared/LoadingSpinner';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
@@ -158,7 +159,7 @@ export function PromptToCVMode({ onComplete, onCancel }: PromptToCVModeProps) {
                             >
                                 {loading ? (
                                     <span className="flex items-center gap-2">
-                                        <Loader2 className="w-5 h-5 animate-spin" /> Generating your CV…
+                                        <LoadingSpinner size="sm" /> Generating your CV…
                                     </span>
                                 ) : (
                                     <span className="flex items-center gap-2">

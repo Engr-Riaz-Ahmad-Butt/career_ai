@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { Skill, userSkills } from '@/lib/skill-gap-data';
+import { Skill, userSkills } from '@/lib/skillGapData';
 
 interface SkillState {
   skills: Skill[];

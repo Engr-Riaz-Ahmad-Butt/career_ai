@@ -9,8 +9,8 @@ import { useAIStream } from '@/hooks/use-ai-stream';
 import { useJobStatus, useResumeAtsScoreJob } from '@/hooks/use-job-poller';
 import { transformAtsAnalysisPayload } from '@/lib/mappers/atsAnalysis.mapper';
 import { resumeApi } from '@/lib/api/endpoints/resume.api';
-import { GC_TIMES, STALE_TIMES } from '@/lib/query-config';
-import { queryKeys } from '@/lib/query-keys';
+import { GC_TIMES, STALE_TIMES } from '@/lib/queryConfig';
+import { queryKeys } from '@/lib/queryKeys';
 import type {
   AtsAnalysisAsyncState,
   ResumeOption,

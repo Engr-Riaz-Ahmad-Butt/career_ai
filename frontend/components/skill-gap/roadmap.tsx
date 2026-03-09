@@ -5,7 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
-import { SkillRoadmap } from '@/lib/skill-gap-data';
+import { SkillRoadmap } from '@/lib/skillGapData';
 import { Calendar, DollarSign, BookOpen, Award, ExternalLink } from 'lucide-react';
 
 interface RoadmapProps {

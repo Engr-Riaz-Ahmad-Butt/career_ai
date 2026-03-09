@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { message } from 'antd';
 import { interviewApi } from '@/lib/api/endpoints/interview.api';
-import { queryKeys } from '@/lib/query-keys';
+import { queryKeys } from '@/lib/queryKeys';
 
 interface InterviewSessionItem {
   readonly id: string;

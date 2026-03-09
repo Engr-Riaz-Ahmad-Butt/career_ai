@@ -11,7 +11,7 @@ import {
   AccordionTrigger,
 } from '@/components/ui/accordion';
 import { Checkbox } from '@/components/ui/checkbox';
-import { interviewQuestions } from '@/lib/mock-data';
+import { interviewQuestions } from '@/lib/mockData';
 import { Mic, Volume2, BookOpen, CheckCircle2, Plus, History, Wand2, Trash2 } from 'lucide-react';
 import { LoadingState, LoadingSpinner } from '@/components/shared';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';

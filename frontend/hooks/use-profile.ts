@@ -1,8 +1,8 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { userApi } from '@/lib/api/endpoints/user.api';
 import { useAuthStore } from '@/store/authStore';
-import { queryKeys } from '@/lib/query-keys';
-import { STALE_TIMES, GC_TIMES } from '@/lib/query-config';
+import { queryKeys } from '@/lib/queryKeys';
+import { STALE_TIMES, GC_TIMES } from '@/lib/queryConfig';
 
 export const useProfile = () => {
     const queryClient = useQueryClient();

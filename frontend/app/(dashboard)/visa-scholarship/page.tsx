@@ -3,8 +3,8 @@
 import { motion } from 'framer-motion';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { VisaGuide } from '@/components/visa/visa-guide';
-import { FinancialProofGenerator } from '@/components/visa/financial-proof-generator';
+import { VisaGuide } from '@/components/visa/VisaGuide';
+import { FinancialProofGenerator } from '@/components/visa/FinancialProofGenerator';
 import { Briefcase, Award, FileText } from 'lucide-react';
 
 const container = {

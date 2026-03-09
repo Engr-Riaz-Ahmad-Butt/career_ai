@@ -1,4 +1,4 @@
-import { resumeAnalysis } from '@/lib/mock-data';
+import { resumeAnalysis } from '@/lib/mockData';
 import type { AnalysisKeyword, AnalysisMetric } from '@/types/atsAnalysis.types';
 
 export const MIN_JOB_DESCRIPTION_LENGTH = 50;

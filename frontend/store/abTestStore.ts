@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { ABTestVariant, ABTestResult, generateABTestPrediction } from '@/lib/ab-testing-data';
+import { ABTestVariant, ABTestResult, generateABTestPrediction } from '@/lib/abTestingData';
 
 interface ABTestState {
   tests: ABTestResult[];

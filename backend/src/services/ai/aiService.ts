@@ -1,6 +1,6 @@
 import { generateContent, generateStructuredContent, MODELS } from '../../config/gemini';
 import PROMPTS from './prompts';
-import ENHANCED_PROMPTS from './enhanced-prompts';
+import ENHANCED_PROMPTS from './enhancedPrompts';
 import prisma from '../../config/database';
 
 // Use enhanced prompts for better results

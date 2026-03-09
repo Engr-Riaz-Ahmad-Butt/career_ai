@@ -1,6 +1,6 @@
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { jobsApi } from '@/lib/api/endpoints/jobs.api';
-import { queryKeys } from '@/lib/query-keys';
+import { queryKeys } from '@/lib/queryKeys';
 
 export function useJobStatus(jobId: string | null) {
   return useQuery({

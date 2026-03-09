@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { VisaSponsorship, ScholarshipInfo, FinancialProof } from '@/lib/visa-scholarship-data';
+import { VisaSponsorship, ScholarshipInfo, FinancialProof } from '@/lib/visaScholarshipData';
 
 interface VisaState {
   selectedMode: 'job-visa' | 'scholarship' | null;

@@ -23,7 +23,7 @@ import {
   AlertDialogDescription,
   AlertDialogTitle,
   AlertDialogTrigger,
-} from '@/components/ui/alert-dialog';
+} from '@/components/ui/AlertDialog';
 import { User as UserIcon, Lock, Bell, Zap, CheckCircle2 } from 'lucide-react';
 import { message } from 'antd';
 import { FeatureErrorBoundary } from '@/components/errors/FeatureErrorBoundary';

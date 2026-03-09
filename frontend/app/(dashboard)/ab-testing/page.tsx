@@ -1,8 +1,8 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { ABTestCreator } from '@/components/ab-testing/test-creator';
-import { TestResults } from '@/components/ab-testing/test-results';
+import { ABTestCreator } from '@/components/ab-testing/TestCreator';
+import { TestResults } from '@/components/ab-testing/TestResults';
 import { useABTestStore } from '@/store/abTestStore';
 import { Sparkles } from 'lucide-react';
 

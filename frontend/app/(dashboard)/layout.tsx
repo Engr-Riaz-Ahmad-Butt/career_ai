@@ -1,7 +1,7 @@
 'use client';
 
-import { AppSidebar } from "@/components/layout/app-sidebar";
-import { AppNavbar } from "@/components/layout/app-navbar";
+import { AppSidebar } from "@/components/layout/AppSidebar";
+import { AppNavbar } from "@/components/layout/AppNavbar";
 import { useUIStore } from "@/store/uiStore";
 import { FeatureErrorBoundary } from "@/components/errors/FeatureErrorBoundary";
 

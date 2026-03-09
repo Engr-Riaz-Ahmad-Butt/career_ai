@@ -2,8 +2,8 @@ import { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { documentApi } from '@/lib/api/endpoints/document.api';
 import { resumeApi } from '@/lib/api/endpoints/resume.api';
-import { GC_TIMES, STALE_TIMES } from '@/lib/query-config';
-import { queryKeys } from '@/lib/query-keys';
+import { GC_TIMES, STALE_TIMES } from '@/lib/queryConfig';
+import { queryKeys } from '@/lib/queryKeys';
 
 export interface LibraryDocumentItem {
   readonly id: string;

@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { billingApi } from '@/lib/api/endpoints/billing.api';
-import { queryKeys } from '@/lib/query-keys';
+import { queryKeys } from '@/lib/queryKeys';
 
 export interface PricingPlanView {
   readonly id: string;

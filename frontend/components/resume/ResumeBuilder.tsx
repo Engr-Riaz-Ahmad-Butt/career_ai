@@ -12,10 +12,10 @@ import {
     AccordionItem,
     AccordionTrigger,
 } from '@/components/ui/accordion';
-import { TemplateSelector } from '@/components/resume/template-selector';
-import { TemplateRenderer } from '@/components/resume/template-renderer';
+import { TemplateSelector } from '@/components/resume/TemplateSelector';
+import { TemplateRenderer } from '@/components/resume/TemplateRenderer';
 import { useDocumentStore } from '@/store/documentStore';
-import { resumeTemplates } from '@/lib/resume-templates';
+import { resumeTemplates } from '@/lib/resumeTemplates';
 import { ResumeData, ResumeTemplate, CVMode } from '@/types';
 import {
     Plus,
@@ -32,6 +32,7 @@ import {
     Loader2
 } from 'lucide-react';
 import { Card } from '@/components/ui/card';
+import { LoadingSpinner } from '@/components/shared/LoadingSpinner';
 import { ResumeOptimizer } from '@/components/resume/ResumeOptimizer';
 import { DesignPanels } from '@/components/resume/DesignPanels';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -41,7 +42,7 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger,
     DropdownMenuSeparator,
-} from '@/components/ui/dropdown-menu';
+} from '@/components/ui/DropdownMenu';
 import { message } from 'antd';
 import { useUIStore } from '@/store/uiStore';
 import { useSearchParams } from 'next/navigation';
@@ -353,7 +354,7 @@ export function ResumeBuilder({
     if (isLoadingResume) {
         return (
             <div className="min-h-screen flex items-center justify-center">
-                <LoadingState size="xl" message="Loading resume..." />
+                <LoadingSpinner size="lg" message="Loading resume..." />
             </div>
         );
     }

@@ -17,7 +17,7 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+} from '@/components/ui/DropdownMenu';
 import { useJobTrackerStore } from '@/store/jobTrackerStore';
 import { JobApplication, getStatusColor, getStatusIcon } from '@/lib/jobTrackerData';
 import { ExternalLink, MoreVertical, Trash2, Edit2 } from 'lucide-react';

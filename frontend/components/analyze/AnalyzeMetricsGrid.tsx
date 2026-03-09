@@ -2,7 +2,7 @@
 
 import { motion } from 'framer-motion';
 import { Card } from '@/components/ui/card';
-import { ScoreCircle } from '@/components/common/score-circle';
+import { ScoreCircle } from '@/components/common/ScoreCircle';
 import type { AnalysisMetric } from '@/types/atsAnalysis.types';
 
 interface AnalyzeMetricsGridProps {

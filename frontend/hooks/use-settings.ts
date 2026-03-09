@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import api from '@/lib/api-client';
+import api from '@/lib/apiClient';
 
 export const settingsApi = {
     getSettings: () => api.get('/settings').then((res) => res.data),

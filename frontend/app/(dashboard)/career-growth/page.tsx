@@ -2,8 +2,8 @@
 
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
-import { GrowthDashboard } from '@/components/career-growth/growth-dashboard';
-import { CareerReportList } from '@/components/career-growth/monthly-report';
+import { GrowthDashboard } from '@/components/career-growth/GrowthDashboard';
+import { CareerReportList } from '@/components/career-growth/MonthlyReport';
 import { useCareerGrowthStore } from '@/store/careerGrowthStore';
 import { BarChart3, Download } from 'lucide-react';
 
