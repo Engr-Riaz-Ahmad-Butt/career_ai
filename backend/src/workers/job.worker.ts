@@ -2,7 +2,7 @@ import { Worker } from 'bullmq';
 import { env } from '@/config/env';
 import { ResumeService } from '@/services/resume.service';
 import { AIService } from '@/services/ai/aiService';
-import { getBullMqConnectionOptions } from '@/services/bullmq-connection';
+import { getBullMqConnectionOptions } from '@/services/bullmqConnection';
 import {
   JOB_NAMES,
   JOB_QUEUE_NAME,
@@ -38,8 +38,7 @@ export function startJobWorker(): Worker | null {
         return aiService.scoreATS(
           payload.userId,
           payload.resumeId,
-          payload.jobDescription,
-          payload.returnSuggestions
+          payload.jobDescription
         );
       }
 

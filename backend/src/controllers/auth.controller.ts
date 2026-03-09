@@ -84,7 +84,9 @@ export const googleAuth = asyncHandler(async (req: Request, res: Response) => {
 /** POST /auth/refresh — reads refreshToken from HttpOnly cookie */
 export const refreshAccessToken = asyncHandler(async (req: Request, res: Response) => {
   const refreshToken = req.cookies?.refreshToken;
-  if (!refreshToken) throw new Error('No refresh token provided');
+  if (!refreshToken) {
+    return res.status(401).json(errorResponse('No refresh token provided', 'UNAUTHORIZED'));
+  }
 
   const result = await authService.refreshTokens(refreshToken);
   sendAuthResponse(res, 200, result.refreshToken, result.accessToken, result.user, 'Token refreshed');

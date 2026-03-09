@@ -1,17 +1,22 @@
 import { Request, Response } from 'express';
 import { ResumeService } from '@/services/resume.service';
 import { asyncHandler } from '@/middleware/error';
-import { cacheInvalidations } from '@/services/cache-invalidation.service';
+import { cacheInvalidations } from '@/services/cacheInvalidation.service';
 
 const resumeService = new ResumeService();
 
 // Helper: Extract list options from query
-function extractListOptions(query: Record<string, unknown>) {
+function extractListOptions(query: Record<string, unknown>): {
+  page?: number;
+  limit?: number;
+  sortBy?: string;
+  order?: 'asc' | 'desc';
+} {
   return {
     page: typeof query.page === 'string' ? parseInt(query.page, 10) : undefined,
     limit: typeof query.limit === 'string' ? parseInt(query.limit, 10) : undefined,
     sortBy: typeof query.sortBy === 'string' ? query.sortBy : undefined,
-    order: typeof query.order === 'string' ? query.order : undefined,
+    order: query.order === 'asc' || query.order === 'desc' ? query.order : undefined,
   };
 }
 

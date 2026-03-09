@@ -1,4 +1,5 @@
 import { Request, Response } from 'express';
+import { DocumentStatus, DocumentType } from '@prisma/client';
 import { DocumentService } from '@/services/document.service';
 import { AIService } from '@/services/ai/aiService';
 import { asyncHandler } from '@/middleware/error';
@@ -6,18 +7,38 @@ import prisma from '@/config/database';
 
 const docService = new DocumentService();
 const aiService = new AIService();
+const DOCUMENT_TYPES = new Set(Object.values(DocumentType));
+const DOCUMENT_STATUSES = new Set(Object.values(DocumentStatus));
+
+function parseDocumentType(value: unknown): DocumentType | undefined {
+  if (typeof value !== 'string') return undefined;
+  return DOCUMENT_TYPES.has(value as DocumentType) ? (value as DocumentType) : undefined;
+}
+
+function parseDocumentStatus(value: unknown): DocumentStatus | undefined {
+  if (typeof value !== 'string') return undefined;
+  return DOCUMENT_STATUSES.has(value as DocumentStatus) ? (value as DocumentStatus) : undefined;
+}
 
 // ── Helper Functions ────────────────────────────────────────────────────
 
-function extractDocumentListOptions(query: Record<string, unknown>) {
+function extractDocumentListOptions(query: Record<string, unknown>): {
+  type?: DocumentType;
+  status?: DocumentStatus;
+  search?: string;
+  page?: number;
+  limit?: number;
+  sortBy?: string;
+  order?: 'asc' | 'desc';
+} {
   return {
-    type: typeof query.type === 'string' ? query.type : undefined,
-    status: typeof query.status === 'string' ? query.status : undefined,
+    type: parseDocumentType(query.type),
+    status: parseDocumentStatus(query.status),
     search: typeof query.search === 'string' ? query.search : undefined,
     page: typeof query.page === 'string' ? parseInt(query.page, 10) : undefined,
     limit: typeof query.limit === 'string' ? parseInt(query.limit, 10) : undefined,
     sortBy: typeof query.sortBy === 'string' ? query.sortBy : undefined,
-    order: typeof query.order === 'string' ? (query.order as 'asc' | 'desc') : undefined,
+    order: query.order === 'asc' || query.order === 'desc' ? query.order : undefined,
   };
 }
 

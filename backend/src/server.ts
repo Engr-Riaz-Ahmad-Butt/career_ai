@@ -32,7 +32,7 @@ import jobRoutes from '@/routes/job.routes';
 import { errorHandler, notFound } from '@/middleware/error';
 import { requestIdMiddleware } from '@/middleware/requestId.middleware';
 import { startJobWorker, stopJobWorker } from '@/workers/job.worker';
-import { getJobQueueService } from '@/services/job-queue.service';
+import { getJobQueueService } from '@/services/jobQueue.service';
 
 const app: Application = express();
 

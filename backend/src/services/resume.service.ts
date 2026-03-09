@@ -8,6 +8,7 @@ import aiService from '@/services/ai/aiService';
 import pdf from 'pdf-parse';
 import mammoth from 'mammoth';
 import { z } from 'zod';
+import { Prisma } from '@prisma/client';
 
 const RESUME_SELECT = {
     id: true,
@@ -33,6 +34,8 @@ const RESUME_SELECT = {
     createdAt: true,
     updatedAt: true,
 } as const;
+
+type ResumeRecord = Prisma.ResumeGetPayload<{ select: typeof RESUME_SELECT }>;
 
 // ─── Types & Interfaces ──────────────────────────────────────────────────
 
@@ -68,6 +71,19 @@ function normalizeListOptions(options: ListResumesOptions = {}): {
     return { page, limit, skip, sortBy, order };
 }
 
+function toNullableInputJson(
+    value: Prisma.JsonValue
+): Prisma.InputJsonValue | Prisma.NullableJsonNullValueInput {
+    if (value === null) {
+        return Prisma.JsonNull;
+    }
+    return value as Prisma.InputJsonValue;
+}
+
+function toInputJsonArray(value: Prisma.JsonValue[]): Prisma.InputJsonValue[] {
+    return value as unknown as Prisma.InputJsonValue[];
+}
+
 // ─── Service Class ──────────────────────────────────────────────────────
 
 export class ResumeService {
@@ -76,13 +92,13 @@ export class ResumeService {
     async listResumes(
         userId: string,
         options: ListResumesOptions = {}
-    ): Promise<{ data: typeof RESUME_SELECT[]; total: number; page: number; limit: number; totalPages: number }> {
+    ): Promise<{ data: ResumeRecord[]; total: number; page: number; limit: number; totalPages: number }> {
         if (!userId) throw createHttpError(400, 'userId is required');
 
         const { page, limit, sortBy, order } = normalizeListOptions(options);
         const orderBy = sortBy ? { [sortBy]: order } : undefined;
 
-        return paginateQuery(
+        return paginateQuery<ResumeRecord>(
             prisma.resume,
             { userId },
             page,
@@ -94,7 +110,7 @@ export class ResumeService {
 
 
     // POST /resumes - Create new resume
-    async createResume(userId: string, options: CreateResumeOptions): Promise<typeof RESUME_SELECT> {
+    async createResume(userId: string, options: CreateResumeOptions): Promise<ResumeRecord> {
         if (!userId) throw createHttpError(400, 'userId is required');
         if (!options.title) throw createHttpError(400, 'title is required');
         if (!options.template) throw createHttpError(400, 'template is required');
@@ -119,10 +135,10 @@ export class ResumeService {
     }
 
     // GET /resumes/:id - Fetch single resume
-    async getResumeById(userId: string, id: string): Promise<typeof RESUME_SELECT> {
+    async getResumeById(userId: string, id: string): Promise<ResumeRecord> {
         if (!userId || !id) throw createHttpError(400, 'userId and id are required');
 
-           return findResourceByIdOrThrow<any>(
+           return findResourceByIdOrThrow<ResumeRecord>(
             prisma.resume,
             id,
             { userId },
@@ -132,7 +148,7 @@ export class ResumeService {
     }
 
     // PUT /resumes/:id - Update resume
-    async updateResume(userId: string, id: string, data: Record<string, unknown>): Promise<typeof RESUME_SELECT> {
+    async updateResume(userId: string, id: string, data: Record<string, unknown>): Promise<ResumeRecord> {
         if (!userId || !id) throw createHttpError(400, 'userId and id are required');
         if (!data || Object.keys(data).length === 0) throw createHttpError(400, 'No data to update');
 
@@ -157,7 +173,7 @@ export class ResumeService {
     }
 
     // POST /resumes/:id/duplicate - Duplicate resume
-    async duplicateResume(userId: string, id: string): Promise<typeof RESUME_SELECT> {
+    async duplicateResume(userId: string, id: string): Promise<ResumeRecord> {
         if (!userId || !id) throw createHttpError(400, 'userId and id are required');
 
         const original = await this.getResumeById(userId, id);
@@ -195,7 +211,7 @@ export class ResumeService {
     }
 
     // POST /resumes/:id/restore/:versionId - Restore version
-    async restoreVersion(userId: string, id: string, versionId: string): Promise<typeof RESUME_SELECT> {
+    async restoreVersion(userId: string, id: string, versionId: string): Promise<ResumeRecord> {
         if (!userId || !id || !versionId) throw createHttpError(400, 'userId, id, and versionId are required');
 
         const existing = await this.getResumeById(userId, id);
@@ -213,7 +229,7 @@ export class ResumeService {
     }
 
     // POST /resumes/upload - Upload and parse resume
-    async uploadResume(userId: string, file: Express.Multer.File, title?: string): Promise<typeof RESUME_SELECT> {
+    async uploadResume(userId: string, file: Express.Multer.File, title?: string): Promise<ResumeRecord> {
         if (!userId || !file) throw createHttpError(400, 'userId and file are required');
 
         const user = await this.getUserOrThrow(userId);
@@ -283,8 +299,8 @@ export class ResumeService {
 
     private async createResumeFromTemplate(
         userId: string,
-        template: typeof RESUME_SELECT
-    ): Promise<typeof RESUME_SELECT> {
+        template: ResumeRecord
+    ): Promise<ResumeRecord> {
         return prisma.resume.create({
             data: {
                 userId,
@@ -292,21 +308,21 @@ export class ResumeService {
                 template: template.template,
                 targetRole: template.targetRole ?? undefined,
                 industry: template.industry ?? undefined,
-                personalInfo: template.personalInfo,
+                personalInfo: toNullableInputJson(template.personalInfo),
                 summary: template.summary ?? undefined,
-                experience: template.experience,
-                education: template.education,
-                skills: template.skills,
-                certifications: template.certifications,
-                projects: template.projects,
-                languages: template.languages,
+                experience: toInputJsonArray(template.experience),
+                education: toInputJsonArray(template.education),
+                skills: toNullableInputJson(template.skills),
+                certifications: toInputJsonArray(template.certifications),
+                projects: toInputJsonArray(template.projects),
+                languages: toInputJsonArray(template.languages),
                 version: 1,
             },
             select: RESUME_SELECT,
         });
     }
 
-    private async createSnapshot(resume: typeof RESUME_SELECT): Promise<void> {
+    private async createSnapshot(resume: ResumeRecord): Promise<void> {
         const { id, ...data } = resume;
 
         const count = await prisma.resumeVersion.count({ where: { resumeId: id } });
@@ -325,7 +341,7 @@ export class ResumeService {
             data: {
                 resumeId: id,
                 versionNum: resume.version,
-                data: data as Record<string, unknown>,
+                data: data as Prisma.InputJsonValue,
             },
         });
     }

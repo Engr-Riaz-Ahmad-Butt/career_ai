@@ -5,6 +5,9 @@ module.exports = {
             isolatedModules: true,
         }],
     },
+    moduleNameMapper: {
+        '^@/(.*)$': '<rootDir>/src/$1',
+    },
     testEnvironment: 'node',
     testMatch: ['**/tests/**/*.test.ts'],
     verbose: true,
