@@ -3,6 +3,7 @@
  */
 
 import { ValidationError } from '@/utils/errorHandler';
+import { PAGINATION } from '@/constants/pagination';
 
 /**
  * Validate required fields exist and are not empty
@@ -75,14 +76,14 @@ export function validatePagination(page?: any, limit?: any): {
   page: number;
   limit: number;
 } {
-  const parsedPage = parseInt(page) || 1;
-  const parsedLimit = parseInt(limit) || 20;
+  const parsedPage = parseInt(page) || PAGINATION.DEFAULT_PAGE;
+  const parsedLimit = parseInt(limit) || PAGINATION.DEFAULT_LIMIT_FALLBACK;
 
-  if (parsedPage < 1) {
+  if (parsedPage < PAGINATION.DEFAULT_PAGE) {
     throw new ValidationError('Page must be greater than 0');
   }
 
-  if (parsedLimit < 1 || parsedLimit > 100) {
+  if (parsedLimit < PAGINATION.DEFAULT_PAGE || parsedLimit > PAGINATION.MAX_LIMIT) {
     throw new ValidationError('Limit must be between 1 and 100');
   }
 

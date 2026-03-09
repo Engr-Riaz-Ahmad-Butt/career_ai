@@ -3,6 +3,7 @@
  */
 
 import { UnauthorizedError, ValidationError } from '@/utils/errorHandler';
+import { PAGINATION } from '@/constants/pagination';
 
 /**
  * Validate user authentication (userId exists)
@@ -74,17 +75,17 @@ export function extractPaginationParams(query: Record<string, any>): {
   sortBy?: string;
   order?: 'asc' | 'desc';
 } {
-  const page = Math.max(1, parseInt(query.page as string) || 1);
+  const page = Math.max(PAGINATION.DEFAULT_PAGE, parseInt(query.page as string) || PAGINATION.DEFAULT_PAGE);
   const limit = Math.min(
-    100,
-    Math.max(1, parseInt(query.limit as string) || 20)
+    PAGINATION.MAX_LIMIT,
+    Math.max(PAGINATION.DEFAULT_PAGE, parseInt(query.limit as string) || PAGINATION.DEFAULT_LIMIT_FALLBACK)
   );
   const skip = (page - 1) * limit;
 
   const sortBy = query.sortBy as string | undefined;
   const order = (query.order === 'asc' || query.order === 'desc')
     ? query.order
-    : 'desc';
+    : PAGINATION.DEFAULT_SORT_ORDER;
 
   return {
     page,

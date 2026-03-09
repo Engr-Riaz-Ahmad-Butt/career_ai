@@ -1,29 +1,20 @@
 import prisma from '@/config/database';
+import { env } from '@/config/env';
+import { BILLING, SUBSCRIPTION_PLANS } from '@/constants/billing';
+import { PAGINATION } from '@/constants/pagination';
 import { createHttpError } from '@/utils/errorHandler';
 
 // Stripe is optional — only initialize if env is set
 let stripe: any = null;
 try {
-    if (process.env.STRIPE_SECRET_KEY) {
+    if (env.STRIPE_SECRET_KEY) {
         const Stripe = require('stripe');
-        stripe = new Stripe(process.env.STRIPE_SECRET_KEY, { apiVersion: '2023-10-16' });
+        stripe = new Stripe(env.STRIPE_SECRET_KEY, { apiVersion: BILLING.STRIPE_API_VERSION });
     }
 } catch { /* stripe not installed; billing will return 501 */ }
 
-// Hard-coded plan definitions (can be moved to DB later)
-export const PLANS = [
-    { id: 'free', name: 'Free', price: 0, credits: 10, features: ['10 credits/month', '3 resumes', 'Basic templates'] },
-    { id: 'pro_monthly', name: 'Pro Monthly', price: 1999, credits: 100, features: ['100 credits/month', 'Unlimited resumes', 'All templates', 'Version history', 'PDF export'] },
-    { id: 'pro_annual', name: 'Pro Annual', price: 19990, credits: 100, features: ['100 credits/month', 'Unlimited resumes', 'All templates', '2 months free'] },
-    { id: 'team_monthly', name: 'Team', price: 4999, credits: 500, features: ['500 credits/month', 'Team management', 'Priority support'] },
-    { id: 'enterprise', name: 'Enterprise', price: 0, credits: -1, features: ['Custom credits', 'Dedicated support', 'SLA', 'Admin panel'] },
-];
-
 const PRICE_IDS: Record<string, string> = {
-    pro_monthly: process.env.STRIPE_PRICE_PRO_MONTHLY || '',
-    pro_annual: process.env.STRIPE_PRICE_PRO_ANNUAL || '',
-    team_monthly: process.env.STRIPE_PRICE_TEAM_MONTHLY || '',
-    enterprise: process.env.STRIPE_PRICE_ENTERPRISE || '',
+    ...BILLING.STRIPE_PRICE_IDS,
 };
 
 export class BillingService {
@@ -34,7 +25,7 @@ export class BillingService {
     }
 
     getPlans() {
-        return PLANS;
+        return SUBSCRIPTION_PLANS;
     }
 
     async createCheckoutSession(userId: string, plan: string, successUrl: string, cancelUrl: string) {
@@ -69,7 +60,7 @@ export class BillingService {
 
         const session = await s.billingPortal.sessions.create({
             customer: user.stripeCustomerId,
-            return_url: `${process.env.FRONTEND_URL}/billing`,
+            return_url: `${env.FRONTEND_URL}/billing`,
         });
         return { portalUrl: session.url };
     }
@@ -102,7 +93,12 @@ export class BillingService {
 
     async purchaseCredits(userId: string, credits: number, successUrl: string) {
         const s = this._requireStripe();
-        if (credits <= 0 || credits % 50 !== 0) throw createHttpError(400, 'Credits must be a positive multiple of 50');
+        if (credits <= 0 || credits % BILLING.CREDIT_PURCHASE_MULTIPLE !== 0) {
+            throw createHttpError(
+                400,
+                `Credits must be a positive multiple of ${BILLING.CREDIT_PURCHASE_MULTIPLE}`
+            );
+        }
 
         const user = await prisma.user.findUnique({ where: { id: userId } });
         if (!user) throw createHttpError(404, 'User not found');
@@ -114,22 +110,22 @@ export class BillingService {
             payment_method_types: ['card'],
             line_items: [{
                 price_data: {
-                    currency: 'usd',
-                    unit_amount: credits * 10,
+                    currency: BILLING.CURRENCY,
+                    unit_amount: credits * BILLING.CREDIT_PRICE_PER_UNIT_CENTS,
                     product_data: { name: `${credits} CareerAI Credits` },
                 },
                 quantity: 1,
             }],
             success_url: successUrl,
-            metadata: { userId, credits: credits.toString(), type: 'credit_purchase' },
+            metadata: { userId, credits: credits.toString(), type: BILLING.CREDIT_PURCHASE_METADATA_TYPE },
         });
 
         return { checkoutUrl: session.url };
     }
 
     async listInvoices(userId: string, params: { page?: number; limit?: number }) {
-        const page = params.page || 1;
-        const limit = Math.min(params.limit || 10, 50);
+        const page = params.page || PAGINATION.DEFAULT_PAGE;
+        const limit = Math.min(params.limit || PAGINATION.DEFAULT_LIMIT, PAGINATION.SERVICE_MAX_LIMIT);
         const skip = (page - 1) * limit;
 
         const [data, total] = await Promise.all([
@@ -148,17 +144,17 @@ export class BillingService {
         let event: any;
 
         try {
-            event = s.webhooks.constructEvent(rawBody, signature, process.env.STRIPE_WEBHOOK_SECRET);
+            event = s.webhooks.constructEvent(rawBody, signature, env.STRIPE_WEBHOOK_SECRET);
         } catch {
             throw createHttpError(400, 'Invalid Stripe signature');
         }
 
         switch (event.type) {
-            case 'checkout.session.completed': {
+            case BILLING.WEBHOOK_EVENTS.CHECKOUT_SESSION_COMPLETED: {
                 const session = event.data.object;
                 const { userId, plan, credits, type } = session.metadata;
 
-                if (type === 'credit_purchase') {
+                if (type === BILLING.CREDIT_PURCHASE_METADATA_TYPE) {
                     const creditAmount = parseInt(credits);
                     const user = await prisma.user.update({
                         where: { id: userId },
@@ -169,11 +165,10 @@ export class BillingService {
                         data: { userId, amount: creditAmount, type: 'PURCHASE', description: `Purchased ${creditAmount} credits`, balanceAfter: user.credits },
                     });
                 } else if (plan) {
-                    const planMap: Record<string, string> = { pro_monthly: 'PRO', pro_annual: 'PRO', team_monthly: 'TEAM', enterprise: 'ENTERPRISE' };
                     await prisma.user.update({
                         where: { id: userId },
                         data: {
-                            plan: planMap[plan] as any || 'PRO',
+                            plan: BILLING.PLAN_TO_USER_PLAN[plan as keyof typeof BILLING.PLAN_TO_USER_PLAN] as any || BILLING.PLAN_FALLBACK,
                             stripeSubscriptionId: session.subscription,
                             subscriptionStatus: 'ACTIVE',
                         },
@@ -181,7 +176,7 @@ export class BillingService {
                 }
                 break;
             }
-            case 'customer.subscription.updated': {
+            case BILLING.WEBHOOK_EVENTS.CUSTOMER_SUBSCRIPTION_UPDATED: {
                 const sub = event.data.object;
                 const user = await prisma.user.findFirst({ where: { stripeSubscriptionId: sub.id } });
                 if (user) {
@@ -196,18 +191,23 @@ export class BillingService {
                 }
                 break;
             }
-            case 'customer.subscription.deleted': {
+            case BILLING.WEBHOOK_EVENTS.CUSTOMER_SUBSCRIPTION_DELETED: {
                 const sub = event.data.object;
                 const user = await prisma.user.findFirst({ where: { stripeSubscriptionId: sub.id } });
                 if (user) {
                     await prisma.user.update({
                         where: { id: user.id },
-                        data: { plan: 'FREE', subscriptionStatus: 'INACTIVE', stripeSubscriptionId: null, credits: 10 },
+                        data: {
+                            plan: 'FREE',
+                            subscriptionStatus: 'INACTIVE',
+                            stripeSubscriptionId: null,
+                            credits: BILLING.DEFAULT_FREE_CREDITS,
+                        },
                     });
                 }
                 break;
             }
-            case 'invoice.payment_failed': {
+            case BILLING.WEBHOOK_EVENTS.INVOICE_PAYMENT_FAILED: {
                 const invoice = event.data.object;
                 const user = await prisma.user.findFirst({ where: { stripeCustomerId: invoice.customer } });
                 if (user) {

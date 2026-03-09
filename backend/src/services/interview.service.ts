@@ -1,4 +1,6 @@
 import prisma from '@/config/database';
+import { INTERVIEW } from '@/constants/interview';
+import { PAGINATION } from '@/constants/pagination';
 import { AIService } from '@/services/ai/aiService';
 import { createHttpError, ValidationError } from '@/utils/errorHandler';
 
@@ -29,8 +31,11 @@ interface InterviewQuestion {
 }
 
 function normalizeListOptions(options: ListSessionsOptions = {}): { page: number; limit: number; skip: number } {
-    const page = Math.max(options.page ?? 1, 1);
-    const limit = Math.min(Math.max(options.limit ?? 10, 1), 50);
+    const page = Math.max(options.page ?? PAGINATION.DEFAULT_PAGE, PAGINATION.DEFAULT_PAGE);
+    const limit = Math.min(
+        Math.max(options.limit ?? PAGINATION.DEFAULT_LIMIT, PAGINATION.DEFAULT_PAGE),
+        PAGINATION.SERVICE_MAX_LIMIT
+    );
     return { page, limit, skip: (page - 1) * limit };
 }
 
@@ -57,7 +62,7 @@ export class InterviewService {
                 userId,
                 resumeId: data.resumeId,
                 jobDescription: data.jobDescription,
-                questionCount: data.questionCount || 10,
+                questionCount: data.questionCount || INTERVIEW.DEFAULT_QUESTION_COUNT,
                 categories: data.categories || [],
                 difficulty: data.difficulty,
                 questions: result.questions || [],

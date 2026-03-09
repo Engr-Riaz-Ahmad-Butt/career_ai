@@ -3,6 +3,7 @@
  */
 
 import prisma from '@/config/database';
+import { PAGINATION } from '@/constants/pagination';
 import { NotFoundError } from '@/utils/errorHandler';
 
 /**
@@ -79,8 +80,8 @@ export async function findResourceByIdOrThrow<T>(
 export async function paginateQuery<T>(
   model: any,
   where: Record<string, any>,
-  page: number = 1,
-  limit: number = 20,
+  page: number = PAGINATION.DEFAULT_PAGE,
+  limit: number = PAGINATION.DEFAULT_LIMIT_FALLBACK,
   selectOrInclude?: { select?: any; include?: any },
   orderBy?: Record<string, any>
 ): Promise<{

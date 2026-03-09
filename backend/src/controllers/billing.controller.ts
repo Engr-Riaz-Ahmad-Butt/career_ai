@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
-import { BillingService, PLANS } from '@/services/billing.service';
+import { SUBSCRIPTION_PLANS } from '@/constants/billing';
+import { BillingService } from '@/services/billing.service';
 import { asyncHandler } from '@/middleware/error';
 
 const billingService = new BillingService();
@@ -33,7 +34,7 @@ function validateWebhookSignature(headers: any): string {
 // ── Controllers ────────────────────────────────────────────────────────
 
 export const getPlans = asyncHandler(async (_req: Request, res: Response) => {
-    res.json({ success: true, data: { plans: PLANS } });
+    res.json({ success: true, data: { plans: SUBSCRIPTION_PLANS } });
 });
 
 export const createCheckout = asyncHandler(async (req: Request, res: Response) => {

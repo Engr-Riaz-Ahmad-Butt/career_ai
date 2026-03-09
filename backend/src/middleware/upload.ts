@@ -1,11 +1,12 @@
 import multer from 'multer';
 import path from 'path';
 import { Request } from 'express';
+import { FILE_UPLOAD } from '@/constants/fileUpload';
 
 // ── Disk storage (local fallback) ──────────────────────────────────────────
 
 const avatarStorage = multer.diskStorage({
-    destination: (_req, _file, cb) => cb(null, 'uploads/avatars/'),
+    destination: (_req, _file, cb) => cb(null, FILE_UPLOAD.AVATAR.DIRECTORY),
     filename: (_req, file, cb) => {
         const ext = path.extname(file.originalname);
         cb(null, `avatar-${Date.now()}${ext}`);
@@ -13,7 +14,7 @@ const avatarStorage = multer.diskStorage({
 });
 
 const resumeStorage = multer.diskStorage({
-    destination: (_req, _file, cb) => cb(null, 'uploads/resumes/'),
+    destination: (_req, _file, cb) => cb(null, FILE_UPLOAD.RESUME.DIRECTORY),
     filename: (_req, file, cb) => {
         const ext = path.extname(file.originalname);
         cb(null, `resume-${Date.now()}${ext}`);
@@ -23,7 +24,7 @@ const resumeStorage = multer.diskStorage({
 // ── File filters ─────────────────────────────────────────────────────────
 
 const imageFilter = (_req: Request, file: Express.Multer.File, cb: multer.FileFilterCallback) => {
-    const allowed = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+    const allowed = FILE_UPLOAD.AVATAR.ALLOWED_MIME_TYPES;
     if (allowed.includes(file.mimetype)) {
         cb(null, true);
     } else {
@@ -32,11 +33,7 @@ const imageFilter = (_req: Request, file: Express.Multer.File, cb: multer.FileFi
 };
 
 const documentFilter = (_req: Request, file: Express.Multer.File, cb: multer.FileFilterCallback) => {
-    const allowed = [
-        'application/pdf',
-        'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-        'application/msword',
-    ];
+    const allowed = FILE_UPLOAD.RESUME.ALLOWED_MIME_TYPES;
     if (allowed.includes(file.mimetype)) {
         cb(null, true);
     } else {
@@ -48,12 +45,12 @@ const documentFilter = (_req: Request, file: Express.Multer.File, cb: multer.Fil
 
 export const uploadAvatar = multer({
     storage: avatarStorage,
-    limits: { fileSize: 2 * 1024 * 1024 }, // 2MB
+    limits: { fileSize: FILE_UPLOAD.AVATAR.MAX_FILE_SIZE_BYTES },
     fileFilter: imageFilter,
 });
 
 export const uploadResume = multer({
     storage: resumeStorage,
-    limits: { fileSize: 5 * 1024 * 1024 }, // 5MB
+    limits: { fileSize: FILE_UPLOAD.RESUME.MAX_FILE_SIZE_BYTES },
     fileFilter: documentFilter,
 });

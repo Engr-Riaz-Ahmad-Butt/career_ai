@@ -1,4 +1,5 @@
 import prisma from '@/config/database';
+import { PAGINATION } from '@/constants/pagination';
 import { Plan, Prisma } from '@prisma/client';
 import { ValidationError } from '@/utils/errorHandler';
 
@@ -26,7 +27,10 @@ function buildUserWhere(options: GetUsersOptions): Prisma.UserWhereInput {
     return where;
 }
 
-function buildUserOrderBy(sortBy?: string, order: 'asc' | 'desc' = 'desc'): Prisma.UserOrderByWithRelationInput {
+function buildUserOrderBy(
+    sortBy?: string,
+    order: 'asc' | 'desc' = PAGINATION.DEFAULT_SORT_ORDER
+): Prisma.UserOrderByWithRelationInput {
     const field = sortBy as UserSortField | undefined;
     if (!field) return { createdAt: 'desc' };
 
@@ -75,7 +79,7 @@ export class AdminService {
         if (query.page < 1 || query.limit < 1) throw new ValidationError('Invalid pagination parameters');
 
         const page = query.page;
-        const limit = Math.min(query.limit, 100);
+        const limit = Math.min(query.limit, PAGINATION.MAX_LIMIT);
         const skip = (page - 1) * limit;
         const where = buildUserWhere(query);
         const orderBy = buildUserOrderBy(query.sortBy, query.order ?? 'desc');

@@ -5,6 +5,9 @@
  * Ensures all cookies are configured according to security best practices
  */
 
+import { env } from '@/config/env';
+import { JWT } from '@/constants/jwt';
+
 /**
  * REFRESH TOKEN COOKIE CONFIGURATION
  *
@@ -162,10 +165,10 @@
  */
 export const HTTPONLY_SECURITY_CHECKLIST = {
   httpOnly: true,
-  secure: process.env.NODE_ENV === 'production',
+  secure: env.NODE_ENV === 'production',
   sameSite: 'strict' as const,
   path: '/',
-  maxAge: 7 * 24 * 60 * 60 * 1000,
+  maxAge: JWT.REFRESH_COOKIE_MAX_AGE_MS,
 };
 
 /**
@@ -175,7 +178,7 @@ export function verifyCookieSecurity(options: any): { isSecure: boolean; issues:
   const issues: string[] = [];
 
   if (!options.httpOnly) issues.push('httpOnly flag not set');
-  if (process.env.NODE_ENV === 'production' && !options.secure) issues.push('secure flag missing in production');
+  if (env.NODE_ENV === 'production' && !options.secure) issues.push('secure flag missing in production');
   if (options.sameSite !== 'strict') issues.push('sameSite should be "strict"');
   if (!options.path) issues.push('path not specified');
 

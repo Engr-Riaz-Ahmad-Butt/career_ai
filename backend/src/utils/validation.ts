@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { PAGINATION } from '@/constants/pagination';
 
 // Auth Schemas
 export const signupSchema = z.object({
@@ -354,10 +355,10 @@ export const purchaseCreditsSchema = z.object({
 
 // Pagination Schema
 export const paginationSchema = z.object({
-  page: z.string().transform(Number).pipe(z.number().int().positive()).optional().default('1'),
-  limit: z.string().transform(Number).pipe(z.number().int().positive().max(100)).optional().default('10'),
+  page: z.coerce.number().int().positive().optional().default(PAGINATION.DEFAULT_PAGE),
+  limit: z.coerce.number().int().positive().max(PAGINATION.MAX_LIMIT).optional().default(PAGINATION.DEFAULT_LIMIT),
   sortBy: z.string().optional(),
-  sortOrder: z.enum(['asc', 'desc']).optional().default('desc'),
+  sortOrder: z.enum(['asc', 'desc']).optional().default(PAGINATION.DEFAULT_SORT_ORDER),
 });
 
 export type SignupInput = z.infer<typeof signupSchema>;

@@ -1,4 +1,5 @@
 import { Request, Response } from 'express';
+import { PAGINATION } from '@/constants/pagination';
 import { AIService } from '@/services/ai/aiService';
 import prisma from '@/config/database';
 import { asyncHandler } from '@/middleware/error';
@@ -28,8 +29,11 @@ export const analyzeCommunicationAI = asyncHandler(async (req: Request, res: Res
 });
 
 export const listAnalyses = asyncHandler(async (req: Request, res: Response) => {
-    const page = parseInt(req.query.page as string) || 1;
-    const limit = Math.min(parseInt(req.query.limit as string) || 10, 50);
+    const page = parseInt(req.query.page as string) || PAGINATION.DEFAULT_PAGE;
+    const limit = Math.min(
+        parseInt(req.query.limit as string) || PAGINATION.DEFAULT_LIMIT,
+        PAGINATION.SERVICE_MAX_LIMIT
+    );
     const skip = (page - 1) * limit;
 
     const [data, total] = await Promise.all([

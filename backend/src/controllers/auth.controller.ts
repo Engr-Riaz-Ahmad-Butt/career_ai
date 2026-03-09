@@ -1,4 +1,6 @@
 import { Request, Response } from 'express';
+import { env } from '@/config/env';
+import { JWT } from '@/constants/jwt';
 import { AuthService } from '@/services/auth.service';
 import {
   signupSchema,
@@ -15,9 +17,9 @@ const authService = new AuthService();
 
 const REFRESH_COOKIE_OPTIONS = {
   httpOnly: true,
-  secure: process.env.NODE_ENV === 'production',
+  secure: env.NODE_ENV === 'production',
   sameSite: 'strict' as const,
-  maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days in ms
+  maxAge: JWT.REFRESH_COOKIE_MAX_AGE_MS,
   path: '/',
 };
 
@@ -32,7 +34,7 @@ function setRefreshCookie(res: Response, refreshToken: string): void {
 function clearRefreshCookie(res: Response): void {
   res.clearCookie('refreshToken', {
     httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
+    secure: env.NODE_ENV === 'production',
     sameSite: 'strict',
     path: '/',
   });

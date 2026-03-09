@@ -1,11 +1,13 @@
 import { generateContent, generateStructuredContent, MODELS } from '@/config/gemini';
+import { env } from '@/config/env';
+import { INTERVIEW } from '@/constants/interview';
 import PROMPTS from '@/services/ai/prompts';
 import ENHANCED_PROMPTS from '@/services/ai/enhancedPrompts';
 import prisma from '@/config/database';
 import { NotFoundError, ValidationError } from '@/utils/errorHandler';
 
 // Use enhanced prompts for better results
-const USE_ENHANCED_PROMPTS = process.env.USE_ENHANCED_PROMPTS !== 'false';
+const USE_ENHANCED_PROMPTS = env.USE_ENHANCED_PROMPTS;
 
 // ── Type Definitions ──────────────────────────────────────────────────────
 
@@ -445,7 +447,7 @@ Return JSON: { "content": "bio text" }`;
 
   private buildInterviewQuestionsPrompt(options: InterviewQuestionsOptions, resume: any): string {
     const categories = options.categories || ['behavioral', 'technical', 'situational'];
-    return `Generate ${options.questionCount || 10} interview questions.
+    return `Generate ${options.questionCount || INTERVIEW.DEFAULT_QUESTION_COUNT} interview questions.
 Categories: ${categories.join(', ')}
 Difficulty: ${options.difficulty || 'mid'}
 ${options.jobDescription ? `Job Description: ${options.jobDescription.substring(0, 800)}` : ''}

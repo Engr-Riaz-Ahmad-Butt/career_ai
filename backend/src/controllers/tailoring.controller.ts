@@ -1,4 +1,5 @@
 import { Request, Response } from 'express';
+import { PAGINATION } from '@/constants/pagination';
 import { TailoringService } from '@/services/tailoring.service';
 import { asyncHandler } from '@/middleware/error';
 
@@ -10,8 +11,11 @@ export const tailorResume = asyncHandler(async (req: Request, res: Response) => 
 });
 
 export const getTailorHistory = asyncHandler(async (req: Request, res: Response) => {
-    const page = parseInt(req.query.page as string) || 1;
-    const limit = parseInt(req.query.limit as string) || 10;
+    const page = parseInt(req.query.page as string) || PAGINATION.DEFAULT_PAGE;
+    const limit = Math.min(
+        parseInt(req.query.limit as string) || PAGINATION.DEFAULT_LIMIT,
+        PAGINATION.SERVICE_MAX_LIMIT
+    );
     const result = await tailoringService.getTailoringHistory(req.user!.userId, { page, limit });
     res.json({ success: true, data: result });
 });

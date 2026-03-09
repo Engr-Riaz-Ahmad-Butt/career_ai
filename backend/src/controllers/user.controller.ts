@@ -1,4 +1,5 @@
 import { Request, Response } from 'express';
+import { FILE_UPLOAD } from '@/constants/fileUpload';
 import { UserService } from '@/services/user.service';
 import { asyncHandler } from '@/middleware/error';
 
@@ -35,7 +36,7 @@ export const uploadAvatar = asyncHandler(async (req: Request, res: Response) => 
         return res.status(400).json({ success: false, message: 'No file uploaded' });
     }
     // In production: upload req.file to S3 and get URL
-    const avatarUrl = `/uploads/avatars/${req.file.filename}`;
+    const avatarUrl = `${FILE_UPLOAD.AVATAR.URL_PREFIX}${req.file.filename}`;
     const user = await userService.updateAvatar(req.user!.userId, avatarUrl);
     res.json({ success: true, message: 'Avatar updated', data: { user } });
 });

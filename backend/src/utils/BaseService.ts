@@ -4,6 +4,7 @@
  */
 
 import { NotFoundError, ValidationError } from '@/utils/errorHandler';
+import { PAGINATION } from '@/constants/pagination';
 
 export abstract class BaseService<T = any> {
   protected abstract entityName: string;
@@ -45,8 +46,17 @@ export abstract class BaseService<T = any> {
     page?: number | string,
     limit?: number | string
   ): { skip: number; take: number; page: number } {
-    const pageNum = Math.max(1, parseInt(String(page || 1)));
-    const limitNum = Math.min(100, Math.max(1, parseInt(String(limit || 20))));
+    const pageNum = Math.max(
+      PAGINATION.DEFAULT_PAGE,
+      parseInt(String(page || PAGINATION.DEFAULT_PAGE))
+    );
+    const limitNum = Math.min(
+      PAGINATION.MAX_LIMIT,
+      Math.max(
+        PAGINATION.DEFAULT_PAGE,
+        parseInt(String(limit || PAGINATION.DEFAULT_LIMIT_FALLBACK))
+      )
+    );
 
     return {
       skip: (pageNum - 1) * limitNum,

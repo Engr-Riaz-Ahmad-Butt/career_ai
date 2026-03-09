@@ -1,4 +1,7 @@
 import prisma from '@/config/database';
+import { env } from '@/config/env';
+import { FILE_UPLOAD } from '@/constants/fileUpload';
+import { PAGINATION } from '@/constants/pagination';
 import { createHttpError } from '@/utils/errorHandler';
 import { findResourceByIdOrThrow, paginateQuery } from '@/utils/dbHelpers';
 import aiService from '@/services/ai/aiService';
@@ -56,8 +59,8 @@ function normalizeListOptions(options: ListResumesOptions = {}): {
     readonly sortBy: string;
     readonly order: 'asc' | 'desc';
 } {
-    const page = Math.max(options.page || 1, 1);
-    const limit = Math.min(options.limit || 10, 50);
+    const page = Math.max(options.page || PAGINATION.DEFAULT_PAGE, PAGINATION.DEFAULT_PAGE);
+    const limit = Math.min(options.limit || PAGINATION.DEFAULT_LIMIT, PAGINATION.SERVICE_MAX_LIMIT);
     const skip = (page - 1) * limit;
     const sortBy = options.sortBy || 'updatedAt';
     const order = (options.order || 'desc') as 'asc' | 'desc';
@@ -170,7 +173,7 @@ export class ResumeService {
         await this.getResumeById(userId, id); // Verify ownership
 
         const expiresAt = new Date(Date.now() + 3600000); // 1 hour
-        const pdfUrl = `${process.env.API_URL || 'http://localhost:5000'}/api/v1/resumes/${id}/download`;
+        const pdfUrl = `${env.API_URL}/api/v1/resumes/${id}/download`;
 
         return { pdfUrl, expiresAt };
     }
@@ -354,12 +357,12 @@ export class ResumeService {
     }
 
     private async extractTextFromBuffer(buffer: Buffer, mimetype: string): Promise<string> {
-        if (mimetype === 'application/pdf') {
+        if (mimetype === FILE_UPLOAD.MIME_TYPES.PDF) {
             const data = await (pdf as any)(buffer);
             return data.text || '';
         }
 
-        if (mimetype === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') {
+        if (mimetype === FILE_UPLOAD.MIME_TYPES.DOCX) {
             const result = await mammoth.extractRawText({ buffer });
             return result.value || '';
         }

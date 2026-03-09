@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import { authenticate, requireAdmin } from '@/middleware/auth';
+import { PAGINATION } from '@/constants/pagination';
 import prisma from '@/config/database';
 import { z } from 'zod';
 import nodemailer from 'nodemailer';
@@ -17,8 +18,11 @@ const broadcastSchema = z.object({
 
 // GET /admin/users
 router.get('/users', async (req, res) => {
-    const page = parseInt(req.query.page as string) || 1;
-    const limit = Math.min(parseInt(req.query.limit as string) || 20, 100);
+    const page = parseInt(req.query.page as string) || PAGINATION.DEFAULT_PAGE;
+    const limit = Math.min(
+        parseInt(req.query.limit as string) || PAGINATION.DEFAULT_LIMIT_FALLBACK,
+        PAGINATION.MAX_LIMIT
+    );
     const skip = (page - 1) * limit;
 
     const where: any = { deletedAt: null };
@@ -30,7 +34,9 @@ router.get('/users', async (req, res) => {
         ];
     }
 
-    const orderBy: any = { [req.query.sortBy as string || 'createdAt']: req.query.order || 'desc' };
+    const orderBy: any = {
+        [req.query.sortBy as string || 'createdAt']: req.query.order || PAGINATION.DEFAULT_SORT_ORDER,
+    };
     const [users, total] = await Promise.all([
         prisma.user.findMany({ where, orderBy, skip, take: limit, select: { id: true, email: true, firstName: true, lastName: true, plan: true, credits: true, createdAt: true, subscriptionStatus: true } }),
         prisma.user.count({ where }),

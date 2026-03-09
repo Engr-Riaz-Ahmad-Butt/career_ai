@@ -1,7 +1,10 @@
 import { Request, Response } from 'express';
+import crypto from 'crypto';
+import { CACHE_TTL } from '@/constants/cacheTtl';
 import { AIService } from '@/services/ai/aiService';
 import { asyncHandler } from '@/middleware/error';
 import { getCacheService } from '@/services/cache.service';
+
 const cache = getCacheService();
 
 const ai = new AIService();
@@ -9,7 +12,7 @@ const ai = new AIService();
 // ── Helpers ────────────────────────────────────────────────────────────
 
 function createHash(text: string): string {
-  return require('crypto').createHash('md5').update(text).digest('hex');
+  return crypto.createHash('md5').update(text).digest('hex');
 }
 
 function requireUserId(req: Request): string {
@@ -37,7 +40,7 @@ export const enhanceResume = asyncHandler(async (req: Request, res: Response) =>
   const result = await cache.getOrFetch(
     cacheKey,
     () => ai.enhanceResumeSection(userId, resumeId, { section, targetRole, industry }),
-    86400 // 24 hour TTL
+    CACHE_TTL.RESUME_ENHANCE_SECONDS
   );
   
   res.json({ success: true, data: result });
@@ -57,7 +60,7 @@ export const scoreAts = asyncHandler(async (req: Request, res: Response) => {
   const result = await cache.getOrFetch(
     cacheKey,
     () => ai.scoreATS(userId, resumeId, jobDescription),
-    86400 // 24 hour TTL
+    CACHE_TTL.ATS_SCORE_SECONDS
   );
   
   res.json({ success: true, data: result });
@@ -87,7 +90,7 @@ export const extractKeywords = asyncHandler(async (req: Request, res: Response) 
   const result = await cache.getOrFetch(
     cacheKey,
     () => ai.extractKeywords(text, maxKeywords, includeWeights),
-    604800 // 7 day TTL
+    CACHE_TTL.KEYWORD_EXTRACTION_SECONDS
   );
   
   res.json({ success: true, data: result });

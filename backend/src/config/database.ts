@@ -1,4 +1,5 @@
 import { PrismaClient } from '@prisma/client';
+import { env } from '@/config/env';
 
 declare global {
   var prisma: PrismaClient | undefined;
@@ -6,12 +7,12 @@ declare global {
 
 const prismaClientSingleton = () => {
   return new PrismaClient({
-    log: process.env.NODE_ENV === 'development' ? ['query', 'error', 'warn'] : ['error'],
+    log: env.NODE_ENV === 'development' ? ['query', 'error', 'warn'] : ['error'],
   });
 };
 
 const prisma = globalThis.prisma ?? prismaClientSingleton();
 
-if (process.env.NODE_ENV !== 'production') globalThis.prisma = prisma;
+if (env.NODE_ENV !== 'production') globalThis.prisma = prisma;
 
 export default prisma;

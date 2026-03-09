@@ -1,4 +1,6 @@
 import prisma from '@/config/database';
+import { env } from '@/config/env';
+import { PAGINATION } from '@/constants/pagination';
 import { createHttpError } from '@/utils/errorHandler';
 import { DocumentType, DocumentStatus } from '@prisma/client';
 
@@ -30,8 +32,8 @@ function normalizeDocumentListOptions(options: ListDocumentsOptions = {}): {
     readonly order: 'asc' | 'desc';
     readonly filters: Record<string, unknown>;
 } {
-    const page = Math.max(options.page || 1, 1);
-    const limit = Math.min(options.limit || 20, 50);
+    const page = Math.max(options.page || PAGINATION.DEFAULT_PAGE, PAGINATION.DEFAULT_PAGE);
+    const limit = Math.min(options.limit || PAGINATION.DEFAULT_LIMIT_FALLBACK, PAGINATION.SERVICE_MAX_LIMIT);
     const skip = (page - 1) * limit;
     const sortBy = options.sortBy || 'updatedAt';
     const order = (options.order || 'desc') as 'asc' | 'desc';
@@ -120,7 +122,7 @@ export class DocumentService {
         await this.getDocumentById(userId, id); // Verify ownership
 
         const expiresAt = new Date(Date.now() + 3600000); // 1 hour
-        const pdfUrl = `${process.env.API_URL || 'http://localhost:5000'}/api/v1/documents/${id}/download`;
+        const pdfUrl = `${env.API_URL}/api/v1/documents/${id}/download`;
 
         return { pdfUrl, expiresAt };
     }

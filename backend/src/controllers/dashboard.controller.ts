@@ -1,4 +1,5 @@
 import { Request, Response } from 'express';
+import { PAGINATION } from '@/constants/pagination';
 import { DashboardService } from '@/services/dashboard.service';
 import { asyncHandler } from '@/middleware/error';
 
@@ -10,7 +11,7 @@ export const getDashboard = asyncHandler(async (req: Request, res: Response) => 
 });
 
 export const getRecentDocuments = asyncHandler(async (req: Request, res: Response) => {
-    const limit = parseInt(req.query.limit as string) || 10;
+    const limit = parseInt(req.query.limit as string) || PAGINATION.DEFAULT_LIMIT;
     const data = await dashboardService.getRecentDocuments(req.user!.userId, limit);
     res.json({ success: true, data });
 });

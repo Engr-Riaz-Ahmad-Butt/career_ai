@@ -1,4 +1,5 @@
 import prisma from '@/config/database';
+import { PAGINATION } from '@/constants/pagination';
 import { createHttpError } from '@/utils/errorHandler';
 import { findResourceByIdOrThrow, paginateQuery } from '@/utils/dbHelpers';
 
@@ -55,8 +56,8 @@ export class TailoringService {
     }
 
     async getTailoringHistory(userId: string, params: { page?: number; limit?: number }) {
-        const page = params.page || 1;
-        const limit = Math.min(params.limit || 10, 50);
+        const page = params.page || PAGINATION.DEFAULT_PAGE;
+        const limit = Math.min(params.limit || PAGINATION.DEFAULT_LIMIT, PAGINATION.SERVICE_MAX_LIMIT);
 
         return paginateQuery(
             prisma.tailoredResume,

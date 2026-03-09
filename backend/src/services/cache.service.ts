@@ -12,6 +12,7 @@
  */
 
 import { createClient, RedisClientType } from 'redis';
+import { CACHE } from '@/constants/cache';
 import { env } from '@/config/env';
 
 export interface CacheOptions {
@@ -27,7 +28,7 @@ export class CacheService {
   private client: RedisClientType | null = null;
   private connected = false;
 
-  constructor(private namespace = 'career_ai') {
+  constructor(private namespace = CACHE.NAMESPACE) {
     this.initialize();
   }
 
@@ -45,11 +46,16 @@ export class CacheService {
         url: env.REDIS_URL,
         socket: {
           reconnectStrategy: (retries: number) => {
-            if (retries > 10) {
-              console.error('❌ Redis reconnection failed after 10 attempts');
+            if (retries > CACHE.REDIS_RECONNECT_MAX_RETRIES) {
+              console.error(
+                `❌ Redis reconnection failed after ${CACHE.REDIS_RECONNECT_MAX_RETRIES} attempts`
+              );
               return new Error('Redis reconnection failed');
             }
-            return Math.min(retries * 50, 500);
+            return Math.min(
+              retries * CACHE.REDIS_RECONNECT_BASE_DELAY_MS,
+              CACHE.REDIS_RECONNECT_MAX_DELAY_MS
+            );
           },
         },
       });

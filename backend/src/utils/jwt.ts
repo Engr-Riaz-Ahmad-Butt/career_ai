@@ -1,10 +1,6 @@
 import jwt from 'jsonwebtoken';
 import crypto from 'crypto';
-
-const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
-const JWT_REFRESH_SECRET = process.env.JWT_REFRESH_SECRET || 'your-refresh-secret';
-const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '15m';
-const JWT_REFRESH_EXPIRES_IN = process.env.JWT_REFRESH_EXPIRES_IN || '7d';
+import { JWT } from '@/constants/jwt';
 
 export interface TokenPayload {
   userId: string;
@@ -16,8 +12,8 @@ export interface TokenPayload {
  * Generate Access Token (short-lived)
  */
 export const generateAccessToken = (payload: TokenPayload): string => {
-  return jwt.sign(payload, JWT_SECRET as jwt.Secret, {
-    expiresIn: JWT_EXPIRES_IN as jwt.SignOptions['expiresIn'],
+  return jwt.sign(payload, JWT.ACCESS_SECRET as jwt.Secret, {
+    expiresIn: JWT.ACCESS_EXPIRES_IN as jwt.SignOptions['expiresIn'],
   });
 };
 
@@ -25,8 +21,8 @@ export const generateAccessToken = (payload: TokenPayload): string => {
  * Generate Refresh Token (long-lived)
  */
 export const generateRefreshToken = (payload: TokenPayload): string => {
-  return jwt.sign(payload, JWT_REFRESH_SECRET as jwt.Secret, {
-    expiresIn: JWT_REFRESH_EXPIRES_IN as jwt.SignOptions['expiresIn'],
+  return jwt.sign(payload, JWT.REFRESH_SECRET as jwt.Secret, {
+    expiresIn: JWT.REFRESH_EXPIRES_IN as jwt.SignOptions['expiresIn'],
   });
 };
 
@@ -35,7 +31,7 @@ export const generateRefreshToken = (payload: TokenPayload): string => {
  */
 export const verifyAccessToken = (token: string): TokenPayload => {
   try {
-    return jwt.verify(token, JWT_SECRET as jwt.Secret) as TokenPayload;
+    return jwt.verify(token, JWT.ACCESS_SECRET as jwt.Secret) as TokenPayload;
   } catch (error) {
     throw new Error('Invalid or expired token');
   }
@@ -46,7 +42,7 @@ export const verifyAccessToken = (token: string): TokenPayload => {
  */
 export const verifyRefreshToken = (token: string): TokenPayload => {
   try {
-    return jwt.verify(token, JWT_REFRESH_SECRET as jwt.Secret) as TokenPayload;
+    return jwt.verify(token, JWT.REFRESH_SECRET as jwt.Secret) as TokenPayload;
   } catch (error) {
     throw new Error('Invalid or expired refresh token');
   }
@@ -63,6 +59,5 @@ export const generateRandomToken = (): string => {
  * Calculate token expiration date
  */
 export const getRefreshTokenExpiry = (): Date => {
-  const days = parseInt(JWT_REFRESH_EXPIRES_IN.replace('d', '')) || 7;
-  return new Date(Date.now() + days * 24 * 60 * 60 * 1000);
+  return new Date(Date.now() + JWT.REFRESH_EXPIRES_IN_MS);
 };

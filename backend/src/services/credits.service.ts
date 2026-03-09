@@ -1,4 +1,7 @@
 import prisma from '@/config/database';
+import { CREDIT_COSTS } from '@/constants/creditCosts';
+import { PAGINATION } from '@/constants/pagination';
+import { env } from '@/config/env';
 
 export class CreditsService {
     async getBalance(userId: string) {
@@ -15,8 +18,8 @@ export class CreditsService {
     }
 
     async getHistory(userId: string, query: { page?: number; limit?: number; type?: string }) {
-        const page = +(query.page || 1);
-        const limit = Math.min(+(query.limit || 20), 50);
+        const page = +(query.page || PAGINATION.DEFAULT_PAGE);
+        const limit = Math.min(+(query.limit || PAGINATION.DEFAULT_LIMIT_FALLBACK), PAGINATION.SERVICE_MAX_LIMIT);
         const skip = (page - 1) * limit;
 
         const where: any = { userId };
@@ -70,21 +73,21 @@ export class CreditsService {
 
     getCosts() {
         return {
-            CREATE_RESUME: 1,
-            UPLOAD_RESUME: 2,
-            TAILOR_RESUME: 3,
-            ENHANCE_RESUME_SECTION: 2,
-            ATS_SCORE: 1,
-            GENERATE_COVER_LETTER: 2,
-            GENERATE_SOP: 3,
-            GENERATE_MOTIVATION_LETTER: 2,
-            GENERATE_STUDY_PLAN: 2,
-            GENERATE_FINANCIAL_LETTER: 2,
-            GENERATE_BIO: 1,
-            GENERATE_INTERVIEW: 2,
-            INTERVIEW_FEEDBACK: 1,
-            COMMUNICATION_ANALYZE: 1,
-            GENERATE_PORTFOLIO: 5,
+            CREATE_RESUME: env.CREDIT_COST_CREATE_RESUME,
+            UPLOAD_RESUME: env.CREDIT_COST_UPLOAD_RESUME,
+            TAILOR_RESUME: env.CREDIT_COST_TAILOR_RESUME,
+            ENHANCE_RESUME_SECTION: env.CREDIT_COST_ENHANCE_RESUME_SECTION,
+            ATS_SCORE: CREDIT_COSTS.ATS_SCORE,
+            GENERATE_COVER_LETTER: CREDIT_COSTS.COVER_LETTER_GENERATE,
+            GENERATE_SOP: CREDIT_COSTS.SOP_GENERATE,
+            GENERATE_MOTIVATION_LETTER: CREDIT_COSTS.MOTIVATION_LETTER_GENERATE,
+            GENERATE_STUDY_PLAN: env.CREDIT_COST_GENERATE_STUDY_PLAN,
+            GENERATE_FINANCIAL_LETTER: env.CREDIT_COST_GENERATE_FINANCIAL_LETTER,
+            GENERATE_BIO: CREDIT_COSTS.BIO_GENERATE,
+            GENERATE_INTERVIEW: CREDIT_COSTS.INTERVIEW_GENERATE,
+            INTERVIEW_FEEDBACK: env.CREDIT_COST_INTERVIEW_FEEDBACK,
+            COMMUNICATION_ANALYZE: CREDIT_COSTS.COMMUNICATION_ANALYZE,
+            GENERATE_PORTFOLIO: CREDIT_COSTS.PORTFOLIO_GENERATE,
         };
     }
 }

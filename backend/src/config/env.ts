@@ -3,6 +3,8 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
+const durationRegex = /^\d+[smhd]$/;
+
 // ── Environment Schema ────────────────────────────────────────────────────
 // Validates ALL required environment variables at startup.
 // If any are missing or malformed, the server will fail fast with a clear message.
@@ -18,8 +20,70 @@ const envSchema = z.object({
     // JWT
     JWT_SECRET: z.string().min(16, 'JWT_SECRET must be at least 16 characters'),
     JWT_REFRESH_SECRET: z.string().min(16, 'JWT_REFRESH_SECRET must be at least 16 characters'),
-    JWT_EXPIRES_IN: z.string().default('15m'),
-    JWT_REFRESH_EXPIRES_IN: z.string().default('7d'),
+        JWT_EXPIRES_IN: z.string().regex(durationRegex, 'JWT_EXPIRES_IN must use format like 15m, 1h, 7d').default('15m'),
+        JWT_REFRESH_EXPIRES_IN: z.string().regex(durationRegex, 'JWT_REFRESH_EXPIRES_IN must use format like 15m, 1h, 7d').default('7d'),
+
+        // Credit costs
+        CREDIT_COST_RESUME_ENHANCE: z.coerce.number().positive().default(1),
+        CREDIT_COST_RESUME_TAILOR: z.coerce.number().positive().default(2),
+        CREDIT_COST_ATS_SCORE: z.coerce.number().positive().default(1),
+        CREDIT_COST_RESUME_IMPROVE: z.coerce.number().positive().default(1),
+        CREDIT_COST_COVER_LETTER_GENERATE: z.coerce.number().positive().default(2),
+        CREDIT_COST_SOP_GENERATE: z.coerce.number().positive().default(3),
+        CREDIT_COST_BIO_GENERATE: z.coerce.number().positive().default(1),
+        CREDIT_COST_MOTIVATION_LETTER_GENERATE: z.coerce.number().positive().default(2),
+        CREDIT_COST_RESIGNATION_LETTER_GENERATE: z.coerce.number().positive().default(1),
+        CREDIT_COST_RECOMMENDATION_GENERATE: z.coerce.number().positive().default(2),
+        CREDIT_COST_SCHOLARSHIP_GENERATE: z.coerce.number().positive().default(3),
+        CREDIT_COST_NETWORKING_GENERATE: z.coerce.number().positive().default(1),
+        CREDIT_COST_ACCEPTANCE_GENERATE: z.coerce.number().positive().default(1),
+        CREDIT_COST_INTERVIEW_GENERATE: z.coerce.number().positive().default(2),
+        CREDIT_COST_COMMUNICATION_ANALYZE: z.coerce.number().positive().default(1),
+        CREDIT_COST_KEYWORD_EXTRACT: z.coerce.number().positive().default(0.5),
+        CREDIT_COST_GRAMMAR_FIX: z.coerce.number().positive().default(0.5),
+        CREDIT_COST_FILE_UPLOAD_PARSE: z.coerce.number().positive().default(1),
+        CREDIT_COST_PORTFOLIO_GENERATE: z.coerce.number().positive().default(5),
+        CREDIT_COST_PORTFOLIO_DEPLOY: z.coerce.number().positive().default(2),
+        CREDIT_COST_CREATE_RESUME: z.coerce.number().positive().default(1),
+        CREDIT_COST_UPLOAD_RESUME: z.coerce.number().positive().default(2),
+        CREDIT_COST_TAILOR_RESUME: z.coerce.number().positive().default(3),
+        CREDIT_COST_ENHANCE_RESUME_SECTION: z.coerce.number().positive().default(2),
+        CREDIT_COST_GENERATE_STUDY_PLAN: z.coerce.number().positive().default(2),
+        CREDIT_COST_GENERATE_FINANCIAL_LETTER: z.coerce.number().positive().default(2),
+        CREDIT_COST_INTERVIEW_FEEDBACK: z.coerce.number().positive().default(1),
+        CREDIT_PLAN_MULTIPLIER_FREE: z.coerce.number().positive().default(1),
+        CREDIT_PLAN_MULTIPLIER_PRO: z.coerce.number().positive().default(0.8),
+        CREDIT_PLAN_MULTIPLIER_TEAM: z.coerce.number().positive().default(0.6),
+        CREDIT_PLAN_MULTIPLIER_ENTERPRISE: z.coerce.number().positive().default(0.4),
+
+        // Pagination
+        PAGINATION_DEFAULT_PAGE: z.coerce.number().int().positive().default(1),
+        PAGINATION_DEFAULT_LIMIT: z.coerce.number().int().positive().default(10),
+        PAGINATION_DEFAULT_LIMIT_FALLBACK: z.coerce.number().int().positive().default(20),
+        PAGINATION_MAX_LIMIT: z.coerce.number().int().positive().default(100),
+        PAGINATION_SERVICE_MAX_LIMIT: z.coerce.number().int().positive().default(50),
+        PAGINATION_DEFAULT_SORT_ORDER: z.enum(['asc', 'desc']).default('desc'),
+
+        // Cache TTL (seconds)
+        CACHE_NAMESPACE: z.string().min(1).default('career_ai'),
+        CACHE_TTL_RESUME_ENHANCE_SECONDS: z.coerce.number().int().positive().default(86400),
+        CACHE_TTL_ATS_SCORE_SECONDS: z.coerce.number().int().positive().default(86400),
+        CACHE_TTL_KEYWORD_EXTRACTION_SECONDS: z.coerce.number().int().positive().default(604800),
+
+        // File upload
+        UPLOAD_AVATAR_DIR: z.string().min(1).default('uploads/avatars/'),
+        UPLOAD_RESUME_DIR: z.string().min(1).default('uploads/resumes/'),
+        UPLOAD_AVATAR_URL_PREFIX: z.string().min(1).default('/uploads/avatars/'),
+        UPLOAD_AVATAR_MAX_MB: z.coerce.number().positive().default(2),
+        UPLOAD_RESUME_MAX_MB: z.coerce.number().positive().default(5),
+        UPLOAD_AVATAR_ALLOWED_MIME_TYPES: z
+            .string()
+            .min(1)
+            .default('image/jpeg,image/png,image/webp,image/gif'),
+        UPLOAD_RESUME_ALLOWED_MIME_TYPES: z
+            .string()
+            .min(1)
+            .default('application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/msword'),
 
     // Google OAuth (optional — only needed if Google auth is used)
     GOOGLE_CLIENT_ID: z.string().optional(),
@@ -37,6 +101,7 @@ const envSchema = z.object({
 
     // Frontend / CORS
     FRONTEND_URL: z.string().url().default('http://localhost:3000'),
+    API_URL: z.string().url().default('http://localhost:5000'),
     ALLOWED_ORIGINS: z.string().optional(),
 
     // Rate Limiting
@@ -46,10 +111,21 @@ const envSchema = z.object({
     // Stripe (optional)
     STRIPE_SECRET_KEY: z.string().optional(),
     STRIPE_WEBHOOK_SECRET: z.string().optional(),
+    STRIPE_API_VERSION: z.string().default('2023-10-16'),
+    STRIPE_PRICE_PRO_MONTHLY: z.string().default(''),
+    STRIPE_PRICE_PRO_ANNUAL: z.string().default(''),
+    STRIPE_PRICE_TEAM_MONTHLY: z.string().default(''),
+    STRIPE_PRICE_ENTERPRISE: z.string().default(''),
+    BILLING_CREDIT_PRICE_PER_UNIT_CENTS: z.coerce.number().int().positive().default(10),
+    BILLING_CREDIT_PURCHASE_MULTIPLE: z.coerce.number().int().positive().default(50),
+
+    // Auth cookie
+    AUTH_REFRESH_COOKIE_MAX_AGE_MS: z.coerce.number().int().positive().default(7 * 24 * 60 * 60 * 1000),
 
     // AI
     GEMINI_API_KEY: z.string().optional(),
-    USE_ENHANCED_PROMPTS: z.string().default('true'),
+    USE_ENHANCED_PROMPTS: z.enum(['true', 'false']).default('true').transform((value) => value === 'true'),
+    INTERVIEW_DEFAULT_QUESTION_COUNT: z.coerce.number().int().positive().default(10),
 
     // Optional AI fallback providers
     ANTHROPIC_API_KEY: z.string().optional(),
@@ -57,6 +133,9 @@ const envSchema = z.object({
 
     // Redis (optional)
     REDIS_URL: z.string().optional(),
+    REDIS_RECONNECT_MAX_RETRIES: z.coerce.number().int().positive().default(10),
+    REDIS_RECONNECT_BASE_DELAY_MS: z.coerce.number().int().positive().default(50),
+    REDIS_RECONNECT_MAX_DELAY_MS: z.coerce.number().int().positive().default(500),
 
     // Background workers
     ENABLE_EMBEDDED_WORKER: z.enum(['true', 'false']).default('true'),

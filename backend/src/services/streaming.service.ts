@@ -12,6 +12,7 @@
  */
 
 import { Response } from 'express';
+import { env } from '@/config/env';
 
 export interface StreamChunk {
   type: 'progress' | 'data' | 'error' | 'complete';
@@ -32,7 +33,7 @@ export function setupSSEResponse(res: Response, clientId: string): void {
   res.setHeader('Cache-Control', 'no-cache');
   res.setHeader('Connection', 'keep-alive');
   res.setHeader('X-Accel-Buffering', 'no'); // Disable nginx buffering
-  res.setHeader('Access-Control-Allow-Origin', process.env.FRONTEND_URL || '*');
+  res.setHeader('Access-Control-Allow-Origin', env.FRONTEND_URL);
   res.setHeader('Access-Control-Allow-Credentials', 'true');
 }
 

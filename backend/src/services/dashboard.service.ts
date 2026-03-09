@@ -1,4 +1,5 @@
 import prisma from '@/config/database';
+import { PAGINATION } from '@/constants/pagination';
 
 export class DashboardService {
 
@@ -36,8 +37,11 @@ export class DashboardService {
         };
     }
 
-    async getRecentDocuments(userId: string, limit = 10) {
-        return this._getRecentDocuments(userId, limit);
+    async getRecentDocuments(userId: string, limit = PAGINATION.DEFAULT_LIMIT) {
+        return this._getRecentDocuments(
+            userId,
+            Math.min(limit, PAGINATION.SERVICE_MAX_LIMIT)
+        );
     }
 
     async getStats(userId: string) {
@@ -65,8 +69,8 @@ export class DashboardService {
     }
 
     async getActivityFeed(userId: string, params: { page?: number; limit?: number }) {
-        const page = params.page || 1;
-        const limit = Math.min(params.limit || 20, 50);
+        const page = params.page || PAGINATION.DEFAULT_PAGE;
+        const limit = Math.min(params.limit || PAGINATION.DEFAULT_LIMIT_FALLBACK, PAGINATION.SERVICE_MAX_LIMIT);
         const skip = (page - 1) * limit;
 
         const [resumes, documents] = await Promise.all([
