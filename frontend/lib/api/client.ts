@@ -89,10 +89,15 @@ apiClient.interceptors.response.use(
                 }
                 return apiClient(originalRequest);
             } catch {
-                // Refresh failed — clear state and redirect
+                // Refresh failed — clear state and redirect (but not from auth pages)
                 useAuthStore.getState().clearAuth();
                 if (typeof window !== 'undefined') {
-                    window.location.href = '/auth/login';
+                    const currentPath = window.location.pathname;
+                    // Don't redirect if already on an auth page
+                    const isAuthPage = currentPath.startsWith('/auth');
+                    if (!isAuthPage) {
+                        window.location.href = '/auth/login';
+                    }
                 }
                 return Promise.reject(error);
             } finally {
