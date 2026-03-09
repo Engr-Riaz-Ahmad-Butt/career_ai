@@ -50,6 +50,12 @@ interface LoginData {
     readonly password: string;
 }
 
+interface LoginCandidate {
+    readonly deletedAt: Date | null;
+    readonly password: string | null;
+    readonly isActive: boolean;
+}
+
 // ── Helper Functions ──────────────────────────────────────────────────────
 
 /** Check if email is already registered */
@@ -97,7 +103,7 @@ async function recordSignupTransaction(userId: string, referredById?: string): P
 }
 
 /** Validate user is active and has local auth */
-async function validateUserActive(user: any): Promise<void> {
+async function validateUserActive(user: LoginCandidate | null): Promise<void> {
     if (!user || user.deletedAt) throw new ApiError(401, 'Invalid email or password');
     if (!user.password) throw new ApiError(401, 'Please login with Google');
     if (!user.isActive) throw new ApiError(403, 'Account suspended');

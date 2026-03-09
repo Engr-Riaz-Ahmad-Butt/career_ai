@@ -7,7 +7,7 @@ import {
   resetPasswordSchema
 } from '../utils/validation';
 import { successResponse, errorResponse } from '../utils/apiResponse';
-import { asyncHandler } from '../middleware/asyncHandler';
+import { asyncHandler } from '../middleware/error';
 
 const authService = new AuthService();
 

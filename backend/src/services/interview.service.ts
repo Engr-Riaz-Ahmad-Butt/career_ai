@@ -4,16 +4,52 @@ import { ApiError } from '../middleware/error';
 
 const ai = new AIService();
 
+interface GenerateSessionData {
+    readonly resumeId: string;
+    readonly jobDescription?: string;
+    readonly questionCount?: number;
+    readonly categories?: string[];
+    readonly difficulty?: string;
+    readonly includeAnswerTips?: boolean;
+}
+
+interface ListSessionsOptions {
+    readonly page?: number;
+    readonly limit?: number;
+}
+
+interface SubmitFeedbackData {
+    readonly questionId: string;
+    readonly userAnswer: string;
+}
+
+interface InterviewQuestion {
+    readonly id: string;
+    readonly question: string;
+}
+
+function normalizeListOptions(options: ListSessionsOptions = {}): { page: number; limit: number; skip: number } {
+    const page = Math.max(options.page ?? 1, 1);
+    const limit = Math.min(Math.max(options.limit ?? 10, 1), 50);
+    return { page, limit, skip: (page - 1) * limit };
+}
+
+function isInterviewQuestion(value: unknown): value is InterviewQuestion {
+    if (!value || typeof value !== 'object') return false;
+    const question = value as Record<string, unknown>;
+    return typeof question.id === 'string' && typeof question.question === 'string';
+}
+
+function parseQuestions(value: unknown): InterviewQuestion[] {
+    if (!Array.isArray(value)) return [];
+    return value.filter(isInterviewQuestion);
+}
+
 export class InterviewService {
 
-    async generateSession(userId: string, data: {
-        resumeId: string;
-        jobDescription?: string;
-        questionCount?: number;
-        categories?: string[];
-        difficulty?: string;
-        includeAnswerTips?: boolean;
-    }) {
+    async generateSession(userId: string, data: GenerateSessionData) {
+        if (!userId || !data?.resumeId) throw new Error('userId and resumeId are required');
+
         const result = await ai.generateInterviewQuestions(userId, data);
 
         const session = await prisma.interviewSession.create({
@@ -31,10 +67,10 @@ export class InterviewService {
         return session;
     }
 
-    async listSessions(userId: string, params: { page?: number; limit?: number }) {
-        const page = params.page || 1;
-        const limit = Math.min(params.limit || 10, 50);
-        const skip = (page - 1) * limit;
+    async listSessions(userId: string, params: ListSessionsOptions = {}) {
+        if (!userId) throw new Error('userId is required');
+
+        const { page, limit, skip } = normalizeListOptions(params);
 
         const [data, total] = await Promise.all([
             prisma.interviewSession.findMany({
@@ -49,17 +85,21 @@ export class InterviewService {
     }
 
     async getSessionById(userId: string, id: string) {
+        if (!userId || !id) throw new Error('userId and session id are required');
+
         const session = await prisma.interviewSession.findFirst({ where: { id, userId } });
         if (!session) throw new ApiError(404, 'Interview session not found');
         return session;
     }
 
-    async submitFeedback(userId: string, sessionId: string, data: { questionId: string; userAnswer: string }) {
-        const session = await prisma.interviewSession.findFirst({ where: { id: sessionId, userId } });
-        if (!session) throw new ApiError(404, 'Session not found');
+    async submitFeedback(userId: string, sessionId: string, data: SubmitFeedbackData) {
+        if (!userId || !sessionId || !data?.questionId || !data?.userAnswer) {
+            throw new Error('userId, sessionId, questionId, and userAnswer are required');
+        }
 
-        const questions = session.questions as any[];
-        const question = questions.find((q: any) => q.id === data.questionId);
+        const session = await this.getSessionById(userId, sessionId);
+        const questions = parseQuestions(session.questions);
+        const question = questions.find((item) => item.id === data.questionId);
         if (!question) throw new ApiError(404, 'Question not found in session');
 
         const result = await ai.generateInterviewFeedback(data.questionId, question.question, data.userAnswer);
@@ -81,8 +121,7 @@ export class InterviewService {
     }
 
     async deleteSession(userId: string, id: string) {
-        const session = await prisma.interviewSession.findFirst({ where: { id, userId } });
-        if (!session) throw new ApiError(404, 'Session not found');
+        await this.getSessionById(userId, id);
         await prisma.interviewSession.delete({ where: { id } });
     }
 }

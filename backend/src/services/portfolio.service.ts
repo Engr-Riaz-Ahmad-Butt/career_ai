@@ -1,4 +1,5 @@
 import prisma from '../config/database';
+import { PortfolioTheme } from '@prisma/client';
 
 // ── Request Interfaces ────────────────────────────────────────────────────
 
@@ -7,14 +8,14 @@ interface CreatePortfolioData {
     readonly theme: string;
     readonly customDomain?: string;
     readonly sections?: string[];
-    readonly colorScheme?: Record<string, unknown>;
+    readonly colorScheme?: string;
 }
 
 interface UpdatePortfolioData {
     readonly theme?: string;
     readonly customDomain?: string;
     readonly sections?: string[];
-    readonly colorScheme?: Record<string, unknown>;
+    readonly colorScheme?: string;
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────────
@@ -38,14 +39,23 @@ function generateLiveUrl(portfolio: { id: string; customDomain?: string | null }
         : `https://careerai-portfolio-${portfolio.id.substring(0, 8)}.vercel.app`;
 }
 
+function parseTheme(theme: string): PortfolioTheme {
+    const normalized = theme.toUpperCase();
+    const validThemes: PortfolioTheme[] = ['MINIMAL', 'MODERN', 'CREATIVE', 'DARK', 'ACADEMIC'];
+    if (!validThemes.includes(normalized as PortfolioTheme)) throw new Error('Invalid portfolio theme');
+    return normalized as PortfolioTheme;
+}
+
 export class PortfolioService {
     async createPortfolio(userId: string, data: CreatePortfolioData) {
         if (!userId || !data?.resumeId || !data?.theme) throw new Error('Missing required fields');
+        const theme = parseTheme(data.theme);
+
         const portfolio = await prisma.portfolio.create({
             data: {
                 userId,
                 resumeId: data.resumeId,
-                theme: data.theme.toUpperCase(),
+                theme,
                 customDomain: data.customDomain,
                 sections: data.sections || ['about', 'experience', 'skills', 'projects', 'contact'],
                 colorScheme: data.colorScheme,
@@ -72,9 +82,11 @@ export class PortfolioService {
 
     async updatePortfolio(userId: string, id: string, data: UpdatePortfolioData) {
         if (!userId || !id || !data) throw new Error('Missing required parameters');
+        const parsedTheme = data.theme ? parseTheme(data.theme) : undefined;
+
         return prisma.portfolio.update({
             where: { id, userId },
-            data: { ...data, theme: data.theme?.toUpperCase() }
+            data: { ...data, theme: parsedTheme }
         });
     }
 

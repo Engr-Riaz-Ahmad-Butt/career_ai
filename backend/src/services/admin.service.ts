@@ -1,34 +1,83 @@
 import prisma from '../config/database';
-import { Plan } from '@prisma/client';
+import { Plan, Prisma } from '@prisma/client';
+
+interface GetUsersOptions {
+    readonly page: number;
+    readonly limit: number;
+    readonly plan?: string;
+    readonly search?: string;
+    readonly sortBy?: string;
+    readonly order?: 'asc' | 'desc';
+}
+
+type UserSortField = 'createdAt' | 'email' | 'firstName' | 'lastName' | 'plan' | 'credits';
+
+function buildUserWhere(options: GetUsersOptions): Prisma.UserWhereInput {
+    const where: Prisma.UserWhereInput = {};
+    if (options.plan) where.plan = options.plan.toUpperCase() as Plan;
+    if (!options.search) return where;
+
+    where.OR = [
+        { email: { contains: options.search, mode: 'insensitive' } },
+        { firstName: { contains: options.search, mode: 'insensitive' } },
+        { lastName: { contains: options.search, mode: 'insensitive' } },
+    ];
+    return where;
+}
+
+function buildUserOrderBy(sortBy?: string, order: 'asc' | 'desc' = 'desc'): Prisma.UserOrderByWithRelationInput {
+    const field = sortBy as UserSortField | undefined;
+    if (!field) return { createdAt: 'desc' };
+
+    switch (field) {
+        case 'email':
+            return { email: order };
+        case 'firstName':
+            return { firstName: order };
+        case 'lastName':
+            return { lastName: order };
+        case 'plan':
+            return { plan: order };
+        case 'credits':
+            return { credits: order };
+        case 'createdAt':
+        default:
+            return { createdAt: order };
+    }
+}
+
+function assertDateRange(from: Date, to: Date): void {
+    if (Number.isNaN(from.getTime()) || Number.isNaN(to.getTime())) {
+        throw new Error('Invalid date range');
+    }
+    if (from > to) throw new Error('from date must be before to date');
+}
+
+function buildCreditUpdate(amount: number): Prisma.UserUpdateInput {
+    if (amount > 0) {
+        return {
+            credits: { increment: amount },
+            lifetimeCreditsEarned: { increment: amount },
+        };
+    }
+    return { credits: { increment: amount } };
+}
+
+function buildBroadcastWhere(segment?: string): Prisma.UserWhereInput {
+    if (segment === 'PRO') return { plan: { not: 'FREE' } };
+    if (segment === 'FREE') return { plan: 'FREE' };
+    return {};
+}
 
 export class AdminService {
-    async getUsers(query: {
-        page: number;
-        limit: number;
-        plan?: string;
-        search?: string;
-        sortBy?: string;
-        order?: 'asc' | 'desc';
-    }) {
-        const { page, limit, plan, search, sortBy, order } = query;
+    async getUsers(query: GetUsersOptions) {
+        if (query.page < 1 || query.limit < 1) throw new Error('Invalid pagination parameters');
+
+        const page = query.page;
+        const limit = Math.min(query.limit, 100);
         const skip = (page - 1) * limit;
-
-        const where: any = {};
-        if (plan) where.plan = plan.toUpperCase();
-        if (search) {
-            where.OR = [
-                { email: { contains: search, mode: 'insensitive' } },
-                { firstName: { contains: search, mode: 'insensitive' } },
-                { lastName: { contains: search, mode: 'insensitive' } },
-            ];
-        }
-
-        const orderBy: any = {};
-        if (sortBy) {
-            orderBy[sortBy] = order;
-        } else {
-            orderBy.createdAt = 'desc';
-        }
+        const where = buildUserWhere(query);
+        const orderBy = buildUserOrderBy(query.sortBy, query.order ?? 'desc');
 
         const [users, total] = await Promise.all([
             prisma.user.findMany({ where, skip, take: limit, orderBy }),
@@ -45,6 +94,7 @@ export class AdminService {
     }
 
     async getUserById(id: string) {
+        if (!id) throw new Error('User ID is required');
         return prisma.user.findUnique({
             where: { id },
             include: {
@@ -56,6 +106,7 @@ export class AdminService {
     }
 
     async updateUserPlan(id: string, plan: Plan) {
+        if (!id || !plan) throw new Error('User ID and plan are required');
         return prisma.user.update({
             where: { id },
             data: { plan },
@@ -63,12 +114,12 @@ export class AdminService {
     }
 
     async adjustUserCredits(id: string, amount: number, reason: string) {
+        if (!id || !reason) throw new Error('User ID and reason are required');
+        if (!Number.isFinite(amount)) throw new Error('Amount must be a valid number');
+
         const user = await prisma.user.update({
             where: { id },
-            data: {
-                credits: { increment: amount },
-                lifetimeCreditsEarned: amount > 0 ? { increment: amount } : undefined,
-            },
+            data: buildCreditUpdate(amount),
             select: { credits: true },
         });
 
@@ -86,6 +137,8 @@ export class AdminService {
     }
 
     async getSystemStats(from: Date, to: Date) {
+        assertDateRange(from, to);
+
         const [totalUsers, totalResumes, totalAIUsage] = await Promise.all([
             prisma.user.count(),
             prisma.resume.count(),
@@ -106,7 +159,8 @@ export class AdminService {
     }
 
     async getAiCosts(from: Date, to: Date) {
-        // This would normally aggregate from log files or a billing API
+        assertDateRange(from, to);
+
         const usage = await prisma.creditTransaction.findMany({
             where: {
                 type: 'USAGE',
@@ -121,6 +175,8 @@ export class AdminService {
     }
 
     async getRevenue(from: Date, to: Date) {
+        assertDateRange(from, to);
+
         const transactions = await prisma.invoice.findMany({
             where: {
                 status: 'paid',
@@ -129,23 +185,19 @@ export class AdminService {
         });
 
         return {
-            totalRevenue: transactions.reduce((sum: number, t: any) => sum + t.amount, 0),
+            totalRevenue: transactions.reduce((sum, transaction) => sum + Number(transaction.amount), 0),
             currency: 'USD',
             transactionCount: transactions.length,
         };
     }
 
     async getBroadcastRecipients(segment?: string) {
-        const where: any = {};
-        if (segment === 'PRO') where.plan = { not: 'FREE' };
-        if (segment === 'FREE') where.plan = 'FREE';
-
         const users = await prisma.user.findMany({
-            where,
+            where: buildBroadcastWhere(segment),
             select: { email: true },
         });
 
-        return users.map(u => u.email);
+        return users.map((user) => user.email).filter((email): email is string => Boolean(email));
     }
 }
 
