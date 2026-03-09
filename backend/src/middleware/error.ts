@@ -11,6 +11,7 @@ import {
   UnauthorizedError,
   ValidationError,
 } from '@/utils/errorHandler';
+import { logger } from '@/utils/logger';
 
 function fromZod(error: ZodError): ValidationError {
   return new ValidationError('Validation error', {
@@ -106,7 +107,7 @@ function normalizeError(error: unknown): AppError {
 function logServerError(req: Request, error: unknown, appError: AppError): void {
   const requestId = resRequestId(req);
 
-  console.error('Unhandled request error', {
+  logger.error('Unhandled request error', {
     requestId,
     method: req.method,
     path: req.originalUrl,
@@ -114,7 +115,7 @@ function logServerError(req: Request, error: unknown, appError: AppError): void 
     code: appError.code,
     message: appError.message,
     details: appError.details,
-    error,
+    error: error instanceof Error ? { name: error.name, message: error.message } : error,
   });
 }
 

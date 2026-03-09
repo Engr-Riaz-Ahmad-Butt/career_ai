@@ -2,6 +2,7 @@ import { Job, JobState, Queue } from 'bullmq';
 import { env } from '@/config/env';
 import { createHttpError } from '@/utils/errorHandler';
 import { getBullMqConnectionOptions } from '@/services/bullmqConnection';
+import { logger } from '@/utils/logger';
 import {
   JOB_NAMES,
   JOB_QUEUE_NAME,
@@ -21,7 +22,7 @@ class JobQueueService {
 
   constructor() {
     if (!env.REDIS_URL) {
-      console.warn('WARNING: REDIS_URL not configured. Background jobs are disabled.');
+      logger.warn('REDIS_URL not configured. Background jobs are disabled.');
       return;
     }
 

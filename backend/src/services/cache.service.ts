@@ -14,6 +14,7 @@
 import { createClient, RedisClientType } from 'redis';
 import { CACHE } from '@/constants/cache';
 import { env } from '@/config/env';
+import { logger } from '@/utils/logger';
 
 export interface CacheOptions {
   ttl?: number; // Time to live in seconds
@@ -37,7 +38,7 @@ export class CacheService {
    */
   private async initialize() {
     if (!env.REDIS_URL) {
-      console.log('⚠️  Redis not configured — caching disabled');
+      logger.warn('Redis not configured; caching disabled');
       return;
     }
 
@@ -47,9 +48,10 @@ export class CacheService {
         socket: {
           reconnectStrategy: (retries: number) => {
             if (retries > CACHE.REDIS_RECONNECT_MAX_RETRIES) {
-              console.error(
-                `❌ Redis reconnection failed after ${CACHE.REDIS_RECONNECT_MAX_RETRIES} attempts`
-              );
+              logger.error('Redis reconnection failed', {
+                retries,
+                maxRetries: CACHE.REDIS_RECONNECT_MAX_RETRIES,
+              });
               return new Error('Redis reconnection failed');
             }
             return Math.min(
@@ -60,13 +62,13 @@ export class CacheService {
         },
       });
 
-      this.client.on('error', (err: unknown) => console.error('Redis error:', err));
+      this.client.on('error', (err: unknown) => logger.error('Redis client error', { err }));
 
       await this.client.connect();
       this.connected = true;
-      console.log('✅ Redis cache connected');
+      logger.info('Redis cache connected');
     } catch (err) {
-      console.error('⚠️  Failed to connect to Redis:', err);
+      logger.error('Failed to connect to Redis', { err });
       this.client = null;
       this.connected = false;
     }
@@ -93,7 +95,7 @@ export class CacheService {
       const value = await this.client.get(fullKey);
       return value ? JSON.parse(value) : null;
     } catch (err) {
-      console.warn('Cache get error:', err);
+      logger.warn('Cache get error', { err, key });
       return null;
     }
   }
@@ -123,7 +125,7 @@ export class CacheService {
 
       return true;
     } catch (err) {
-      console.warn('Cache set error:', err);
+      logger.warn('Cache set error', { err, key });
       return false;
     }
   }
@@ -180,7 +182,7 @@ export class CacheService {
       const fullKeys = keyArray.map((k) => this.getKey(k, options?.namespace));
       return await this.client.del(fullKeys);
     } catch (err) {
-      console.warn('Cache invalidation error:', err);
+      logger.warn('Cache invalidation error', { err, keys });
       return 0;
     }
   }
@@ -204,7 +206,7 @@ export class CacheService {
 
       return await this.client.del(keys);
     } catch (err) {
-      console.warn('Cache invalidation pattern error:', err);
+      logger.warn('Cache invalidation pattern error', { err, pattern });
       return 0;
     }
   }
@@ -236,7 +238,7 @@ export class CacheService {
         info: info ? info.substring(0, 200) : undefined,
       };
     } catch (err) {
-      console.warn('Cache stats error:', err);
+      logger.warn('Cache stats error', { err, namespace });
       return { keys: 0 };
     }
   }

@@ -9,12 +9,13 @@ import {
   ResumeAtsScoreJobPayload,
   ResumePdfJobPayload,
 } from '@/services/job.types';
+import { logger } from '@/utils/logger';
 
 let workerInstance: Worker | null = null;
 
 export function startJobWorker(): Worker | null {
   if (!env.REDIS_URL) {
-    console.warn('WARNING: REDIS_URL not configured. Job worker not started.');
+    logger.warn('REDIS_URL not configured. Job worker not started.');
     return null;
   }
 
@@ -51,19 +52,23 @@ export function startJobWorker(): Worker | null {
   );
 
   workerInstance.on('ready', () => {
-    console.log('Job worker ready');
+    logger.info('Job worker ready');
   });
 
   workerInstance.on('completed', (job) => {
-    console.log(`Job completed: ${job.id} (${job.name})`);
+    logger.info('Job completed', { jobId: job.id, jobName: job.name });
   });
 
   workerInstance.on('failed', (job, error) => {
-    console.error(`Job failed: ${job?.id} (${job?.name}) - ${error.message}`);
+    logger.error('Job failed', {
+      jobId: job?.id,
+      jobName: job?.name,
+      message: error.message,
+    });
   });
 
   workerInstance.on('error', (error) => {
-    console.error('Worker error:', error);
+    logger.error('Job worker error', { error });
   });
 
   return workerInstance;
@@ -83,7 +88,7 @@ if (require.main === module) {
     process.exit(1);
   }
 
-  console.log('BullMQ worker started');
+  logger.info('BullMQ worker started');
 
   const shutdown = async () => {
     await stopJobWorker();

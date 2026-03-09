@@ -10,7 +10,7 @@ import {
     getReferrals,
 } from '@/controllers/user.controller';
 import { authenticate } from '@/middleware/auth';
-import { uploadAvatar as avatarUpload } from '@/middleware/upload';
+import { uploadAvatar as avatarUpload, validateAvatarMagicBytes } from '@/middleware/upload';
 import { validate } from '@/middleware/validate';
 import { userUpdateProfileSchema, userChangePasswordSchema } from '@/utils/validation';
 
@@ -23,7 +23,7 @@ router.get('/me', getMe);
 router.put('/me', validate(userUpdateProfileSchema), updateMe);
 router.delete('/me', deleteMe);
 router.put('/me/password', validate(userChangePasswordSchema), changePassword);
-router.post('/me/avatar', avatarUpload.single('file'), uploadAvatar);
+router.post('/me/avatar', avatarUpload.single('file'), validateAvatarMagicBytes, uploadAvatar);
 router.get('/me/credits', getCredits);
 router.get('/me/usage', getUsage);
 router.get('/me/referrals', getReferrals);

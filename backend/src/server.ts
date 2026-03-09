@@ -30,9 +30,12 @@ import jobRoutes from '@/routes/job.routes';
 
 // Middleware
 import { errorHandler, notFound } from '@/middleware/error';
+import { performanceMonitor } from '@/middleware/performanceMonitor';
 import { requestIdMiddleware } from '@/middleware/requestId.middleware';
+import { sanitizeInput } from '@/middleware/sanitizeInput';
 import { startJobWorker, stopJobWorker } from '@/workers/job.worker';
 import { getJobQueueService } from '@/services/jobQueue.service';
+import { logger } from '@/utils/logger';
 
 const app: Application = express();
 
@@ -40,21 +43,31 @@ const app: Application = express();
 
 app.use(helmet());
 app.use(requestIdMiddleware);
+app.use(performanceMonitor);
 
 const allowedOrigins = env.ALLOWED_ORIGINS
-  ? env.ALLOWED_ORIGINS.split(',')
+  ? env.ALLOWED_ORIGINS.split(',').map((origin) => origin.trim()).filter(Boolean)
   : [env.FRONTEND_URL];
 
 app.use(
   cors({
     origin: (origin, callback) => {
-      // allow requests with no origin (like mobile apps or curl requests)
-      if (!origin) return callback(null, true);
+      if (!origin) {
+        if (env.CORS_ALLOW_NO_ORIGIN) {
+          return callback(null, true);
+        }
+        return callback(new Error('CORS policy: Missing origin header'), false);
+      }
+
       if (allowedOrigins.indexOf(origin) === -1) {
         return callback(new Error('CORS policy: This origin is not allowed'), false);
       }
       return callback(null, true);
     },
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'X-Request-Id'],
+    exposedHeaders: ['X-Request-Id', 'X-Response-Time-Ms', 'X-First-Byte-Ms'],
+    maxAge: 600,
     credentials: true,
   })
 );
@@ -64,6 +77,7 @@ app.use('/api/v1/billing/webhook', express.raw({ type: 'application/json' }));
 
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+app.use(sanitizeInput);
 app.use(cookieParser());
 app.use(compression());
 
@@ -143,35 +157,35 @@ let server: ReturnType<typeof app.listen> | null = null;
 let embeddedWorkerStarted = false;
 
 async function gracefulShutdown(signal: string) {
-  console.log(`\n⏳ Received ${signal}. Shutting down gracefully...`);
+  logger.info('Graceful shutdown initiated', { signal });
 
   if (server) {
     server.close(() => {
-      console.log('   ✅ HTTP server closed');
+      logger.info('HTTP server closed');
     });
   }
 
   try {
     if (embeddedWorkerStarted) {
       await stopJobWorker();
-      console.log('   ✅ Embedded job worker stopped');
+      logger.info('Embedded job worker stopped');
     }
   } catch (err) {
-    console.error('   ❌ Error stopping job worker:', err);
+    logger.error('Error stopping job worker', { err });
   }
 
   try {
     await getJobQueueService().close();
-    console.log('   ✅ Job queue connection closed');
+    logger.info('Job queue connection closed');
   } catch (err) {
-    console.error('   ❌ Error closing job queue connection:', err);
+    logger.error('Error closing job queue connection', { err });
   }
 
   try {
     await prisma.$disconnect();
-    console.log('   ✅ Database disconnected');
+    logger.info('Database disconnected');
   } catch (err) {
-    console.error('   ❌ Error disconnecting database:', err);
+    logger.error('Error disconnecting database', { err });
   }
 
   process.exit(0);
@@ -187,16 +201,13 @@ if (require.main === module) {
   }
 
   server = app.listen(env.PORT, () => {
-    console.log(`
-  🚀 CareerAI API Server
-  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  📡 Port:        ${env.PORT}
-  🌍 Environment: ${env.NODE_ENV}
-  🔗 Health:      http://localhost:${env.PORT}/health
-  📚 API v1:      http://localhost:${env.PORT}/api/v1
-  🔧 Worker:      ${shouldStartEmbeddedWorker ? 'embedded' : 'external/off'}
-  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-    `);
+    logger.info('CareerAI API server started', {
+      port: env.PORT,
+      environment: env.NODE_ENV,
+      healthUrl: `http://localhost:${env.PORT}/health`,
+      apiBaseUrl: `http://localhost:${env.PORT}/api/v1`,
+      workerMode: shouldStartEmbeddedWorker ? 'embedded' : 'external/off',
+    });
   });
 }
 
@@ -206,12 +217,12 @@ process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
 process.on('SIGINT', () => gracefulShutdown('SIGINT'));
 
 process.on('unhandledRejection', (err: Error) => {
-  console.error('Unhandled Promise Rejection:', err);
+  logger.error('Unhandled promise rejection', { err });
   gracefulShutdown('unhandledRejection');
 });
 
 process.on('uncaughtException', (err: Error) => {
-  console.error('Uncaught Exception:', err);
+  logger.error('Uncaught exception', { err });
   gracefulShutdown('uncaughtException');
 });
 

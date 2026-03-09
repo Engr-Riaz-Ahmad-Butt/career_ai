@@ -1,10 +1,11 @@
 import { GoogleGenerativeAI, GenerativeModel } from '@google/generative-ai';
 import { env } from '@/config/env';
+import { logger } from '@/utils/logger';
 
 const GEMINI_API_KEY = env.GEMINI_API_KEY ?? '';
 
 if (!GEMINI_API_KEY) {
-  console.warn('⚠️  GEMINI_API_KEY not found in environment variables');
+  logger.warn('GEMINI_API_KEY not found in environment variables');
 }
 
 // Initialize Gemini AI
@@ -44,7 +45,11 @@ export const generateContent = async (
     const response = await result.response;
     return response.text();
   } catch (error: any) {
-    console.error('Gemini API Error:', error);
+    logger.error('Gemini API error', {
+      modelType,
+      message: error?.message,
+      name: error?.name,
+    });
     throw new Error(`Gemini generation failed: ${error.message}`);
   }
 };
@@ -67,7 +72,11 @@ export const generateStructuredContent = async <T>(
 
     return JSON.parse(cleanedText) as T;
   } catch (error: any) {
-    console.error('Gemini Structured Generation Error:', error);
+    logger.error('Gemini structured generation error', {
+      modelType,
+      message: error?.message,
+      name: error?.name,
+    });
     throw new Error(`Failed to generate structured content: ${error.message}`);
   }
 };

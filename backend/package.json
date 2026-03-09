@@ -14,7 +14,8 @@
     "prisma:studio": "prisma studio",
     "prisma:seed": "tsx prisma/seed.ts",
     "test": "jest",
-    "lint": "eslint src/**/*.ts"
+    "lint": "eslint src/**/*.ts",
+    "audit:deps": "npm audit --audit-level=moderate"
   },
   "keywords": [
     "resume",

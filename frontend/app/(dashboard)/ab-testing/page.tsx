@@ -2,10 +2,19 @@
 
 import { motion } from 'framer-motion';
 import { Sparkles } from 'lucide-react';
+import dynamic from 'next/dynamic';
 
-import { ABTestCreator } from '@/components/ab-testing/TestCreator';
-import { TestResults } from '@/components/ab-testing/TestResults';
 import { useABTestStore } from '@/store/abTestStore';
+
+const ABTestCreator = dynamic(
+  () => import('@/components/ab-testing/TestCreator').then((mod) => mod.ABTestCreator),
+  { ssr: false }
+);
+
+const TestResults = dynamic(
+  () => import('@/components/ab-testing/TestResults').then((mod) => mod.TestResults),
+  { ssr: false }
+);
 
 const container = {
   hidden: { opacity: 0 },
@@ -23,7 +32,7 @@ const item = {
 };
 
 export default function ABTestingPage() {
-  const tests = useABTestStore((state) => state.getTests());
+  const tests = useABTestStore((state) => state.tests);
   const deleteTest = useABTestStore((state) => state.deleteTest);
 
   return (

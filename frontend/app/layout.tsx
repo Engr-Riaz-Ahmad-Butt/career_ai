@@ -5,6 +5,7 @@ import AuthProvider from "@/components/auth/AuthProvider";
 import { RootErrorBoundary } from "@/components/errors/RootErrorBoundary";
 import QueryProvider from "@/components/providers/QueryProvider";
 import { ThemeProvider } from "@/components/providers/ThemeProvider";
+import WebVitalsProvider from "@/components/providers/WebVitalsProvider";
 
 import type { Metadata } from "next";
 import "@/styles/globals.css";
@@ -42,6 +43,7 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${spaceGrotesk.variable} ${inter.variable}`} suppressHydrationWarning>
       <body>
+        <WebVitalsProvider />
         <ThemeProvider
           attribute="class"
           defaultTheme="dark"

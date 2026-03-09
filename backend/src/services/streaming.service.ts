@@ -13,6 +13,7 @@
 
 import { Response } from 'express';
 import { env } from '@/config/env';
+import { logger } from '@/utils/logger';
 
 export interface StreamChunk {
   type: 'progress' | 'data' | 'error' | 'complete';
@@ -46,7 +47,7 @@ export function sendChunk(res: Response, chunk: StreamChunk): void {
     const data = JSON.stringify(chunk);
     res.write(`data: ${data}\n\n`);
   } catch (err) {
-    console.error('Error sending SSE chunk:', err);
+    logger.error('Error sending SSE chunk', { err });
   }
 }
 
@@ -90,7 +91,7 @@ export async function streamProgress(
     clearTimeout(timeoutHandle);
     res.end();
   } catch (err) {
-    console.error('Stream error:', err);
+    logger.error('Stream error', { err });
     sendChunk(res, {
       type: 'error',
       message: err instanceof Error ? err.message : 'Stream error',

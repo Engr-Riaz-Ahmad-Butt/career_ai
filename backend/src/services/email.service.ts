@@ -1,5 +1,6 @@
 import nodemailer from 'nodemailer';
 import { env } from '@/config/env';
+import { logger } from '@/utils/logger';
 
 export class EmailService {
     private transporter: nodemailer.Transporter | null = null;
@@ -30,7 +31,7 @@ export class EmailService {
                 html,
             });
         } catch (error) {
-            console.error('Email delivery failed:', error);
+            logger.error('Email delivery failed', { error, subject, recipientCount: 1 });
             // In production, we might want to queue this or use a more reliable provider
         }
     }

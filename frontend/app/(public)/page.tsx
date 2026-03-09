@@ -1,9 +1,12 @@
-import CTA from "@/components/sections/CTA";
-import Features from "@/components/sections/Features";
+import dynamic from "next/dynamic";
+
 import Hero from "@/components/sections/Hero";
-import HowItWorks from "@/components/sections/HowItWorks";
-import Testimonials from "@/components/sections/Testimonials";
-import TrustedBy from "@/components/sections/TrustedBy";
+
+const TrustedBy = dynamic(() => import("@/components/sections/TrustedBy"));
+const Features = dynamic(() => import("@/components/sections/Features"));
+const HowItWorks = dynamic(() => import("@/components/sections/HowItWorks"));
+const Testimonials = dynamic(() => import("@/components/sections/Testimonials"));
+const CTA = dynamic(() => import("@/components/sections/CTA"));
 
 export default function HomePage() {
   return (

@@ -5,16 +5,11 @@ import {
     Sparkles,
     Search,
     ArrowRight,
-    Layout,
-    Zap,
-    CheckCircle2,
-    FileText,
-    Award,
-    Filter
+    Layout
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 
 const CATEGORIES = ["Popular", "Simple", "Modern", "Creative"];
 
@@ -73,11 +68,14 @@ export default function TemplatesPage() {
     const [activeCategory, setActiveCategory] = useState("Popular");
     const [searchQuery, setSearchQuery] = useState("");
 
-    const filteredTemplates = TEMPLATES.filter(template => {
-        const matchesCategory = activeCategory === "Popular" || template.category === activeCategory;
-        const matchesSearch = template.name.toLowerCase().includes(searchQuery.toLowerCase());
-        return matchesCategory && matchesSearch;
-    });
+    const filteredTemplates = useMemo(() => {
+        const normalizedQuery = searchQuery.toLowerCase();
+        return TEMPLATES.filter((template) => {
+            const matchesCategory = activeCategory === "Popular" || template.category === activeCategory;
+            const matchesSearch = template.name.toLowerCase().includes(normalizedQuery);
+            return matchesCategory && matchesSearch;
+        });
+    }, [activeCategory, searchQuery]);
 
     return (
         <div className="min-h-screen pt-24 pb-20 bg-[var(--black)] relative overflow-hidden">
@@ -164,10 +162,12 @@ export default function TemplatesPage() {
                                 <div className="relative aspect-[1/1.4] rounded-3xl overflow-hidden bg-[var(--surface)] border border-[var(--border)] shadow-sm group-hover:shadow-2xl group-hover:shadow-blue-500/10 group-hover:border-[var(--blue)]/30 transition-all duration-500">
                                     <div className="absolute inset-0 bg-gradient-to-t from-[var(--black)]/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 z-10" />
 
-                                    <img
+                                    <Image
                                         src={template.image}
                                         alt={template.name}
-                                        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                                        fill
+                                        sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                                        className="object-cover transition-transform duration-700 group-hover:scale-105"
                                     />
 
                                     {/* Actions Overlay */}

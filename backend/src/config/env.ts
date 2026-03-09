@@ -1,5 +1,5 @@
-import { z } from 'zod';
 import dotenv from 'dotenv';
+import { z } from 'zod';
 
 dotenv.config();
 
@@ -83,7 +83,7 @@ const envSchema = z.object({
         UPLOAD_RESUME_ALLOWED_MIME_TYPES: z
             .string()
             .min(1)
-            .default('application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/msword'),
+            .default('application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document'),
 
     // Google OAuth (optional — only needed if Google auth is used)
     GOOGLE_CLIENT_ID: z.string().optional(),
@@ -103,6 +103,12 @@ const envSchema = z.object({
     FRONTEND_URL: z.string().url().default('http://localhost:3000'),
     API_URL: z.string().url().default('http://localhost:5000'),
     ALLOWED_ORIGINS: z.string().optional(),
+    CORS_ALLOW_NO_ORIGIN: z.enum(['true', 'false']).default('false').transform((value) => value === 'true'),
+
+    // Response performance targets (milliseconds)
+    PERF_NON_AI_RESPONSE_TARGET_MS: z.coerce.number().int().positive().default(200),
+    PERF_AI_FIRST_BYTE_TARGET_MS: z.coerce.number().int().positive().default(500),
+    PERF_UPLOAD_QUEUE_TARGET_MS: z.coerce.number().int().positive().default(300),
 
     // Rate Limiting
     RATE_LIMIT_WINDOW_MS: z.coerce.number().default(900000),

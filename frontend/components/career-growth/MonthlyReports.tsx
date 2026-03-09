@@ -20,8 +20,7 @@ interface MonthlyReportProps {
 
 export function MonthlyReportCard({ report }: MonthlyReportProps) {
   const handleDownload = () => {
-    // Generate PDF or download logic
-    console.log('Downloading report:', report.id);
+    // Generate PDF or download logic.
   };
 
   return (
@@ -129,7 +128,7 @@ export function MonthlyReportCard({ report }: MonthlyReportProps) {
 }
 
 export function CareerReportList() {
-  const reports = useCareerGrowthStore((state) => state.getReports());
+  const reports = useCareerGrowthStore((state) => state.reports);
 
   return (
     <div className="space-y-4">

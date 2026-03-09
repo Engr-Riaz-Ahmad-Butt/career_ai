@@ -7,7 +7,7 @@ import {
 import { tailorResume, getTailorHistory, getTailored, deleteTailored } from '@/controllers/tailoring.controller';
 import { enhanceResume, scoreAts } from '@/controllers/ai.controller';
 import { authenticate, requireCreditsForAction } from '@/middleware/auth';
-import { uploadResume as resumeUpload } from '@/middleware/upload';
+import { uploadResume as resumeUpload, validateResumeMagicBytes } from '@/middleware/upload';
 import { validate } from '@/middleware/validate';
 import {
   createResumeSchema,
@@ -20,7 +20,7 @@ const router = Router();
 router.use(authenticate);
 
 // Upload (before /:id routes)
-router.post('/upload', resumeUpload.single('file'), requireCreditsForAction('FILE_UPLOAD_PARSE'), uploadResume);
+router.post('/upload', resumeUpload.single('file'), validateResumeMagicBytes, requireCreditsForAction('FILE_UPLOAD_PARSE'), uploadResume);
 
 // Tailoring sub-routes
 router.post('/tailor', validate(tailorResumeSchema), requireCreditsForAction('RESUME_TAILOR'), tailorResume);
@@ -42,7 +42,7 @@ router.get('/:id/versions', listVersions);
 router.post('/:id/restore/:versionId', restoreVersion);
 router.post('/:id/enhance', requireCreditsForAction('RESUME_ENHANCE'), enhanceResume);
 router.post('/:id/ats-score', requireCreditsForAction('ATS_SCORE'), scoreAts);
-router.post('/extract', resumeUpload.single('file'), requireCreditsForAction('FILE_UPLOAD_PARSE'), extractResume);
+router.post('/extract', resumeUpload.single('file'), validateResumeMagicBytes, requireCreditsForAction('FILE_UPLOAD_PARSE'), extractResume);
 router.post('/:id/optimize', requireCreditsForAction('RESUME_IMPROVE'), optimizeResume);
 
 export default router;
