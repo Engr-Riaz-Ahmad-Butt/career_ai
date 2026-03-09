@@ -1,9 +1,10 @@
 import { ConnectionOptions } from 'bullmq';
 import { env } from '../config/env';
+import { InternalError } from '../utils/errorHandler';
 
 export function getBullMqConnectionOptions(): ConnectionOptions {
   if (!env.REDIS_URL) {
-    throw new Error('REDIS_URL is required for BullMQ');
+    throw new InternalError('REDIS_URL is required for BullMQ');
   }
 
   const redisUrl = new URL(env.REDIS_URL);

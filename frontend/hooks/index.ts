@@ -24,3 +24,11 @@ export type { PaginationConfig, UsePaginationReturn } from './use-pagination';
 // Toast notifications
 export { useToast } from './use-toast';
 export type { ToastOptions, UseToastReturn } from './use-toast';
+
+// Form management
+export { useForm } from './use-form';
+export type { UseFormOptions, UseFormReturn } from './use-form';
+
+// Modal management
+export { useModal } from './use-modal';
+export type { UseModalReturn } from './use-modal';

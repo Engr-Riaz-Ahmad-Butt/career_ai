@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { generateFinancialProofLetter, FinancialProof } from '@/lib/visaScholarshipData';
 import { useVisaStore } from '@/store/visaStore';
+import { useModal } from '@/hooks';
 import { Download, FileText, Plus } from 'lucide-react';
 
 export function FinancialProofGenerator() {
@@ -20,7 +21,7 @@ export function FinancialProofGenerator() {
   });
 
   const { saveFinancialProof, savedProofs } = useVisaStore();
-  const [showPreview, setShowPreview] = useState(false);
+  const previewModal = useModal();
 
   const handleGenerate = () => {
     if (!formData.amount || !formData.bankName || !formData.name) {
@@ -39,7 +40,7 @@ export function FinancialProofGenerator() {
     };
 
     saveFinancialProof(proof);
-    setShowPreview(true);
+    previewModal.open();
   };
 
   const handleDownload = () => {
@@ -124,7 +125,7 @@ export function FinancialProofGenerator() {
                 <FileText className="h-4 w-4" />
                 Generate Letter
               </Button>
-              {showPreview && (
+              {previewModal.isOpen && (
                 <Button
                   onClick={handleDownload}
                   variant="outline"

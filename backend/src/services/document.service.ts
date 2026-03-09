@@ -1,5 +1,5 @@
 import prisma from '../config/database';
-import { ApiError } from '../middleware/error';
+import { createHttpError } from '../utils/errorHandler';
 import { DocumentType, DocumentStatus } from '@prisma/client';
 
 // ─── Types & Interfaces ──────────────────────────────────────────────────
@@ -60,7 +60,7 @@ export class DocumentService {
         userId: string,
         options: ListDocumentsOptions = {}
     ): Promise<{ data: any[]; total: number; page: number; limit: number; totalPages: number }> {
-        if (!userId) throw new ApiError(400, 'userId is required');
+        if (!userId) throw createHttpError(400, 'userId is required');
 
         const { page, limit, skip, sortBy, order, filters } = normalizeDocumentListOptions(options);
         const where = { ...filters, userId } as Record<string, unknown>;
@@ -81,18 +81,18 @@ export class DocumentService {
 
     // GET /documents/:id
     async getDocumentById(userId: string, id: string): Promise<any> {
-        if (!userId || !id) throw new ApiError(400, 'userId and id are required');
+        if (!userId || !id) throw createHttpError(400, 'userId and id are required');
 
         const doc = await prisma.document.findFirst({ where: { id, userId } });
-        if (!doc) throw new ApiError(404, 'Document not found');
+        if (!doc) throw createHttpError(404, 'Document not found');
 
         return doc;
     }
 
     // PUT /documents/:id
     async updateDocument(userId: string, id: string, options: UpdateDocumentOptions): Promise<any> {
-        if (!userId || !id) throw new ApiError(400, 'userId and id are required');
-        if (!options || Object.keys(options).length === 0) throw new ApiError(400, 'No data to update');
+        if (!userId || !id) throw createHttpError(400, 'userId and id are required');
+        if (!options || Object.keys(options).length === 0) throw createHttpError(400, 'No data to update');
 
         await this.getDocumentById(userId, id); // Verify ownership
 
@@ -107,7 +107,7 @@ export class DocumentService {
 
     // DELETE /documents/:id
     async deleteDocument(userId: string, id: string): Promise<void> {
-        if (!userId || !id) throw new ApiError(400, 'userId and id are required');
+        if (!userId || !id) throw createHttpError(400, 'userId and id are required');
 
         await this.getDocumentById(userId, id); // Verify ownership
         await prisma.document.delete({ where: { id } });
@@ -115,7 +115,7 @@ export class DocumentService {
 
     // GET /documents/:id/pdf
     async generatePdf(userId: string, id: string): Promise<{ pdfUrl: string; expiresAt: Date }> {
-        if (!userId || !id) throw new ApiError(400, 'userId and id are required');
+        if (!userId || !id) throw createHttpError(400, 'userId and id are required');
 
         await this.getDocumentById(userId, id); // Verify ownership
 
@@ -127,7 +127,7 @@ export class DocumentService {
 
     // POST /documents/:id/duplicate
     async duplicateDocument(userId: string, id: string): Promise<any> {
-        if (!userId || !id) throw new ApiError(400, 'userId and id are required');
+        if (!userId || !id) throw createHttpError(400, 'userId and id are required');
 
         const original = await this.getDocumentById(userId, id);
         const duplicate = await this.createDocumentCopy(userId, original);
@@ -144,7 +144,7 @@ export class DocumentService {
         metadata: Record<string, unknown> = {}
     ): Promise<any> {
         if (!userId || !type || !title || !content) {
-            throw new ApiError(400, 'userId, type, title, and content are required');
+            throw createHttpError(400, 'userId, type, title, and content are required');
         }
 
         return this.createDocument(userId, {
@@ -216,3 +216,4 @@ export class DocumentService {
         });
     }
 }
+

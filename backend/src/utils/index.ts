@@ -12,6 +12,9 @@ export * from './errorHandler';
 // Validation
 export * from './validators';
 
+// Request Validators
+export * from './requestValidators';
+
 // Database Helpers
 export * from './dbHelpers';
 

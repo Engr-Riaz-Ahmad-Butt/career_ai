@@ -1,5 +1,5 @@
 import prisma from '../config/database';
-import { ApiError } from '../middleware/error';
+import { createHttpError } from '../utils/errorHandler';
 
 // Legacy service — kept for any older routes still referencing it.
 // New code should use UserService in user.service.ts instead.
@@ -23,7 +23,7 @@ export class ProfileService {
             },
         });
 
-        if (!user) throw new ApiError(404, 'User not found');
+        if (!user) throw createHttpError(404, 'User not found');
         return user;
     }
 
@@ -56,3 +56,4 @@ export class ProfileService {
 }
 
 export const profileService = new ProfileService();
+

@@ -1,5 +1,6 @@
 import prisma from '../config/database';
-import { ApiError } from '../middleware/error';
+import { createHttpError } from '../utils/errorHandler';
+import { findResourceByIdOrThrow, paginateQuery } from '../utils/dbHelpers';
 import aiService from './ai/aiService';
 import pdf from 'pdf-parse';
 import mammoth from 'mammoth';
@@ -73,34 +74,30 @@ export class ResumeService {
         userId: string,
         options: ListResumesOptions = {}
     ): Promise<{ data: typeof RESUME_SELECT[]; total: number; page: number; limit: number; totalPages: number }> {
-        if (!userId) throw new ApiError(400, 'userId is required');
+        if (!userId) throw createHttpError(400, 'userId is required');
 
-        const { page, limit, skip, sortBy, order } = normalizeListOptions(options);
-        const orderBy = { [sortBy]: order };
+        const { page, limit, sortBy, order } = normalizeListOptions(options);
+        const orderBy = sortBy ? { [sortBy]: order } : undefined;
 
-        const [resumes, total] = await Promise.all([
-            prisma.resume.findMany({
-                where: { userId },
-                select: RESUME_SELECT,
-                orderBy,
-                skip,
-                take: limit,
-            }),
-            prisma.resume.count({ where: { userId } }),
-        ]);
-
-        return { data: resumes, total, page, limit, totalPages: Math.ceil(total / limit) };
+        return paginateQuery(
+            prisma.resume,
+            { userId },
+            page,
+            limit,
+            { select: RESUME_SELECT },
+            orderBy
+        );
     }
 
 
     // POST /resumes - Create new resume
     async createResume(userId: string, options: CreateResumeOptions): Promise<typeof RESUME_SELECT> {
-        if (!userId) throw new ApiError(400, 'userId is required');
-        if (!options.title) throw new ApiError(400, 'title is required');
-        if (!options.template) throw new ApiError(400, 'template is required');
+        if (!userId) throw createHttpError(400, 'userId is required');
+        if (!options.title) throw createHttpError(400, 'title is required');
+        if (!options.template) throw createHttpError(400, 'template is required');
 
         const user = await this.getUserOrThrow(userId);
-        if (user.credits < 1) throw new ApiError(402, 'Insufficient credits');
+        if (user.credits < 1) throw createHttpError(402, 'Insufficient credits');
 
         const resume = await prisma.resume.create({
             data: {
@@ -120,21 +117,21 @@ export class ResumeService {
 
     // GET /resumes/:id - Fetch single resume
     async getResumeById(userId: string, id: string): Promise<typeof RESUME_SELECT> {
-        if (!userId || !id) throw new ApiError(400, 'userId and id are required');
+        if (!userId || !id) throw createHttpError(400, 'userId and id are required');
 
-        const resume = await prisma.resume.findFirst({
-            where: { id, userId },
-            select: RESUME_SELECT,
-        });
-
-        if (!resume) throw new ApiError(404, 'Resume not found');
-        return resume;
+           return findResourceByIdOrThrow<any>(
+            prisma.resume,
+            id,
+            { userId },
+               RESUME_SELECT,
+            'Resume not found'
+        );
     }
 
     // PUT /resumes/:id - Update resume
     async updateResume(userId: string, id: string, data: Record<string, unknown>): Promise<typeof RESUME_SELECT> {
-        if (!userId || !id) throw new ApiError(400, 'userId and id are required');
-        if (!data || Object.keys(data).length === 0) throw new ApiError(400, 'No data to update');
+        if (!userId || !id) throw createHttpError(400, 'userId and id are required');
+        if (!data || Object.keys(data).length === 0) throw createHttpError(400, 'No data to update');
 
         const existing = await this.getResumeById(userId, id);
         await this.createSnapshot(existing);
@@ -150,7 +147,7 @@ export class ResumeService {
 
     // DELETE /resumes/:id - Delete resume
     async deleteResume(userId: string, id: string): Promise<void> {
-        if (!userId || !id) throw new ApiError(400, 'userId and id are required');
+        if (!userId || !id) throw createHttpError(400, 'userId and id are required');
 
         const existing = await this.getResumeById(userId, id);
         await prisma.resume.delete({ where: { id: existing.id } });
@@ -158,7 +155,7 @@ export class ResumeService {
 
     // POST /resumes/:id/duplicate - Duplicate resume
     async duplicateResume(userId: string, id: string): Promise<typeof RESUME_SELECT> {
-        if (!userId || !id) throw new ApiError(400, 'userId and id are required');
+        if (!userId || !id) throw createHttpError(400, 'userId and id are required');
 
         const original = await this.getResumeById(userId, id);
         const duplicate = await this.createResumeFromTemplate(userId, original);
@@ -168,7 +165,7 @@ export class ResumeService {
 
     // POST /resumes/:id/pdf - Generate PDF
     async generatePdf(userId: string, id: string): Promise<{ pdfUrl: string; expiresAt: Date }> {
-        if (!userId || !id) throw new ApiError(400, 'userId and id are required');
+        if (!userId || !id) throw createHttpError(400, 'userId and id are required');
 
         await this.getResumeById(userId, id); // Verify ownership
 
@@ -180,7 +177,7 @@ export class ResumeService {
 
     // GET /resumes/:id/versions - List resume versions
     async listVersions(userId: string, id: string): Promise<readonly { readonly id: string; readonly versionNum: number; readonly createdAt: Date }[]> {
-        if (!userId || !id) throw new ApiError(400, 'userId and id are required');
+        if (!userId || !id) throw createHttpError(400, 'userId and id are required');
 
         await this.getResumeById(userId, id); // Verify ownership
 
@@ -196,7 +193,7 @@ export class ResumeService {
 
     // POST /resumes/:id/restore/:versionId - Restore version
     async restoreVersion(userId: string, id: string, versionId: string): Promise<typeof RESUME_SELECT> {
-        if (!userId || !id || !versionId) throw new ApiError(400, 'userId, id, and versionId are required');
+        if (!userId || !id || !versionId) throw createHttpError(400, 'userId, id, and versionId are required');
 
         const existing = await this.getResumeById(userId, id);
         const version = await this.getVersionOrThrow(versionId, id);
@@ -214,10 +211,10 @@ export class ResumeService {
 
     // POST /resumes/upload - Upload and parse resume
     async uploadResume(userId: string, file: Express.Multer.File, title?: string): Promise<typeof RESUME_SELECT> {
-        if (!userId || !file) throw new ApiError(400, 'userId and file are required');
+        if (!userId || !file) throw createHttpError(400, 'userId and file are required');
 
         const user = await this.getUserOrThrow(userId);
-        if (user.credits < 1) throw new ApiError(402, 'Insufficient credits');
+        if (user.credits < 1) throw createHttpError(402, 'Insufficient credits');
 
         const text = await this.extractTextFromBuffer(file.buffer, file.mimetype);
         const parsed = await aiService.extractResumeData(text);
@@ -244,7 +241,7 @@ export class ResumeService {
 
     // POST /resumes/extract - Extract and parse resume
     async extractAndParse(userId: string, file: Express.Multer.File): Promise<unknown> {
-        if (!userId || !file) throw new ApiError(400, 'userId and file are required');
+        if (!userId || !file) throw createHttpError(400, 'userId and file are required');
 
         const text = await this.extractTextFromBuffer(file.buffer, file.mimetype);
         return aiService.extractResumeData(text);
@@ -252,7 +249,7 @@ export class ResumeService {
 
     // POST /resumes/:id/optimize - Optimize for job description
     async optimizeResume(userId: string, id: string, jobDescription: string): Promise<unknown> {
-        if (!userId || !id || !jobDescription) throw new ApiError(400, 'userId, id, and jobDescription are required');
+        if (!userId || !id || !jobDescription) throw createHttpError(400, 'userId, id, and jobDescription are required');
 
         const resume = await this.getResumeById(userId, id);
         return aiService.optimizeResumeForJD(resume, jobDescription);
@@ -262,22 +259,23 @@ export class ResumeService {
     // ── Private Helpers ──────────────────────────────────────────────────
 
     private async getUserOrThrow(userId: string) {
-        const user = await prisma.user.findUnique({
-            where: { id: userId },
-            select: { credits: true, id: true },
-        });
-
-        if (!user) throw new ApiError(404, 'User not found');
-        return user;
+           return findResourceByIdOrThrow<{ id: string; credits: number }>(
+            prisma.user,
+            userId,
+            undefined,
+               { id: true, credits: true },
+            'User not found'
+        );
     }
 
     private async getVersionOrThrow(versionId: string, resumeId: string) {
-        const version = await prisma.resumeVersion.findFirst({
-            where: { id: versionId, resumeId },
-        });
-
-        if (!version) throw new ApiError(404, 'Version not found');
-        return version;
+           return findResourceByIdOrThrow<any>(
+            prisma.resumeVersion,
+            versionId,
+            { resumeId },
+               undefined,
+            'Version not found'
+        );
     }
 
     private async createResumeFromTemplate(
@@ -366,7 +364,8 @@ export class ResumeService {
             return result.value || '';
         }
 
-        throw new ApiError(400, 'Unsupported file type. Please upload PDF or DOCX.');
+        throw createHttpError(400, 'Unsupported file type. Please upload PDF or DOCX.');
     }
 }
+
 

@@ -1,5 +1,5 @@
 import prisma from '../config/database';
-import { ApiError } from '../middleware/error';
+import { createHttpError } from '../utils/errorHandler';
 
 // Stripe is optional — only initialize if env is set
 let stripe: any = null;
@@ -29,7 +29,7 @@ const PRICE_IDS: Record<string, string> = {
 export class BillingService {
 
     private _requireStripe() {
-        if (!stripe) throw new ApiError(501, 'Billing not configured. Set STRIPE_SECRET_KEY in environment.');
+        if (!stripe) throw createHttpError(501, 'Billing not configured. Set STRIPE_SECRET_KEY in environment.');
         return stripe;
     }
 
@@ -40,7 +40,7 @@ export class BillingService {
     async createCheckoutSession(userId: string, plan: string, successUrl: string, cancelUrl: string) {
         const s = this._requireStripe();
         const user = await prisma.user.findUnique({ where: { id: userId } });
-        if (!user) throw new ApiError(404, 'User not found');
+        if (!user) throw createHttpError(404, 'User not found');
 
         let customerId = user.stripeCustomerId;
         if (!customerId) {
@@ -65,7 +65,7 @@ export class BillingService {
     async createPortalSession(userId: string) {
         const s = this._requireStripe();
         const user = await prisma.user.findUnique({ where: { id: userId } });
-        if (!user?.stripeCustomerId) throw new ApiError(400, 'No billing account found');
+        if (!user?.stripeCustomerId) throw createHttpError(400, 'No billing account found');
 
         const session = await s.billingPortal.sessions.create({
             customer: user.stripeCustomerId,
@@ -85,7 +85,7 @@ export class BillingService {
     async cancelSubscription(userId: string) {
         const s = this._requireStripe();
         const user = await prisma.user.findUnique({ where: { id: userId } });
-        if (!user?.stripeSubscriptionId) throw new ApiError(400, 'No active subscription');
+        if (!user?.stripeSubscriptionId) throw createHttpError(400, 'No active subscription');
 
         await s.subscriptions.update(user.stripeSubscriptionId, { cancel_at_period_end: true });
         await prisma.user.update({ where: { id: userId }, data: { cancelAtPeriodEnd: true } });
@@ -94,7 +94,7 @@ export class BillingService {
     async reactivateSubscription(userId: string) {
         const s = this._requireStripe();
         const user = await prisma.user.findUnique({ where: { id: userId } });
-        if (!user?.stripeSubscriptionId) throw new ApiError(400, 'No subscription to reactivate');
+        if (!user?.stripeSubscriptionId) throw createHttpError(400, 'No subscription to reactivate');
 
         await s.subscriptions.update(user.stripeSubscriptionId, { cancel_at_period_end: false });
         await prisma.user.update({ where: { id: userId }, data: { cancelAtPeriodEnd: false } });
@@ -102,10 +102,10 @@ export class BillingService {
 
     async purchaseCredits(userId: string, credits: number, successUrl: string) {
         const s = this._requireStripe();
-        if (credits <= 0 || credits % 50 !== 0) throw new ApiError(400, 'Credits must be a positive multiple of 50');
+        if (credits <= 0 || credits % 50 !== 0) throw createHttpError(400, 'Credits must be a positive multiple of 50');
 
         const user = await prisma.user.findUnique({ where: { id: userId } });
-        if (!user) throw new ApiError(404, 'User not found');
+        if (!user) throw createHttpError(404, 'User not found');
 
         // $1 per 10 credits
         const session = await s.checkout.sessions.create({
@@ -150,7 +150,7 @@ export class BillingService {
         try {
             event = s.webhooks.constructEvent(rawBody, signature, process.env.STRIPE_WEBHOOK_SECRET);
         } catch {
-            throw new ApiError(400, 'Invalid Stripe signature');
+            throw createHttpError(400, 'Invalid Stripe signature');
         }
 
         switch (event.type) {
@@ -225,3 +225,4 @@ export class BillingService {
         return { received: true };
     }
 }
+

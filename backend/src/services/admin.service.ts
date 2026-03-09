@@ -1,5 +1,6 @@
 import prisma from '../config/database';
 import { Plan, Prisma } from '@prisma/client';
+import { ValidationError } from '../utils/errorHandler';
 
 interface GetUsersOptions {
     readonly page: number;
@@ -48,9 +49,9 @@ function buildUserOrderBy(sortBy?: string, order: 'asc' | 'desc' = 'desc'): Pris
 
 function assertDateRange(from: Date, to: Date): void {
     if (Number.isNaN(from.getTime()) || Number.isNaN(to.getTime())) {
-        throw new Error('Invalid date range');
+        throw new ValidationError('Invalid date range');
     }
-    if (from > to) throw new Error('from date must be before to date');
+    if (from > to) throw new ValidationError('from date must be before to date');
 }
 
 function buildCreditUpdate(amount: number): Prisma.UserUpdateInput {
@@ -71,7 +72,7 @@ function buildBroadcastWhere(segment?: string): Prisma.UserWhereInput {
 
 export class AdminService {
     async getUsers(query: GetUsersOptions) {
-        if (query.page < 1 || query.limit < 1) throw new Error('Invalid pagination parameters');
+        if (query.page < 1 || query.limit < 1) throw new ValidationError('Invalid pagination parameters');
 
         const page = query.page;
         const limit = Math.min(query.limit, 100);
@@ -94,7 +95,7 @@ export class AdminService {
     }
 
     async getUserById(id: string) {
-        if (!id) throw new Error('User ID is required');
+        if (!id) throw new ValidationError('User ID is required');
         return prisma.user.findUnique({
             where: { id },
             include: {
@@ -106,7 +107,7 @@ export class AdminService {
     }
 
     async updateUserPlan(id: string, plan: Plan) {
-        if (!id || !plan) throw new Error('User ID and plan are required');
+        if (!id || !plan) throw new ValidationError('User ID and plan are required');
         return prisma.user.update({
             where: { id },
             data: { plan },
@@ -114,8 +115,8 @@ export class AdminService {
     }
 
     async adjustUserCredits(id: string, amount: number, reason: string) {
-        if (!id || !reason) throw new Error('User ID and reason are required');
-        if (!Number.isFinite(amount)) throw new Error('Amount must be a valid number');
+        if (!id || !reason) throw new ValidationError('User ID and reason are required');
+        if (!Number.isFinite(amount)) throw new ValidationError('Amount must be a valid number');
 
         const user = await prisma.user.update({
             where: { id },

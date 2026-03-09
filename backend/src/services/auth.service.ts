@@ -8,7 +8,7 @@ import {
     verifyRefreshToken,
     getRefreshTokenExpiry,
 } from '../utils/jwt';
-import { ApiError } from '../middleware/error';
+import { createHttpError } from '../utils/errorHandler';
 import { emailService } from './email.service';
 import { env } from '../config/env';
 
@@ -61,7 +61,7 @@ interface LoginCandidate {
 /** Check if email is already registered */
 async function checkEmailExists(email: string): Promise<void> {
     const existing = await prisma.user.findUnique({ where: { email } });
-    if (existing) throw new ApiError(409, 'Email already registered');
+    if (existing) throw createHttpError(409, 'Email already registered');
 }
 
 /** Resolve referrer ID from referral code */
@@ -104,9 +104,9 @@ async function recordSignupTransaction(userId: string, referredById?: string): P
 
 /** Validate user is active and has local auth */
 async function validateUserActive(user: LoginCandidate | null): Promise<void> {
-    if (!user || user.deletedAt) throw new ApiError(401, 'Invalid email or password');
-    if (!user.password) throw new ApiError(401, 'Please login with Google');
-    if (!user.isActive) throw new ApiError(403, 'Account suspended');
+    if (!user || user.deletedAt) throw createHttpError(401, 'Invalid email or password');
+    if (!user.password) throw createHttpError(401, 'Please login with Google');
+    if (!user.isActive) throw createHttpError(403, 'Account suspended');
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -151,7 +151,7 @@ export class AuthService {
         const user = await prisma.user.findUnique({ where: { email: data.email } });
         await validateUserActive(user);
         const isValid = await comparePassword(data.password, user!.password!);
-        if (!isValid) throw new ApiError(401, 'Invalid email or password');
+        if (!isValid) throw createHttpError(401, 'Invalid email or password');
 
         await prisma.user.update({ where: { id: user!.id }, data: { lastLoginAt: new Date() } });
         const profile = await prisma.user.findUnique({ where: { id: user!.id }, select: USER_SELECT });
@@ -164,7 +164,7 @@ export class AuthService {
     async googleAuth(googleToken: string) {
         const ticket = await googleClient.verifyIdToken({ idToken: googleToken, audience: env.GOOGLE_CLIENT_ID });
         const payload = ticket.getPayload();
-        if (!payload?.email) throw new ApiError(400, 'Invalid Google token');
+        if (!payload?.email) throw createHttpError(400, 'Invalid Google token');
 
         let user = await prisma.user.findFirst({
             where: { OR: [{ googleId: payload.sub }, { email: payload.email }] },
@@ -213,16 +213,16 @@ export class AuthService {
         try {
             decoded = verifyRefreshToken(refreshToken) as { userId: string };
         } catch {
-            throw new ApiError(401, 'Invalid or expired refresh token');
+            throw createHttpError(401, 'Invalid or expired refresh token');
         }
 
         const storedToken = await prisma.refreshToken.findUnique({ where: { token: refreshToken } });
         if (!storedToken || storedToken.revoked || storedToken.expiresAt < new Date()) {
-            throw new ApiError(401, 'Refresh token revoked or expired');
+            throw createHttpError(401, 'Refresh token revoked or expired');
         }
 
         const user = await prisma.user.findUnique({ where: { id: decoded.userId } });
-        if (!user || !user.isActive) throw new ApiError(401, 'User not found');
+        if (!user || !user.isActive) throw createHttpError(401, 'User not found');
 
         await prisma.refreshToken.update({ where: { token: refreshToken }, data: { revoked: true } });
         const tokens = await this.generateTokens(user);
@@ -247,7 +247,7 @@ export class AuthService {
         const user = await prisma.user.findFirst({
             where: { passwordResetToken: token, passwordResetExpires: { gt: new Date() } },
         });
-        if (!user) throw new ApiError(400, 'Invalid or expired reset token');
+        if (!user) throw createHttpError(400, 'Invalid or expired reset token');
         const hashedPassword = await hashPassword(newPassword);
         await prisma.user.update({
             where: { id: user.id },
@@ -262,7 +262,7 @@ export class AuthService {
         const user = await prisma.user.findFirst({
             where: { emailVerificationToken: token, emailVerificationExpires: { gt: new Date() } },
         });
-        if (!user) throw new ApiError(400, 'Invalid or expired verification token');
+        if (!user) throw createHttpError(400, 'Invalid or expired verification token');
         await prisma.user.update({
             where: { id: user.id },
             data: { emailVerified: true, emailVerificationToken: null, emailVerificationExpires: null },
@@ -275,7 +275,7 @@ export class AuthService {
     async resendVerification(email: string): Promise<void> {
         const user = await prisma.user.findUnique({ where: { email } });
         if (!user || user.deletedAt) return; // Silent
-        if (user.emailVerified) throw new ApiError(400, 'Email already verified');
+        if (user.emailVerified) throw createHttpError(400, 'Email already verified');
         const token = crypto.randomBytes(32).toString('hex');
         const expires = new Date(Date.now() + 24 * 60 * 60 * 1000);
         await prisma.user.update({ where: { id: user.id }, data: { emailVerificationToken: token, emailVerificationExpires: expires } });
@@ -292,4 +292,5 @@ export class AuthService {
         return { accessToken, refreshToken };
     }
 }
+
 

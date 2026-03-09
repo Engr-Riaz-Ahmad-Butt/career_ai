@@ -1,6 +1,6 @@
 import prisma from '../config/database';
 import { hashPassword, comparePassword } from '../utils/password';
-import { ApiError } from '../middleware/error';
+import { createHttpError } from '../utils/errorHandler';
 
 export class UserService {
 
@@ -34,7 +34,7 @@ export class UserService {
             where: { id: userId, deletedAt: null },
             select: this.USER_SELECT,
         });
-        if (!user) throw new ApiError(404, 'User not found');
+        if (!user) throw createHttpError(404, 'User not found');
         return user;
     }
 
@@ -73,10 +73,10 @@ export class UserService {
     // PUT /users/me/password
     async changePassword(userId: string, currentPassword: string, newPassword: string) {
         const user = await prisma.user.findUnique({ where: { id: userId } });
-        if (!user || !user.password) throw new ApiError(400, 'No password set for this account');
+        if (!user || !user.password) throw createHttpError(400, 'No password set for this account');
 
         const isValid = await comparePassword(currentPassword, user.password);
-        if (!isValid) throw new ApiError(400, 'Current password is incorrect');
+        if (!isValid) throw createHttpError(400, 'Current password is incorrect');
 
         const hashed = await hashPassword(newPassword);
         await prisma.user.update({ where: { id: userId }, data: { password: hashed } });
@@ -98,7 +98,7 @@ export class UserService {
             where: { id: userId },
             select: { credits: true, creditsResetAt: true, lifetimeCreditsEarned: true, lifetimeCreditsUsed: true },
         });
-        if (!user) throw new ApiError(404, 'User not found');
+        if (!user) throw createHttpError(404, 'User not found');
 
         const history = await prisma.creditTransaction.findMany({
             where: { userId },
@@ -139,3 +139,4 @@ export class UserService {
         return { referrals, creditsEarned, totalReferrals: referrals.length };
     }
 }
+

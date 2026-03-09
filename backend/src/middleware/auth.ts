@@ -2,6 +2,11 @@ import { Request, Response, NextFunction } from 'express';
 import { verifyAccessToken } from '../utils/jwt';
 import prisma from '../config/database';
 import { CREDIT_COSTS, getCreditCost, CreditActionType, PLAN_MULTIPLIERS } from '../constants/creditCosts';
+import {
+  ForbiddenError,
+  InsufficientCreditsError,
+  UnauthorizedError,
+} from '../utils/errorHandler';
 /**
  * NEW: Require user to have credits for a specific AI action.
  * Automatically calculates cost based on plan multiplier.
@@ -11,33 +16,40 @@ import { CREDIT_COSTS, getCreditCost, CreditActionType, PLAN_MULTIPLIERS } from 
  */
 export const requireCreditsForAction = (action: CreditActionType) => {
   return async (req: Request, res: Response, next: NextFunction) => {
-    if (!req.user) return res.status(401).json({ success: false, message: 'Authentication required' });
+    try {
+      if (!req.user) {
+        return next(new UnauthorizedError('Authentication required'));
+      }
 
-    const user = await prisma.user.findUnique({
-      where: { id: req.user.userId },
-      select: { credits: true, plan: true },
-    });
-
-    if (!user) return res.status(401).json({ success: false, message: 'User not found' });
-
-    // Get plan multiplier (default to 1 if plan not in mapping)
-    const multiplier = PLAN_MULTIPLIERS[user.plan as keyof typeof PLAN_MULTIPLIERS] ?? 1;
-    const creditsNeeded = getCreditCost(action, multiplier);
-
-    if (user.credits < creditsNeeded) {
-      return res.status(402).json({
-        success: false,
-        message: `Insufficient credits for ${action}. Need ${creditsNeeded}, have ${user.credits}`,
-        error: { 
-          action,
-          creditsNeeded, 
-          creditsAvailable: user.credits,
-          baseCost: CREDIT_COSTS[action],
-          planMultiplier: multiplier,
-        },
+      const user = await prisma.user.findUnique({
+        where: { id: req.user.userId },
+        select: { credits: true, plan: true },
       });
+
+      if (!user) {
+        return next(new UnauthorizedError('User not found'));
+      }
+
+      const multiplier = PLAN_MULTIPLIERS[user.plan as keyof typeof PLAN_MULTIPLIERS] ?? 1;
+      const creditsNeeded = getCreditCost(action, multiplier);
+
+      if (user.credits < creditsNeeded) {
+        return next(new InsufficientCreditsError(
+          `Insufficient credits for ${action}. Need ${creditsNeeded}, have ${user.credits}`,
+          {
+            action,
+            creditsNeeded,
+            creditsAvailable: user.credits,
+            baseCost: CREDIT_COSTS[action],
+            planMultiplier: multiplier,
+          }
+        ));
+      }
+
+      next();
+    } catch (error) {
+      next(error);
     }
-    next();
   };
 };
 
@@ -50,7 +62,7 @@ async function loadActiveUserFromToken(token: string) {
   });
 
   if (!user || !user.isActive || user.deletedAt) {
-    throw new Error('User not found or inactive');
+    throw new UnauthorizedError('User not found or inactive');
   }
 
   return user;
@@ -79,14 +91,14 @@ export const authenticate = async (req: Request, res: Response, next: NextFuncti
   try {
     const token = readBearerToken(req);
     if (!token) {
-      return res.status(401).json({ success: false, message: 'No token provided' });
+      throw new UnauthorizedError('No token provided');
     }
 
     const user = await loadActiveUserFromToken(token);
     req.user = { userId: user.id, email: user.email, plan: user.plan };
     next();
-  } catch {
-    return res.status(401).json({ success: false, message: 'Invalid or expired token' });
+  } catch (error) {
+    next(error instanceof UnauthorizedError ? error : new UnauthorizedError('Invalid or expired token'));
   }
 };
 
@@ -101,14 +113,14 @@ export const authenticateStream = async (req: Request, res: Response, next: Next
     const token = readBearerToken(req) ?? readQueryToken(req);
 
     if (!token) {
-      return res.status(401).json({ success: false, message: 'No token provided' });
+      throw new UnauthorizedError('No token provided');
     }
 
     const user = await loadActiveUserFromToken(token);
     req.user = { userId: user.id, email: user.email, plan: user.plan };
     next();
-  } catch {
-    return res.status(401).json({ success: false, message: 'Invalid or expired token' });
+  } catch (error) {
+    next(error instanceof UnauthorizedError ? error : new UnauthorizedError('Invalid or expired token'));
   }
 };
 
@@ -117,9 +129,9 @@ export const authenticateStream = async (req: Request, res: Response, next: Next
  */
 export const requirePlan = (allowedPlans: string[]) => {
   return (req: Request, res: Response, next: NextFunction) => {
-    if (!req.user) return res.status(401).json({ success: false, message: 'Authentication required' });
+    if (!req.user) return next(new UnauthorizedError('Authentication required'));
     if (!allowedPlans.includes(req.user.plan)) {
-      return res.status(403).json({ success: false, message: `Requires ${allowedPlans.join(' or ')} plan` });
+      return next(new ForbiddenError(`Requires ${allowedPlans.join(' or ')} plan`));
     }
     next();
   };
@@ -130,7 +142,7 @@ export const requirePlan = (allowedPlans: string[]) => {
  */
 export const requireAdmin = (req: Request, res: Response, next: NextFunction) => {
   if (!req.user || req.user.plan !== 'ENTERPRISE') {
-    return res.status(403).json({ success: false, message: 'Admin access required' });
+    return next(new ForbiddenError('Admin access required'));
   }
   next();
 };
@@ -141,21 +153,27 @@ export const requireAdmin = (req: Request, res: Response, next: NextFunction) =>
  */
 export const requireCredits = (creditsNeeded: number) => {
   return async (req: Request, res: Response, next: NextFunction) => {
-    if (!req.user) return res.status(401).json({ success: false, message: 'Authentication required' });
+    try {
+      if (!req.user) {
+        return next(new UnauthorizedError('Authentication required'));
+      }
 
-    const user = await prisma.user.findUnique({
-      where: { id: req.user.userId },
-      select: { credits: true },
-    });
-
-    if (!user || user.credits < creditsNeeded) {
-      return res.status(402).json({
-        success: false,
-        message: 'Insufficient credits',
-        error: { creditsNeeded, creditsAvailable: user?.credits ?? 0 },
+      const user = await prisma.user.findUnique({
+        where: { id: req.user.userId },
+        select: { credits: true },
       });
+
+      if (!user || user.credits < creditsNeeded) {
+        return next(new InsufficientCreditsError('Insufficient credits', {
+          creditsNeeded,
+          creditsAvailable: user?.credits ?? 0,
+        }));
+      }
+
+      next();
+    } catch (error) {
+      next(error);
     }
-    next();
   };
 };
 

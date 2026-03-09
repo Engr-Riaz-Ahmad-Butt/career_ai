@@ -1,6 +1,6 @@
 import { Job, JobState, Queue } from 'bullmq';
 import { env } from '../config/env';
-import { ApiError } from '../middleware/error';
+import { createHttpError } from '../utils/errorHandler';
 import { getBullMqConnectionOptions } from './bullmqConnection';
 import {
   JOB_NAMES,
@@ -147,7 +147,7 @@ class JobQueueService {
 
   private ensureEnabled() {
     if (!this.enabled || !this.queue) {
-      throw new ApiError(503, 'Background jobs unavailable. Configure REDIS_URL.');
+      throw createHttpError(503, 'Background jobs unavailable. Configure REDIS_URL.');
     }
   }
 
@@ -191,3 +191,4 @@ export function getJobQueueService(): JobQueueService {
   }
   return queueInstance;
 }
+

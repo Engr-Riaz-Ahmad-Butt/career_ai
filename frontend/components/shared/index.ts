@@ -9,3 +9,5 @@ export { StatusBadge, type StatusBadgeProps, type StatusVariant } from './Status
 export { FileUploader, type FileUploaderProps } from './FileUploader';
 export { PageHeader, type PageHeaderProps, type PageHeaderAction } from './PageHeader';
 export { CreditCost, type CreditCostProps } from './CreditCost';
+export { AsyncBoundary, type AsyncBoundaryProps } from './AsyncBoundary';
+export { ConfirmDialog, type ConfirmDialogProps } from './ConfirmDialog';

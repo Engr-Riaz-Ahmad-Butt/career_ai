@@ -1,6 +1,6 @@
 import prisma from '../config/database';
 import { AIService } from './ai/aiService';
-import { ApiError } from '../middleware/error';
+import { createHttpError, ValidationError } from '../utils/errorHandler';
 
 const ai = new AIService();
 
@@ -48,7 +48,7 @@ function parseQuestions(value: unknown): InterviewQuestion[] {
 export class InterviewService {
 
     async generateSession(userId: string, data: GenerateSessionData) {
-        if (!userId || !data?.resumeId) throw new Error('userId and resumeId are required');
+        if (!userId || !data?.resumeId) throw new ValidationError('userId and resumeId are required');
 
         const result = await ai.generateInterviewQuestions(userId, data);
 
@@ -68,7 +68,7 @@ export class InterviewService {
     }
 
     async listSessions(userId: string, params: ListSessionsOptions = {}) {
-        if (!userId) throw new Error('userId is required');
+        if (!userId) throw new ValidationError('userId is required');
 
         const { page, limit, skip } = normalizeListOptions(params);
 
@@ -85,22 +85,22 @@ export class InterviewService {
     }
 
     async getSessionById(userId: string, id: string) {
-        if (!userId || !id) throw new Error('userId and session id are required');
+        if (!userId || !id) throw new ValidationError('userId and session id are required');
 
         const session = await prisma.interviewSession.findFirst({ where: { id, userId } });
-        if (!session) throw new ApiError(404, 'Interview session not found');
+        if (!session) throw createHttpError(404, 'Interview session not found');
         return session;
     }
 
     async submitFeedback(userId: string, sessionId: string, data: SubmitFeedbackData) {
         if (!userId || !sessionId || !data?.questionId || !data?.userAnswer) {
-            throw new Error('userId, sessionId, questionId, and userAnswer are required');
+            throw new ValidationError('userId, sessionId, questionId, and userAnswer are required');
         }
 
         const session = await this.getSessionById(userId, sessionId);
         const questions = parseQuestions(session.questions);
         const question = questions.find((item) => item.id === data.questionId);
-        if (!question) throw new ApiError(404, 'Question not found in session');
+        if (!question) throw createHttpError(404, 'Question not found in session');
 
         const result = await ai.generateInterviewFeedback(data.questionId, question.question, data.userAnswer);
 
@@ -125,3 +125,4 @@ export class InterviewService {
         await prisma.interviewSession.delete({ where: { id } });
     }
 }
+

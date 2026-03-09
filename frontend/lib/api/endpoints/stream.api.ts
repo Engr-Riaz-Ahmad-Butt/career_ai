@@ -1,3 +1,5 @@
+import { captureClientError } from '@/lib/errorHandling';
+
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:5000/api/v1';
 
 export interface StreamChunk {
@@ -37,6 +39,15 @@ function openStream(
       const chunk = JSON.parse(event.data) as StreamChunk;
       handlers.onChunk(chunk);
     } catch {
+      captureClientError(new Error('Invalid stream payload'), {
+        source: 'stream_api',
+        action: 'invalid_stream_payload',
+        extras: {
+          path,
+          payload: event.data,
+        },
+      });
+
       handlers.onChunk({
         type: 'error',
         message: 'Invalid stream payload',
@@ -45,6 +56,13 @@ function openStream(
   };
 
   eventSource.onerror = (error) => {
+    captureClientError(new Error('Stream connection failed'), {
+      source: 'stream_api',
+      action: 'stream_connection_failed',
+      extras: {
+        path,
+      },
+    });
     handlers.onError?.(error);
   };
 

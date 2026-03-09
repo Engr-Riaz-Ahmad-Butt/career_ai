@@ -8,6 +8,7 @@ import { LoadingSpinner } from '@/components/shared/LoadingSpinner';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
+import { useAsync } from '@/hooks';
 import { WizardData } from './ManualBuilderWizard';
 
 interface PromptToCVModeProps {
@@ -47,27 +48,20 @@ function generateMockCV(prompt: string, jd: string): Partial<WizardData> {
 export function PromptToCVMode({ onComplete, onCancel }: PromptToCVModeProps) {
     const [prompt, setPrompt] = useState('');
     const [jd, setJd] = useState('');
-    const [loading, setLoading] = useState(false);
-    const [error, setError] = useState('');
+    const [validationError, setValidationError] = useState('');
 
-    const handleGenerate = async () => {
+    const { execute: handleGenerate, isLoading } = useAsync(async () => {
         if (!prompt.trim() || prompt.trim().length < 30) {
-            setError('Please write at least a sentence or two about yourself.');
+            setValidationError('Please write at least a sentence or two about yourself.');
             return;
         }
-        setError('');
-        setLoading(true);
-        try {
-            // Simulate AI processing (in production: call /api/ai/prompt-to-cv)
-            await new Promise(r => setTimeout(r, 2500));
-            const result = generateMockCV(prompt, jd);
-            onComplete(result);
-        } catch (e) {
-            setError('AI generation failed. Please try again.');
-        } finally {
-            setLoading(false);
-        }
-    };
+        setValidationError('');
+        
+        // Simulate AI processing (in production: call /api/ai/prompt-to-cv)
+        await new Promise(r => setTimeout(r, 2500));
+        const result = generateMockCV(prompt, jd);
+        onComplete(result);
+    });
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-amber-50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 flex items-start justify-center pt-12 px-4 pb-12">
@@ -95,14 +89,14 @@ export function PromptToCVMode({ onComplete, onCancel }: PromptToCVModeProps) {
                                 value={prompt}
                                 onChange={e => {
                                     setPrompt(e.target.value);
-                                    if (error) setError('');
+                                    if (validationError) setValidationError('');
                                 }}
                                 placeholder={`Example:\n"I am a software engineer with 5 years of experience in React and Node.js. I worked at a fintech startup and a logistics company. I want a CV for a senior frontend role at a product-focused company."`}
                                 className="min-h-[200px] rounded-2xl resize-none border-slate-200 dark:border-slate-700 focus:border-orange-400 dark:focus:border-orange-600 text-base leading-relaxed p-5"
                             />
-                            {error && (
+                            {validationError && (
                                 <p className="text-sm text-red-500 flex items-center gap-1.5">
-                                    <span>⚠</span> {error}
+                                    <span>⚠</span> {validationError}
                                 </p>
                             )}
                             <div className="flex justify-between items-center">
@@ -154,10 +148,10 @@ export function PromptToCVMode({ onComplete, onCancel }: PromptToCVModeProps) {
                             </Button>
                             <Button
                                 onClick={handleGenerate}
-                                disabled={loading || prompt.trim().length < 10}
+                                disabled={isLoading || prompt.trim().length < 10}
                                 className="flex-1 h-13 bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white font-bold rounded-2xl text-base shadow-lg disabled:opacity-40 py-3"
                             >
-                                {loading ? (
+                                {isLoading ? (
                                     <span className="flex items-center gap-2">
                                         <LoadingSpinner size="sm" /> Generating your CV…
                                     </span>
@@ -169,7 +163,7 @@ export function PromptToCVMode({ onComplete, onCancel }: PromptToCVModeProps) {
                             </Button>
                         </div>
 
-                        {loading && (
+                        {isLoading && (
                             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-center space-y-2 py-2">
                                 <div className="flex justify-center gap-1">
                                     {['Analyzing your prompt…', 'Extracting experience…', 'Structuring CV data…', 'Almost done…'].map((msg) => (

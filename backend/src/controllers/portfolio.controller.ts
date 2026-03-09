@@ -1,20 +1,9 @@
 import { Request, Response } from 'express';
 import { PortfolioService } from '../services/portfolio.service';
 import { asyncHandler } from '../middleware/error';
+import { requireAuth, requireId } from '../utils/requestValidators';
 
 const portfolioService = new PortfolioService();
-
-// ── Helpers ─────────────────────────────────────────────────────────────────
-
-/** Ensure user is authenticated */
-function requireAuth(userId?: string): void {
-    if (!userId) throw new Error('Unauthorized');
-}
-
-/** Ensure resource ID is provided */
-function requireId(id?: string): void {
-    if (!id) throw new Error('Portfolio ID is required');
-}
 
 // ── Handlers ────────────────────────────────────────────────────────────────
 
@@ -45,7 +34,7 @@ export const getPortfolio = asyncHandler(async (req: Request, res: Response) => 
 
 export const updatePortfolio = asyncHandler(async (req: Request, res: Response) => {
     requireAuth(req.user?.userId);
-    requireId(req.params.id);
+    requireId(req.params.id, 'Portfolio ID');
     if (!req.body || typeof req.body !== 'object') throw new Error('Invalid request body');
 
     const portfolio = await portfolioService.updatePortfolio(req.user!.userId, req.params.id, req.body);

@@ -1,5 +1,6 @@
 import prisma from '../config/database';
-import { ApiError } from '../middleware/error';
+import { createHttpError } from '../utils/errorHandler';
+import { findResourceByIdOrThrow, paginateQuery } from '../utils/dbHelpers';
 
 export class TailoringService {
 
@@ -10,8 +11,13 @@ export class TailoringService {
         jobTitle?: string;
         aggressiveness?: string;
     }) {
-        const baseResume = await prisma.resume.findFirst({ where: { id: data.baseResumeId, userId } });
-        if (!baseResume) throw new ApiError(404, 'Base resume not found');
+           const baseResume = await findResourceByIdOrThrow<any>(
+            prisma.resume,
+            data.baseResumeId,
+            { userId },
+               undefined,
+            'Base resume not found'
+        );
 
         // Import AI service dynamically to avoid circular deps
         const { AIService } = await import('./ai/aiService');
@@ -51,30 +57,45 @@ export class TailoringService {
     async getTailoringHistory(userId: string, params: { page?: number; limit?: number }) {
         const page = params.page || 1;
         const limit = Math.min(params.limit || 10, 50);
-        const skip = (page - 1) * limit;
 
-        const [data, total] = await Promise.all([
-            prisma.tailoredResume.findMany({
-                where: { userId },
-                orderBy: { createdAt: 'desc' },
-                skip, take: limit,
-                select: { id: true, jobTitle: true, companyName: true, atsScore: true, aggressiveness: true, createdAt: true },
-            }),
-            prisma.tailoredResume.count({ where: { userId } }),
-        ]);
-        return { data, total, page, limit, totalPages: Math.ceil(total / limit) };
+        return paginateQuery(
+            prisma.tailoredResume,
+            { userId },
+            page,
+            limit,
+            {
+                select: {
+                    id: true,
+                    jobTitle: true,
+                    companyName: true,
+                    atsScore: true,
+                    aggressiveness: true,
+                    createdAt: true,
+                },
+            },
+            { createdAt: 'desc' }
+        );
     }
 
     async getTailoredById(userId: string, id: string) {
-        const tailored = await prisma.tailoredResume.findFirst({ where: { id, userId } });
-        if (!tailored) throw new ApiError(404, 'Tailored resume not found');
-        return tailored;
+           return findResourceByIdOrThrow<any>(
+            prisma.tailoredResume,
+            id,
+            { userId },
+               undefined,
+            'Tailored resume not found'
+        );
     }
 
     async deleteTailored(userId: string, id: string) {
-        const tailored = await prisma.tailoredResume.findFirst({ where: { id, userId } });
-        if (!tailored) throw new ApiError(404, 'Tailored resume not found');
-        await prisma.tailoredResume.delete({ where: { id } });
+           const tailored = await findResourceByIdOrThrow<any>(
+            prisma.tailoredResume,
+            id,
+            { userId },
+               undefined,
+            'Tailored resume not found'
+        );
+        await prisma.tailoredResume.delete({ where: { id: tailored.id } });
     }
 
     private async _deductCredit(userId: string, action: string, amount: number, resourceId?: string) {
@@ -88,3 +109,4 @@ export class TailoringService {
         });
     }
 }
+

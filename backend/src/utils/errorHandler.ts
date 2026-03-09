@@ -1,141 +1,119 @@
-import { Request, Response, NextFunction } from 'express';
-
 /**
- * Standard error class with HTTP status code
+ * Canonical application error hierarchy.
+ *
+ * All operational errors in services/controllers should use one of these
+ * classes so the global middleware can return consistent responses.
  */
+
 export class AppError extends Error {
+  readonly statusCode: number;
+  readonly code: string;
+  readonly details?: unknown;
+  readonly isOperational: boolean;
+
   constructor(
-    public message: string,
-    public statusCode: number = 500,
-    public code: string = 'INTERNAL_ERROR',
-    public details?: unknown
+    statusCode: number,
+    message: string,
+    code: string,
+    details?: unknown,
+    isOperational = true
   ) {
     super(message);
     this.name = 'AppError';
+    this.statusCode = statusCode;
+    this.code = code;
+    this.details = details;
+    this.isOperational = isOperational;
     Error.captureStackTrace(this, this.constructor);
   }
 }
 
-/**
- * Common error types for consistency
- */
 export class ValidationError extends AppError {
-  constructor(message: string, details?: unknown) {
-    super(message, 400, 'VALIDATION_ERROR', details);
+  constructor(message = 'Validation failed', details?: unknown) {
+    super(400, message, 'VALIDATION_ERROR', details);
     this.name = 'ValidationError';
   }
 }
 
 export class UnauthorizedError extends AppError {
-  constructor(message: string = 'Unauthorized') {
-    super(message, 401, 'UNAUTHORIZED');
+  constructor(message = 'Unauthorized', details?: unknown) {
+    super(401, message, 'UNAUTHORIZED_ERROR', details);
     this.name = 'UnauthorizedError';
   }
 }
 
 export class ForbiddenError extends AppError {
-  constructor(message: string = 'Forbidden') {
-    super(message, 403, 'FORBIDDEN');
+  constructor(message = 'Forbidden', details?: unknown) {
+    super(403, message, 'FORBIDDEN_ERROR', details);
     this.name = 'ForbiddenError';
   }
 }
 
 export class NotFoundError extends AppError {
-  constructor(resource: string = 'Resource') {
-    super(`${resource} not found`, 404, 'NOT_FOUND');
+  constructor(message = 'Resource not found', details?: unknown) {
+    super(404, message, 'NOT_FOUND_ERROR', details);
     this.name = 'NotFoundError';
   }
 }
 
 export class ConflictError extends AppError {
-  constructor(message: string) {
-    super(message, 409, 'CONFLICT');
+  constructor(message = 'Conflict', details?: unknown) {
+    super(409, message, 'CONFLICT_ERROR', details);
     this.name = 'ConflictError';
   }
 }
 
 export class InsufficientCreditsError extends AppError {
-  constructor(needed: number, available: number, action: string) {
-    super(
-      `Insufficient credits for ${action}. Need ${needed}, have ${available}`,
-      402,
-      'INSUFFICIENT_CREDITS',
-      { needed, available, action }
-    );
+  constructor(message = 'Insufficient credits', details?: unknown) {
+    super(402, message, 'INSUFFICIENT_CREDITS_ERROR', details);
     this.name = 'InsufficientCreditsError';
   }
 }
 
-/**
- * Async handler wrapper to catch errors in async route handlers
- * Replaces repeated try-catch blocks in controllers
- * 
- * @example
- * router.get('/users', asyncHandler(async (req, res) => {
- *   const users = await userService.getAll();
- *   res.json(successResponse(users));
- * }));
- */
-export const asyncHandler = (
-  fn: (req: Request, res: Response, next: NextFunction) => Promise<any>
-) => {
-  return (req: Request, res: Response, next: NextFunction) => {
-    Promise.resolve(fn(req, res, next)).catch(next);
-  };
-};
-
-/**
- * Global error handler middleware
- * Place at the end of middleware chain
- * 
- * @example
- * app.use(errorHandler);
- */
-export const errorHandler = (
-  err: Error | AppError,
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
-  console.error('❌ Error:', err);
-
-  if (err instanceof AppError) {
-    const errorResponse: any = {
-      success: false,
-      data: null,
-      message: err.message,
-      error: {
-        code: err.code,
-      },
-    };
-
-    if (err.details) {
-      errorResponse.error.details = err.details;
-    }
-
-    return res.status(err.statusCode).json(errorResponse);
+export class InternalError extends AppError {
+  constructor(message = 'Internal server error', details?: unknown) {
+    super(500, message, 'INTERNAL_ERROR', details, false);
+    this.name = 'InternalError';
   }
-
-  // Default to 500 server error
-  res.status(500).json({
-    success: false,
-    data: null,
-    message: err.message || 'Internal server error',
-    error: {
-      code: 'INTERNAL_ERROR',
-    },
-  });
-};
+}
 
 /**
- * Helper to assert conditions and throw errors
- * 
- * @example
- * assert(user, new NotFoundError('User'));
- * assert(user.isActive, new ForbiddenError('Account inactive'));
+ * Backward-compatible alias while the codebase migrates away from ApiError.
  */
-export function assert(condition: any, error: Error): asserts condition {
-  if (!condition) {
-    throw error;
+export class ApiError extends AppError {
+  constructor(statusCode: number, message: string, details?: unknown) {
+    const mapped = createHttpError(statusCode, message, details);
+    super(mapped.statusCode, mapped.message, mapped.code, mapped.details, mapped.isOperational);
+    this.name = 'ApiError';
   }
+}
+
+export function createHttpError(
+  statusCode: number,
+  message: string,
+  details?: unknown
+): AppError {
+  switch (statusCode) {
+    case 400:
+      return new ValidationError(message, details);
+    case 401:
+      return new UnauthorizedError(message, details);
+    case 402:
+      return new InsufficientCreditsError(message, details);
+    case 403:
+      return new ForbiddenError(message, details);
+    case 404:
+      return new NotFoundError(message, details);
+    case 409:
+      return new ConflictError(message, details);
+    default:
+      return new InternalError(message || 'Internal server error', {
+        statusCode,
+        ...(details ? { details } : {}),
+      });
+  }
+}
+
+export function assert(condition: unknown, error: Error): asserts condition {
+  if (!condition) throw error;
 }

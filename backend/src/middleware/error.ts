@@ -1,136 +1,163 @@
+import { Prisma } from '@prisma/client';
 import { Request, Response, NextFunction } from 'express';
 import { ZodError } from 'zod';
+import {
+  AppError,
+  ConflictError,
+  ForbiddenError,
+  InsufficientCreditsError,
+  InternalError,
+  NotFoundError,
+  UnauthorizedError,
+  ValidationError,
+} from '../utils/errorHandler';
 
-/**
- * Custom API Error class
- */
-export class ApiError extends Error {
-  statusCode: number;
-  isOperational: boolean;
+function fromZod(error: ZodError): ValidationError {
+  return new ValidationError('Validation error', {
+    fields: error.errors.map((item) => ({
+      field: item.path.join('.'),
+      message: item.message,
+    })),
+  });
+}
 
-  constructor(statusCode: number, message: string, isOperational = true) {
-    super(message);
-    this.statusCode = statusCode;
-    this.isOperational = isOperational;
-    Error.captureStackTrace(this, this.constructor);
+function fromPrisma(error: Prisma.PrismaClientKnownRequestError): AppError {
+  switch (error.code) {
+    case 'P2002': {
+      const field = (error.meta?.target as string[] | undefined)?.[0] ?? 'field';
+      return new ConflictError(`${field} already exists`, { code: error.code, meta: error.meta });
+    }
+    case 'P2025':
+      return new NotFoundError('Record not found', { code: error.code, meta: error.meta });
+    case 'P2003':
+      return new ValidationError('Invalid reference', { code: error.code, meta: error.meta });
+    default:
+      return new InternalError('Database error', { code: error.code, meta: error.meta });
   }
 }
 
-/**
- * Handle Zod validation errors
- */
-const handleZodError = (error: ZodError) => {
-  const errors = error.errors.map((err) => ({
-    field: err.path.join('.'),
-    message: err.message,
-  }));
+function fromMessage(error: Error): AppError {
+  const message = error.message || 'Unexpected error';
+  const lowered = message.toLowerCase();
 
-  return {
-    statusCode: 400,
-    message: 'Validation error',
-    errors,
-  };
-};
-
-/**
- * Handle Prisma errors
- */
-const handlePrismaError = (error: any) => {
-  switch (error.code) {
-    case 'P2002':
-      // Unique constraint violation
-      const field = error.meta?.target?.[0] || 'field';
-      return {
-        statusCode: 409,
-        message: `${field} already exists`,
-      };
-
-    case 'P2025':
-      // Record not found
-      return {
-        statusCode: 404,
-        message: 'Record not found',
-      };
-
-    case 'P2003':
-      // Foreign key constraint violation
-      return {
-        statusCode: 400,
-        message: 'Invalid reference',
-      };
-
-    default:
-      return {
-        statusCode: 500,
-        message: 'Database error',
-      };
+  if (lowered.includes('unauthorized') || lowered.includes('invalid token') || lowered.includes('token expired')) {
+    return new UnauthorizedError(message);
   }
-};
 
-/**
- * Global error handler middleware
- */
+  if (lowered.includes('forbidden')) {
+    return new ForbiddenError(message);
+  }
+
+  if (lowered.includes('insufficient credits')) {
+    return new InsufficientCreditsError(message);
+  }
+
+  if (lowered.includes('already exists') || lowered.includes('already registered') || lowered.includes('conflict')) {
+    return new ConflictError(message);
+  }
+
+  if (lowered.includes('not found')) {
+    return new NotFoundError(message);
+  }
+
+  if (
+    lowered.includes('required') ||
+    lowered.includes('invalid') ||
+    lowered.includes('missing') ||
+    lowered.includes('no data')
+  ) {
+    return new ValidationError(message);
+  }
+
+  return new InternalError('Internal server error');
+}
+
+function normalizeError(error: unknown): AppError {
+  if (error instanceof AppError) {
+    return error;
+  }
+
+  if (error instanceof ZodError) {
+    return fromZod(error);
+  }
+
+  if (error instanceof Prisma.PrismaClientKnownRequestError) {
+    return fromPrisma(error);
+  }
+
+  if (error instanceof Prisma.PrismaClientValidationError) {
+    return new ValidationError('Invalid database query');
+  }
+
+  if (error instanceof SyntaxError && 'body' in error) {
+    return new ValidationError('Invalid JSON payload');
+  }
+
+  if (error instanceof Error) {
+    if (error.name === 'JsonWebTokenError' || error.name === 'TokenExpiredError') {
+      return new UnauthorizedError('Invalid or expired token');
+    }
+    return fromMessage(error);
+  }
+
+  return new InternalError('Internal server error');
+}
+
+function logServerError(req: Request, error: unknown, appError: AppError): void {
+  const requestId = resRequestId(req);
+
+  console.error('Unhandled request error', {
+    requestId,
+    method: req.method,
+    path: req.originalUrl,
+    statusCode: appError.statusCode,
+    code: appError.code,
+    message: appError.message,
+    details: appError.details,
+    error,
+  });
+}
+
+function resRequestId(req: Request): string | undefined {
+  const localRequestId = req.res?.locals?.requestId;
+  return typeof localRequestId === 'string' ? localRequestId : undefined;
+}
+
+function buildClientErrorResponse(appError: AppError, requestId?: string) {
+  return {
+    success: false,
+    message: appError.message,
+    error: {
+      code: appError.code,
+      ...(appError.details !== undefined ? { details: appError.details } : {}),
+    },
+    ...(requestId ? { requestId } : {}),
+  };
+}
+
 export const errorHandler = (
-  err: Error | ApiError,
+  error: unknown,
   req: Request,
   res: Response,
-  next: NextFunction
+  _next: NextFunction
 ) => {
-  let statusCode = 500;
-  let message = 'Internal server error';
-  let errors: any = undefined;
+  const appError = normalizeError(error);
+  const requestId = resRequestId(req);
 
-  // Handle different error types
-  if (err instanceof ApiError) {
-    statusCode = err.statusCode;
-    message = err.message;
-  } else if (err instanceof ZodError) {
-    const zodError = handleZodError(err);
-    statusCode = zodError.statusCode;
-    message = zodError.message;
-    errors = zodError.errors;
-  } else if (err.name === 'PrismaClientKnownRequestError') {
-    const prismaError = handlePrismaError(err);
-    statusCode = prismaError.statusCode;
-    message = prismaError.message;
-  } else if (err.name === 'JsonWebTokenError') {
-    statusCode = 401;
-    message = 'Invalid token';
-  } else if (err.name === 'TokenExpiredError') {
-    statusCode = 401;
-    message = 'Token expired';
-  }
+  // Always log full error details server-side.
+  logServerError(req, error, appError);
 
-  // Log error in development
-  if (process.env.NODE_ENV === 'development') {
-    console.error('Error:', err);
-  }
-
-  // Send error response
-  res.status(statusCode).json({
-    success: false,
-    message,
-    errors,
-    ...(process.env.NODE_ENV === 'development' && {
-      stack: err.stack,
-    }),
-  });
+  // Never expose stack traces or raw internals to clients.
+  res.status(appError.statusCode).json(buildClientErrorResponse(appError, requestId));
 };
 
-/**
- * Handle 404 routes
- */
-export const notFound = (req: Request, res: Response) => {
-  res.status(404).json({
-    success: false,
-    message: `Route ${req.originalUrl} not found`,
-  });
+export const notFound = (req: Request, _res: Response, next: NextFunction) => {
+  next(new NotFoundError(`Route ${req.originalUrl} not found`));
 };
 
-/**
- * Async error wrapper
- */
-export const asyncHandler = (fn: Function) => {
+export const asyncHandler = (
+  fn: (req: Request, res: Response, next: NextFunction) => Promise<unknown>
+) => {
   return (req: Request, res: Response, next: NextFunction) => {
     Promise.resolve(fn(req, res, next)).catch(next);
   };

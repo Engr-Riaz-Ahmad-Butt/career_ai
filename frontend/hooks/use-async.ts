@@ -1,4 +1,5 @@
 import { useState, useCallback, useEffect } from 'react';
+import { captureClientError } from '@/lib/errorHandling';
 
 export type AsyncStatus = 'idle' | 'loading' | 'success' | 'error';
 
@@ -53,6 +54,10 @@ export function useAsync<T>(
         const error = err instanceof Error ? err : new Error(String(err));
         setError(error);
         setStatus('error');
+        captureClientError(error, {
+          source: 'use_async',
+          action: 'execute_failed',
+        });
         return undefined;
       }
     },
