@@ -2,10 +2,11 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { resumeApi, CreateResumeRequest, UpdateResumeRequest } from '@/lib/api/endpoints/resume.api';
 import { useAuthStore } from '@/store/authStore';
 import type { ResumeData } from '@/types';
-import { queryKeys, invalidationKeys } from '@/lib/query-keys';
+import { queryKeys } from '@/lib/query-keys';
 import { STALE_TIMES, GC_TIMES } from '@/lib/query-config';
 import { message } from 'antd';
 import { toResumeData } from '@/lib/mappers/resume.mapper';
+import { resumeInvalidations, userInvalidations } from '@/lib/api/invalidations';
 
 // ── Queries ────────────────────────────────────────────────────────────────
 
@@ -58,7 +59,10 @@ export function useCreateResume() {
             return toResumeData(resume, userId);
         },
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: invalidationKeys.afterResumeCreate() });
+            const keysToInvalidate = resumeInvalidations.afterCreate();
+            keysToInvalidate.forEach(key => {
+                queryClient.invalidateQueries({ queryKey: key });
+            });
             message.success('Resume created successfully');
         },
         onError: (error: { response?: { data?: { message?: string } } }) => {
@@ -100,7 +104,10 @@ export function useUpdateResume() {
         onSuccess: (updatedResume, { id }) => {
             // Replace with server truth
             queryClient.setQueryData(queryKeys.resumes.byId(id), updatedResume);
-            queryClient.invalidateQueries({ queryKey: invalidationKeys.afterResumeListRefresh() });
+            const keysToInvalidate = resumeInvalidations.afterUpdate(id);
+            keysToInvalidate.forEach(key => {
+                queryClient.invalidateQueries({ queryKey: key });
+            });
         },
 
         onError: (error: { response?: { data?: { message?: string } } }, { id }, context) => {
@@ -119,7 +126,10 @@ export function useDeleteResume() {
     return useMutation({
         mutationFn: (id: string) => resumeApi.delete(id),
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: invalidationKeys.afterResumeDelete() });
+            const keysToInvalidate = resumeInvalidations.afterDelete('');
+            keysToInvalidate.forEach(key => {
+                queryClient.invalidateQueries({ queryKey: key });
+            });
             message.success('Resume deleted');
         },
         onError: (error: { response?: { data?: { message?: string } } }) => {
@@ -135,7 +145,10 @@ export function useDuplicateResume() {
         mutationFn: (id: string) =>
             resumeApi.duplicate(id).then((r) => toResumeData(r, useAuthStore.getState().user?.id)),
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: queryKeys.resumes.all() });
+            const keysToInvalidate = resumeInvalidations.afterDuplicate();
+            keysToInvalidate.forEach(key => {
+                queryClient.invalidateQueries({ queryKey: key });
+            });
             message.success('Resume duplicated');
         },
         onError: (error: { response?: { data?: { message?: string } } }) => {
@@ -151,8 +164,10 @@ export function useRestoreVersion() {
         mutationFn: ({ id, versionId }: { id: string; versionId: string }) =>
             resumeApi.restoreVersion(id, versionId).then((r) => toResumeData(r, useAuthStore.getState().user?.id)),
         onSuccess: (_, { id }) => {
-            queryClient.invalidateQueries({ queryKey: queryKeys.resumes.byId(id) });
-            queryClient.invalidateQueries({ queryKey: queryKeys.resumes.versions(id) });
+            const keysToInvalidate = resumeInvalidations.afterVersionRestore(id);
+            keysToInvalidate.forEach(key => {
+                queryClient.invalidateQueries({ queryKey: key });
+            });
             message.success('Version restored');
         },
         onError: (error: { response?: { data?: { message?: string } } }) => {

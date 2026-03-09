@@ -28,12 +28,14 @@ import analyzeRoutes from './routes/analyze.routes';
 
 // Middleware
 import { errorHandler, notFound } from './middleware/error';
+import { requestIdMiddleware } from './middleware/requestId.middleware';
 
 const app: Application = express();
 
 // ── Middleware ──────────────────────────────────────────────────────────────
 
 app.use(helmet());
+app.use(requestIdMiddleware);
 
 const allowedOrigins = env.ALLOWED_ORIGINS
   ? env.ALLOWED_ORIGINS.split(',')
