@@ -7,6 +7,7 @@ import {
   resetPasswordSchema
 } from '../utils/validation';
 import { successResponse, errorResponse } from '../utils/apiResponse';
+import { asyncHandler } from '../middleware/asyncHandler';
 
 const authService = new AuthService();
 
@@ -20,111 +21,117 @@ const REFRESH_COOKIE_OPTIONS = {
   path: '/',
 };
 
-/** Helper: set refresh token as HttpOnly cookie */
-function setRefreshCookie(res: Response, refreshToken: string) {
+// ── Helpers ─────────────────────────────────────────────────────────────────
+
+/** Set refresh token as HttpOnly cookie */
+function setRefreshCookie(res: Response, refreshToken: string): void {
   res.cookie('refreshToken', refreshToken, REFRESH_COOKIE_OPTIONS);
 }
 
-// ── Handlers ───────────────────────────────────────────────────────────────
-
-/** POST /auth/register */
-export const register = async (req: Request, res: Response) => {
-  const result = await authService.register(req.body);
-  const { accessToken, refreshToken, user } = result;
-
-  setRefreshCookie(res, refreshToken);
-
-  res.status(201).json(
-    successResponse({ accessToken, user }, 'Account created. Please verify your email.')
-  );
-};
-
-/** POST /auth/login */
-export const login = async (req: Request, res: Response) => {
-  const result = await authService.login(req.body);
-  const { accessToken, refreshToken, user } = result;
-
-  setRefreshCookie(res, refreshToken);
-
-  res.json(successResponse({ accessToken, user }, 'Login successful'));
-};
-
-/** POST /auth/google */
-export const googleAuth = async (req: Request, res: Response) => {
-  const { googleToken } = req.body;
-  const result = await authService.googleAuth(googleToken);
-  const { accessToken, refreshToken, user } = result;
-
-  setRefreshCookie(res, refreshToken);
-
-  res.json(successResponse({ accessToken, user }, 'Google authentication successful'));
-};
-
-/** POST /auth/refresh  — reads refreshToken from HttpOnly cookie */
-export const refreshAccessToken = async (req: Request, res: Response) => {
-  const refreshToken = req.cookies?.refreshToken;
-
-  if (!refreshToken) {
-      return res.status(401).json(
-        errorResponse('No refresh token provided', 'NO_REFRESH_TOKEN')
-      );
-  }
-
-  const result = await authService.refreshTokens(refreshToken);
-  const { accessToken, refreshToken: newRefreshToken, user } = result;
-
-  // Rotate: issue new cookie with rotated refresh token
-  setRefreshCookie(res, newRefreshToken);
-
-  res.json(successResponse({ accessToken, user }, 'Token refreshed'));
-};
-
-/** POST /auth/logout — clears HttpOnly cookie */
-export const logout = async (req: Request, res: Response) => {
-  const refreshToken = req.cookies?.refreshToken;
-
-  if (refreshToken) {
-    // Best-effort revoke in DB (don't throw if it fails)
-    try {
-      await authService.logout(refreshToken);
-    } catch {
-      // already expired or revoked — that's fine
-    }
-  }
-
+/** Clear refresh token cookie */
+function clearRefreshCookie(res: Response): void {
   res.clearCookie('refreshToken', {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
     sameSite: 'strict',
     path: '/',
   });
-    res.json(successResponse({}, 'Logged out successfully'));
-};
+}
+
+/** Send auth success response with cookies */
+function sendAuthResponse(
+  res: Response,
+  statusCode: number,
+  refreshToken: string,
+  accessToken: string,
+  user: any,
+  message: string
+): void {
+  setRefreshCookie(res, refreshToken);
+  res.status(statusCode).json(
+    successResponse({ accessToken, user }, message)
+  );
+}
+
+/**  Handlers ───────────────────────────────────────────────────────────────*/
+
+/** POST /auth/register */
+export const register = asyncHandler(async (req: Request, res: Response) => {
+  if (!req.body || typeof req.body !== 'object') throw new Error('Invalid request body');
+
+  const result = await authService.register(req.body);
+  sendAuthResponse(res, 201, result.refreshToken, result.accessToken, result.user, 'Account created. Please verify your email.');
+});
+
+/** POST /auth/login */
+export const login = asyncHandler(async (req: Request, res: Response) => {
+  if (!req.body || typeof req.body !== 'object') throw new Error('Invalid request body');
+
+  const result = await authService.login(req.body);
+  sendAuthResponse(res, 200, result.refreshToken, result.accessToken, result.user, 'Login successful');
+});
+
+/** POST /auth/google */
+export const googleAuth = asyncHandler(async (req: Request, res: Response) => {
+  if (!req.body?.googleToken) throw new Error('Google token is required');
+
+  const result = await authService.googleAuth(req.body.googleToken);
+  sendAuthResponse(res, 200, result.refreshToken, result.accessToken, result.user, 'Google authentication successful');
+});
+
+/** POST /auth/refresh — reads refreshToken from HttpOnly cookie */
+export const refreshAccessToken = asyncHandler(async (req: Request, res: Response) => {
+  const refreshToken = req.cookies?.refreshToken;
+  if (!refreshToken) throw new Error('No refresh token provided');
+
+  const result = await authService.refreshTokens(refreshToken);
+  sendAuthResponse(res, 200, result.refreshToken, result.accessToken, result.user, 'Token refreshed');
+});
+
+/** POST /auth/logout — clears HttpOnly cookie */
+export const logout = asyncHandler(async (req: Request, res: Response) => {
+  const refreshToken = req.cookies?.refreshToken;
+
+  if (refreshToken) {
+    try {
+      await authService.logout(refreshToken);
+    } catch {
+      // Already expired or revoked — that's fine
+    }
+  }
+
+  clearRefreshCookie(res);
+  res.json(successResponse({}, 'Logged out successfully'));
+});
 
 /** POST /auth/forgot-password */
-export const forgotPassword = async (req: Request, res: Response) => {
-  const { email } = req.body;
-  await authService.forgotPassword(email);
+export const forgotPassword = asyncHandler(async (req: Request, res: Response) => {
+  if (!req.body?.email) throw new Error('Email is required');
+
+  await authService.forgotPassword(req.body.email);
   res.json(successResponse({}, 'If that email exists, a reset link has been sent.'));
-};
+});
 
 /** POST /auth/reset-password */
-export const resetPassword = async (req: Request, res: Response) => {
-  const { token, newPassword } = req.body;
-  await authService.resetPassword(token, newPassword);
+export const resetPassword = asyncHandler(async (req: Request, res: Response) => {
+  if (!req.body?.token || !req.body?.newPassword) throw new Error('Token and password are required');
+
+  await authService.resetPassword(req.body.token, req.body.newPassword);
   res.json(successResponse({}, 'Password reset successfully'));
-};
+});
 
 /** POST /auth/verify-email */
-export const verifyEmail = async (req: Request, res: Response) => {
-  const { token } = req.body;
-  const result = await authService.verifyEmail(token);
+export const verifyEmail = asyncHandler(async (req: Request, res: Response) => {
+  if (!req.body?.token) throw new Error('Verification token is required');
+
+  const result = await authService.verifyEmail(req.body.token);
   res.json(successResponse({}, result.message));
-};
+});
 
 /** POST /auth/resend-verification */
-export const resendVerification = async (req: Request, res: Response) => {
-  const { email } = req.body;
-  await authService.resendVerification(email);
+export const resendVerification = asyncHandler(async (req: Request, res: Response) => {
+  if (!req.body?.email) throw new Error('Email is required');
+
+  await authService.resendVerification(req.body.email);
   res.json(successResponse({}, 'Verification email sent if account exists.'));
-};
+});
