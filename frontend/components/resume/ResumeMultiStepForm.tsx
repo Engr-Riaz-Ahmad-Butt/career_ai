@@ -142,8 +142,10 @@ export function ResumeMultiStepForm({ onComplete, onCancel }: ResumeMultiStepFor
             case 'experience':
                 return (
                     <div className="space-y-6">
-                        {formData.experience.map((exp: any, i: number) => (
-                            <Card key={i} className="p-4 relative space-y-4 border-slate-200 dark:border-slate-800">
+                        {formData.experience.map((exp: any, i: number) => {
+                            const expKey = `exp-${i}-${exp.title || 'untitled'}-${exp.company || ''}`;
+                            return (
+                            <Card key={expKey} className="p-4 relative space-y-4 border-slate-200 dark:border-slate-800">
                                 <Button
                                     variant="ghost"
                                     size="icon"
@@ -205,7 +207,7 @@ export function ResumeMultiStepForm({ onComplete, onCancel }: ResumeMultiStepFor
                                     />
                                 </div>
                             </Card>
-                        ))}
+                        );})}
                         <Button variant="outline" className="w-full border-dashed" onClick={() => addArrayItem('experience', { title: '', company: '', startDate: '', endDate: '', description: '', achievements: [] })}>
                             <Plus className="h-4 w-4 mr-2" /> Add Experience
                         </Button>
@@ -214,8 +216,10 @@ export function ResumeMultiStepForm({ onComplete, onCancel }: ResumeMultiStepFor
             case 'education':
                 return (
                     <div className="space-y-6">
-                        {formData.education.map((edu: any, i: number) => (
-                            <Card key={i} className="p-4 relative space-y-4 border-slate-200 dark:border-slate-800">
+                        {formData.education.map((edu: any, i: number) => {
+                            const eduKey = `edu-${i}-${edu.degree || 'untitled'}-${edu.school || ''}`;
+                            return (
+                            <Card key={eduKey} className="p-4 relative space-y-4 border-slate-200 dark:border-slate-800">
                                 <Button
                                     variant="ghost"
                                     size="icon"
@@ -259,7 +263,7 @@ export function ResumeMultiStepForm({ onComplete, onCancel }: ResumeMultiStepFor
                                     </div>
                                 </div>
                             </Card>
-                        ))}
+                        );})}
                         <Button variant="outline" className="w-full border-dashed" onClick={() => addArrayItem('education', { degree: '', institution: '', startDate: '', endDate: '' })}>
                             <Plus className="h-4 w-4 mr-2" /> Add Education
                         </Button>
@@ -280,8 +284,10 @@ export function ResumeMultiStepForm({ onComplete, onCancel }: ResumeMultiStepFor
             case 'projects':
                 return (
                     <div className="space-y-6">
-                        {formData.projects.map((proj: any, i: number) => (
-                            <Card key={i} className="p-4 relative space-y-4 border-slate-200 dark:border-slate-800">
+                        {formData.projects.map((proj: any, i: number) => {
+                            const projKey = `proj-${i}-${proj.name || 'untitled'}`;
+                            return (
+                            <Card key={projKey} className="p-4 relative space-y-4 border-slate-200 dark:border-slate-800">
                                 <Button
                                     variant="ghost"
                                     size="icon"
@@ -307,7 +313,7 @@ export function ResumeMultiStepForm({ onComplete, onCancel }: ResumeMultiStepFor
                                     />
                                 </div>
                             </Card>
-                        ))}
+                        );})}
                         <Button variant="outline" className="w-full border-dashed" onClick={() => addArrayItem('projects', { name: '', description: '', technologies: [] })}>
                             <Plus className="h-4 w-4 mr-2" /> Add Project
                         </Button>
@@ -316,8 +322,10 @@ export function ResumeMultiStepForm({ onComplete, onCancel }: ResumeMultiStepFor
             case 'certifications':
                 return (
                     <div className="space-y-6">
-                        {formData.certifications.map((cert: any, i: number) => (
-                            <Card key={i} className="p-4 relative space-y-4 border-slate-200 dark:border-slate-800">
+                        {formData.certifications.map((cert: any, i: number) => {
+                            const certKey = `cert-${i}-${cert.name || 'untitled'}-${cert.issuer || ''}`;
+                            return (
+                            <Card key={certKey} className="p-4 relative space-y-4 border-slate-200 dark:border-slate-800">
                                 <Button
                                     variant="ghost"
                                     size="icon"
@@ -353,7 +361,7 @@ export function ResumeMultiStepForm({ onComplete, onCancel }: ResumeMultiStepFor
                                     </div>
                                 </div>
                             </Card>
-                        ))}
+                        );})}
                         <Button variant="outline" className="w-full border-dashed" onClick={() => addArrayItem('certifications', { name: '', issuer: '', date: '' })}>
                             <Plus className="h-4 w-4 mr-2" /> Add Certification
                         </Button>
@@ -362,8 +370,10 @@ export function ResumeMultiStepForm({ onComplete, onCancel }: ResumeMultiStepFor
             case 'languages':
                 return (
                     <div className="space-y-6">
-                        {formData.languages.map((lang: any, i: number) => (
-                            <Card key={i} className="p-4 relative space-y-4 border-slate-200 dark:border-slate-800">
+                        {formData.languages.map((lang: any, i: number) => {
+                            const langKey = `lang-${i}-${lang.language || 'untitled'}`;
+                            return (
+                            <Card key={langKey} className="p-4 relative space-y-4 border-slate-200 dark:border-slate-800">
                                 <Button
                                     variant="ghost"
                                     size="icon"
@@ -391,7 +401,7 @@ export function ResumeMultiStepForm({ onComplete, onCancel }: ResumeMultiStepFor
                                     </div>
                                 </div>
                             </Card>
-                        ))}
+                        );})}
                         <Button variant="outline" className="w-full border-dashed" onClick={() => addArrayItem('languages', { name: '', level: 'Fluent' })}>
                             <Plus className="h-4 w-4 mr-2" /> Add Language
                         </Button>

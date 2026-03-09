@@ -63,8 +63,8 @@ export function VisaGuide() {
                     Required Documents
                   </h4>
                   <ul className="space-y-1">
-                    {visa.documentChecklist.slice(0, 3).map((doc, idx) => (
-                      <li key={idx} className="text-xs text-slate-600 dark:text-slate-400">
+                    {visa.documentChecklist.slice(0, 3).map((doc) => (
+                      <li key={doc} className="text-xs text-slate-600 dark:text-slate-400">
                         • {doc}
                       </li>
                     ))}

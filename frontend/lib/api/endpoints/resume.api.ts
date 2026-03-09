@@ -83,6 +83,32 @@ export interface ResumeVersionSummary {
   createdAt: string;
 }
 
+export interface ResumeExtractedData {
+  personalInfo?: {
+    name?: string;
+    email?: string;
+    phone?: string;
+    location?: string;
+  };
+  summary?: string;
+  experience?: Array<{
+    title?: string;
+    company?: string;
+    startDate?: string;
+    endDate?: string;
+    achievements?: string[];
+  }>;
+  skills?: {
+    technical?: string[];
+    soft?: string[];
+  };
+  projects?: Array<{
+    name?: string;
+    description?: string;
+    technologies?: string[];
+  }>;
+}
+
 export interface JobStatusResponse {
   jobId: string;
   status: 'processing' | 'complete' | 'failed';
@@ -129,6 +155,18 @@ export const resumeApi = {
         headers: { 'Content-Type': 'multipart/form-data' },
       })
       .then((r) => r.data.data.resume);
+  },
+
+  /** POST /resumes/extract  — multipart form data */
+  extractFromFile: (file: File): Promise<ResumeExtractedData> => {
+    const form = new FormData();
+    form.append('file', file);
+
+    return apiClient
+      .post('/resumes/extract', form, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      })
+      .then((r) => r.data.data as ResumeExtractedData);
   },
 
   /** POST /jobs/resume/:id/pdf */

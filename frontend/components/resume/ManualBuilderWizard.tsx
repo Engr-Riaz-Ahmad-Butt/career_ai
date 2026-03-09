@@ -427,8 +427,8 @@ export function ManualBuilderWizard({ initialData, selectedTemplate, onComplete,
                                     className="min-h-[80px] rounded-xl resize-none"
                                 />
                                 <div className="flex flex-wrap gap-1.5 mt-1">
-                                    {data.skills[key as keyof WizardData['skills']].filter(Boolean).map((skill, i) => (
-                                        <span key={i} className="px-2.5 py-0.5 bg-indigo-50 dark:bg-indigo-950/40 text-indigo-700 dark:text-indigo-300 text-xs rounded-full font-medium border border-indigo-100 dark:border-indigo-800">
+                                    {data.skills[key as keyof WizardData['skills']].filter(Boolean).map((skill) => (
+                                        <span key={skill} className="px-2.5 py-0.5 bg-indigo-50 dark:bg-indigo-950/40 text-indigo-700 dark:text-indigo-300 text-xs rounded-full font-medium border border-indigo-100 dark:border-indigo-800">
                                             {skill}
                                         </span>
                                     ))}

@@ -13,6 +13,7 @@ import { z } from 'zod';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { resetPasswordSchema } from '@/lib/validation';
+import { useAuth } from '@/hooks/use-auth';
 
 type ResetPasswordData = z.infer<typeof resetPasswordSchema>;
 
@@ -24,6 +25,8 @@ function ResetPasswordForm() {
     const [isLoading, setIsLoading] = useState(false);
     const [isSubmitted, setIsSubmitted] = useState(false);
     const [serverError, setServerError] = useState('');
+
+    const { resetPassword } = useAuth();
 
     const {
         register,
@@ -44,23 +47,13 @@ function ResetPasswordForm() {
         setServerError('');
 
         try {
-            const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/api/auth/reset-password`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ token, password: values.password }),
-            });
-
-            if (!response.ok) {
-                const data = await response.json();
-                throw new Error(data.message || 'Failed to reset password.');
-            }
-
+            await resetPassword.mutateAsync({ token, newPassword: values.password });
             setIsSubmitted(true);
-            setTimeout(() => {
+            window.setTimeout(() => {
                 router.push('/auth/login');
             }, 3000);
-        } catch (err: any) {
-            setServerError(err.message || 'Something went wrong.');
+        } catch (error) {
+            setServerError(error instanceof Error ? error.message : 'Something went wrong.');
         } finally {
             setIsLoading(false);
         }
@@ -125,7 +118,7 @@ function ResetPasswordForm() {
             )}
 
             <div className="space-y-2">
-                <Label htmlFor="password text-slate-700 dark:text-slate-300">
+                <Label htmlFor="password" className="text-slate-700 dark:text-slate-300">
                     New Password
                 </Label>
                 <div className="relative">
@@ -146,7 +139,7 @@ function ResetPasswordForm() {
             </div>
 
             <div className="space-y-2">
-                <Label htmlFor="confirmPassword text-slate-700 dark:text-slate-300">
+                <Label htmlFor="confirmPassword" className="text-slate-700 dark:text-slate-300">
                     Confirm New Password
                 </Label>
                 <div className="relative">

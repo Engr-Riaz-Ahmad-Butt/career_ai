@@ -11,6 +11,7 @@ import { Label } from '@/components/ui/label';
 import { Zap, ArrowLeft, Mail, CheckCircle2, AlertCircle } from 'lucide-react';
 import { forgotPasswordSchema } from '@/lib/validation';
 import { z } from 'zod';
+import { useAuth } from '@/hooks/use-auth';
 
 type ForgotPasswordFormData = z.infer<typeof forgotPasswordSchema>;
 
@@ -19,6 +20,8 @@ export default function ForgotPasswordPage() {
     const [isSubmitted, setIsSubmitted] = useState(false);
     const [serverError, setServerError] = useState('');
     const [submittedEmail, setSubmittedEmail] = useState('');
+
+    const { forgotPassword } = useAuth();
 
     const {
         register,
@@ -37,20 +40,10 @@ export default function ForgotPasswordPage() {
         setSubmittedEmail(data.email);
 
         try {
-            const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/api/auth/forgot-password`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(data),
-            });
-
-            if (!response.ok) {
-                const errorData = await response.json().catch(() => ({}));
-                throw new Error(errorData.message || 'Something went wrong. Please try again.');
-            }
-
+            await forgotPassword.mutateAsync(data.email);
             setIsSubmitted(true);
-        } catch (err: any) {
-            setServerError(err.message || 'Failed to send reset email.');
+        } catch (error) {
+            setServerError(error instanceof Error ? error.message : 'Failed to send reset email.');
         } finally {
             setIsLoading(false);
         }

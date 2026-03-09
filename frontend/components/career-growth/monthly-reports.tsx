@@ -80,8 +80,8 @@ export function MonthlyReportCard({ report }: MonthlyReportProps) {
               <h3 className="font-semibold text-slate-900 dark:text-white">Highlights</h3>
             </div>
             <ul className="space-y-2">
-              {report.highlights.map((highlight, idx) => (
-                <li key={idx} className="flex items-start gap-2 text-sm text-slate-700 dark:text-slate-300">
+              {report.highlights.map((highlight) => (
+                <li key={highlight} className="flex items-start gap-2 text-sm text-slate-700 dark:text-slate-300">
                   <span className="text-amber-600 font-bold">•</span>
                   {highlight}
                 </li>
@@ -96,8 +96,8 @@ export function MonthlyReportCard({ report }: MonthlyReportProps) {
               <h3 className="font-semibold text-slate-900 dark:text-white">Skills Learned</h3>
             </div>
             <div className="flex flex-wrap gap-2">
-              {report.skillsLearned.map((skill, idx) => (
-                <Badge key={idx} variant="secondary">
+              {report.skillsLearned.map((skill) => (
+                <Badge key={skill} variant="secondary">
                   {skill}
                 </Badge>
               ))}

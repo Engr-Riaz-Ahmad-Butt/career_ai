@@ -218,7 +218,7 @@ export default function FeaturesPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12">
             {FEATURES.map((feature, index) => (
               <motion.div
-                key={index}
+                key={feature.title}
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
@@ -259,8 +259,8 @@ export default function FeaturesPage() {
               { label: "Data Encrypted", value: "AES-256" },
               { label: "API Latency", value: "<50ms" },
               { label: "Support", value: "24/7" },
-            ].map((stat, i) => (
-              <div key={i}>
+            ].map((stat) => (
+              <div key={stat.label}>
                 <div className="text-3xl font-bold mb-1">{stat.value}</div>
                 <div className="text-xs uppercase tracking-widest text-slate-500 font-bold">{stat.label}</div>
               </div>

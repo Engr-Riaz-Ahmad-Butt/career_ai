@@ -5,7 +5,7 @@ import { useUIStore } from '@/store/uiStore';
 import { useAuthStore } from '@/store/authStore';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { authApi } from '@/lib/api/endpoints/auth.api';
+import { useAuth } from '@/hooks/use-auth';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -24,8 +24,8 @@ export function AppNavbar() {
   const sidebarOpen = useUIStore((state) => state.sidebarOpen);
   const toggleSidebar = useUIStore((state) => state.toggleSidebar);
   const user = useAuthStore((state) => state.user);
-  const clearAuth = useAuthStore((state) => state.clearAuth);
   const router = useRouter();
+  const { logout } = useAuth();
 
   useEffect(() => {
     setMounted(true);
@@ -33,9 +33,8 @@ export function AppNavbar() {
 
   const handleLogout = async () => {
     try {
-      await authApi.logout();
+      await logout.mutateAsync();
     } finally {
-      clearAuth();
       router.push('/auth/login');
     }
   };

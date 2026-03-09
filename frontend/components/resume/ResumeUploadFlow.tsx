@@ -1,74 +1,33 @@
 'use client';
 
-import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Upload, FileText, CheckCircle2, Loader2, ArrowRight, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Card } from '@/components/ui/card';
-import api from '@/lib/api-client';
+import { useResumeUploadFlow } from '@/hooks/useResumeUploadFlow';
+import type {
+    ExtractedResumeExperience,
+    ExtractedResumeProject,
+    ResumeExtractedData,
+} from '@/types/resumeExtraction.types';
 
 interface ResumeUploadFlowProps {
-    onComplete: (data: any) => void;
+    onComplete: (data: ResumeExtractedData) => void;
     onCancel: () => void;
 }
 
-type UploadStep = 'upload' | 'extracting' | 'review';
-
 export function ResumeUploadFlow({ onComplete, onCancel }: ResumeUploadFlowProps) {
-    const [step, setStep] = useState<UploadStep>('upload');
-    const [file, setFile] = useState<File | null>(null);
-    const [progress, setProgress] = useState(0);
-    const [error, setError] = useState<string | null>(null);
-    const [extractedData, setExtractedData] = useState<any>(null);
-
-    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const selectedFile = e.target.files?.[0];
-        if (selectedFile) {
-            if (selectedFile.type === 'application/pdf' ||
-                selectedFile.type === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') {
-                setFile(selectedFile);
-                setError(null);
-            } else {
-                setError('Please upload a PDF or DOCX file.');
-            }
-        }
-    };
-
-    const handleUpload = async () => {
-        if (!file) return;
-
-        setStep('extracting');
-        setProgress(10);
-
-        const formData = new FormData();
-        formData.append('file', file);
-
-        try {
-            // Step-by-step progress simulation while waiting for AI
-            const interval = setInterval(() => {
-                setProgress((prev) => {
-                    if (prev >= 90) {
-                        clearInterval(interval);
-                        return 90;
-                    }
-                    return prev + 5;
-                });
-            }, 500);
-
-            const response = await api.post('/resumes/extract', formData, {
-                headers: { 'Content-Type': 'multipart/form-data' },
-            });
-
-            clearInterval(interval);
-            setProgress(100);
-            setExtractedData(response.data.data);
-            setStep('review');
-        } catch (err: any) {
-            setError(err.response?.data?.message || 'Failed to extract data. Please try again.');
-            setStep('upload');
-        }
-    };
+    const {
+        step,
+        file,
+        progress,
+        error,
+        extractedData,
+        handleFileChange,
+        handleUpload,
+        resetToUploadStep,
+    } = useResumeUploadFlow();
 
     return (
         <div className="max-w-4xl mx-auto py-8">
@@ -206,32 +165,38 @@ export function ResumeUploadFlow({ onComplete, onCancel }: ResumeUploadFlowProps
                                 {/* Experience */}
                                 <section className="space-y-4">
                                     <h3 className="font-semibold text-indigo-600 text-sm uppercase tracking-wider">Experience</h3>
-                                    {extractedData?.experience?.map((exp: any, i: number) => (
-                                        <div key={i} className="border-l-2 border-slate-100 dark:border-slate-800 pl-4 py-1">
-                                            <p className="font-bold text-slate-900 dark:text-white">{exp.title}</p>
-                                            <p className="text-xs text-slate-600 dark:text-slate-400">{exp.company} • {exp.startDate} - {exp.endDate}</p>
-                                            {exp.achievements?.length > 0 && (
-                                                <ul className="mt-2 space-y-1">
-                                                    {exp.achievements.slice(0, 2).map((ach: string, j: number) => (
-                                                        <li key={j} className="text-xs text-slate-600 dark:text-slate-400 list-disc ml-4">{ach}</li>
-                                                    ))}
-                                                </ul>
-                                            )}
-                                        </div>
-                                    ))}
+                                    {extractedData?.experience?.map((exp: ExtractedResumeExperience) => {
+                                        const experienceKey = [exp.title, exp.company, exp.startDate, exp.endDate]
+                                            .filter(Boolean)
+                                            .join('-');
+
+                                        return (
+                                            <div key={experienceKey} className="border-l-2 border-slate-100 dark:border-slate-800 pl-4 py-1">
+                                                <p className="font-bold text-slate-900 dark:text-white">{exp.title}</p>
+                                                <p className="text-xs text-slate-600 dark:text-slate-400">{exp.company} • {exp.startDate} - {exp.endDate}</p>
+                                                {exp.achievements && exp.achievements.length > 0 && (
+                                                    <ul className="mt-2 space-y-1">
+                                                        {exp.achievements.slice(0, 2).map((achievement) => (
+                                                            <li key={achievement} className="text-xs text-slate-600 dark:text-slate-400 list-disc ml-4">{achievement}</li>
+                                                        ))}
+                                                    </ul>
+                                                )}
+                                            </div>
+                                        );
+                                    })}
                                 </section>
 
                                 {/* Skills */}
                                 <section className="space-y-3">
                                     <h3 className="font-semibold text-indigo-600 text-sm uppercase tracking-wider">Skills</h3>
                                     <div className="flex flex-wrap gap-2">
-                                        {extractedData?.skills?.technical?.map((skill: string, i: number) => (
-                                            <span key={i} className="px-2 py-1 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 rounded text-xs border border-indigo-100 dark:border-indigo-800">
+                                        {extractedData?.skills?.technical?.map((skill) => (
+                                            <span key={`technical-${skill}`} className="px-2 py-1 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 rounded text-xs border border-indigo-100 dark:border-indigo-800">
                                                 {skill}
                                             </span>
                                         ))}
-                                        {extractedData?.skills?.soft?.map((skill: string, i: number) => (
-                                            <span key={i} className="px-2 py-1 bg-purple-50 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 rounded text-xs border border-purple-100 dark:border-purple-800">
+                                        {extractedData?.skills?.soft?.map((skill) => (
+                                            <span key={`soft-${skill}`} className="px-2 py-1 bg-purple-50 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 rounded text-xs border border-purple-100 dark:border-purple-800">
                                                 {skill}
                                             </span>
                                         ))}
@@ -239,22 +204,26 @@ export function ResumeUploadFlow({ onComplete, onCancel }: ResumeUploadFlowProps
                                 </section>
 
                                 {/* Projects */}
-                                {extractedData?.projects?.length > 0 && (
+                                {extractedData?.projects && extractedData.projects.length > 0 && (
                                     <section className="space-y-3">
                                         <h3 className="font-semibold text-indigo-600 text-sm uppercase tracking-wider">Projects</h3>
-                                        {extractedData.projects.map((proj: any, i: number) => (
-                                            <div key={i} className="border-l-2 border-slate-100 dark:border-slate-800 pl-4 py-1">
-                                                <p className="font-bold text-slate-900 dark:text-white">{proj.name}</p>
-                                                <p className="text-xs text-slate-600 dark:text-slate-400">{proj.description}</p>
-                                                <div className="flex flex-wrap gap-1 mt-2">
-                                                    {proj.technologies?.map((tech: string, j: number) => (
-                                                        <span key={j} className="text-[10px] px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded">
-                                                            {tech}
-                                                        </span>
-                                                    ))}
+                                        {extractedData.projects.map((project: ExtractedResumeProject) => {
+                                            const projectKey = [project.name, project.description].filter(Boolean).join('-');
+
+                                            return (
+                                                <div key={projectKey} className="border-l-2 border-slate-100 dark:border-slate-800 pl-4 py-1">
+                                                    <p className="font-bold text-slate-900 dark:text-white">{project.name}</p>
+                                                    <p className="text-xs text-slate-600 dark:text-slate-400">{project.description}</p>
+                                                    <div className="flex flex-wrap gap-1 mt-2">
+                                                        {project.technologies?.map((technology) => (
+                                                            <span key={`${projectKey}-${technology}`} className="text-[10px] px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded">
+                                                                {technology}
+                                                            </span>
+                                                        ))}
+                                                    </div>
                                                 </div>
-                                            </div>
-                                        ))}
+                                            );
+                                        })}
                                     </section>
                                 )}
                             </div>
@@ -265,9 +234,13 @@ export function ResumeUploadFlow({ onComplete, onCancel }: ResumeUploadFlowProps
                                 Next: Choose a template and start editing.
                             </p>
                             <div className="flex gap-3">
-                                <Button variant="outline" onClick={() => setStep('upload')}>Re-upload</Button>
+                                <Button variant="outline" onClick={resetToUploadStep}>Re-upload</Button>
                                 <Button
-                                    onClick={() => onComplete(extractedData)}
+                                    onClick={() => {
+                                        if (extractedData) {
+                                            onComplete(extractedData);
+                                        }
+                                    }}
                                     className="bg-indigo-600 hover:bg-indigo-700 text-white"
                                 >
                                     Continue to Template <ArrowRight className="ml-2 h-4 w-4" />

@@ -272,8 +272,8 @@ export function ModernTechPreview({ template, data = SAMPLE_DATA }: TemplatePrev
               <section className="space-y-4">
                 <h3 className="font-bold uppercase tracking-widest" style={{ color: primaryColor }}>Skills</h3>
                 <div className="flex flex-wrap gap-2 text-xs">
-                  {data.skills.technical.concat(data.skills.soft).map((skill: string, i: number) => (
-                    <span key={i} className="px-3 py-1 bg-slate-100 rounded-full font-medium">{skill}</span>
+                  {data.skills.technical.concat(data.skills.soft).map((skill: string) => (
+                    <span key={skill} className="px-3 py-1 bg-slate-100 rounded-full font-medium">{skill}</span>
                   ))}
                 </div>
               </section>
@@ -369,8 +369,8 @@ export function CreativeDesignerPreview({ template, data = SAMPLE_DATA }: Templa
           <div className="space-y-8">
             <div className="space-y-2">
               <h2 className="text-4xl font-black uppercase leading-tight">
-                {data.personalInfo.fullName.split(' ').map((n: string, i: number) => (
-                  <React.Fragment key={i}>{n}<br /></React.Fragment>
+                {data.personalInfo.fullName.split(' ').map((n: string) => (
+                  <React.Fragment key={n}>{n}<br /></React.Fragment>
                 )) || 'John Doe'}
               </h2>
               <div className="w-12 h-2" style={{ backgroundColor: accentColor }}></div>
@@ -389,8 +389,8 @@ export function CreativeDesignerPreview({ template, data = SAMPLE_DATA }: Templa
               <section className="space-y-4">
                 <h3 className="text-[10px] font-bold uppercase tracking-widest opacity-70">Expertise</h3>
                 <div className="flex flex-wrap gap-2">
-                  {data.skills.technical.concat(data.skills.soft).map((skill: string, i: number) => (
-                    <span key={i} className="px-2 py-1 bg-white/10 rounded text-[10px]">{skill}</span>
+                  {data.skills.technical.concat(data.skills.soft).map((skill: string) => (
+                    <span key={skill} className="px-2 py-1 bg-white/10 rounded text-[10px]">{skill}</span>
                   ))}
                 </div>
               </section>
@@ -491,8 +491,8 @@ export function ExecutiveElegantPreview({ template, data = SAMPLE_DATA }: Templa
               <section className="space-y-4">
                 <h3 className="font-serif font-bold text-xs uppercase tracking-tight" style={{ color: primaryColor }}>Competencies</h3>
                 <ul className="text-xs space-y-2 text-slate-700 font-medium">
-                  {data.skills.technical.concat(data.skills.soft).map((c, i) => (
-                    <li key={i} className="flex items-center gap-2">
+                  {data.skills.technical.concat(data.skills.soft).map((c) => (
+                    <li key={c} className="flex items-center gap-2">
                       <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: accentColor }}></span>
                       {c}
                     </li>

@@ -6,18 +6,36 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Loader2, Radio } from 'lucide-react';
 import type { StreamChunk } from '@/lib/api/endpoints/stream.api';
 
+interface AIStreamProgressLabels {
+  readonly liveTitle: string;
+  readonly updateTitle: string;
+  readonly stopButton: string;
+  readonly streamingMessage: string;
+  readonly idleMessage: string;
+}
+
 interface AIStreamProgressProps {
   isStreaming: boolean;
   latestChunk: StreamChunk | null;
   error: string | null;
   onStop: () => void;
+  labels?: AIStreamProgressLabels;
 }
+
+const DEFAULT_LABELS: AIStreamProgressLabels = {
+  liveTitle: 'Live AI Stream',
+  updateTitle: 'Stream Update',
+  stopButton: 'Stop Stream',
+  streamingMessage: 'Streaming...',
+  idleMessage: 'Idle',
+};
 
 export function AIStreamProgress({
   isStreaming,
   latestChunk,
   error,
   onStop,
+  labels = DEFAULT_LABELS,
 }: AIStreamProgressProps) {
   const progress = Math.max(0, Math.min(100, latestChunk?.progress ?? 0));
 
@@ -32,12 +50,12 @@ export function AIStreamProgress({
           {isStreaming ? (
             <>
               <Loader2 className="h-4 w-4 animate-spin text-indigo-600" />
-              Live AI Stream
+              {labels.liveTitle}
             </>
           ) : (
             <>
               <Radio className="h-4 w-4 text-indigo-600" />
-              Stream Update
+              {labels.updateTitle}
             </>
           )}
         </CardTitle>
@@ -45,12 +63,12 @@ export function AIStreamProgress({
       <CardContent className="space-y-3">
         <Progress value={progress} className="h-2" />
         <p className="text-sm text-slate-700 dark:text-slate-300">
-          {error ?? latestChunk?.message ?? (isStreaming ? 'Streaming...' : 'Idle')}
+          {error ?? latestChunk?.message ?? (isStreaming ? labels.streamingMessage : labels.idleMessage)}
         </p>
 
         {isStreaming && (
           <Button variant="outline" size="sm" onClick={onStop} className="rounded-xl">
-            Stop Stream
+            {labels.stopButton}
           </Button>
         )}
       </CardContent>

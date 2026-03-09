@@ -11,46 +11,22 @@ import {
   AccordionTrigger,
 } from '@/components/ui/accordion';
 import { Checkbox } from '@/components/ui/checkbox';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { interviewApi } from '@/lib/api/interview';
 import { interviewQuestions } from '@/lib/mock-data';
 import { Mic, Volume2, BookOpen, CheckCircle2, Plus, Loader2, History, Wand2, Trash2 } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { FeatureErrorBoundary } from '@/components/errors/FeatureErrorBoundary';
-import { queryKeys } from '@/lib/query-keys';
-import { message } from 'antd';
+import { useInterviewPrep } from '@/hooks/useInterviewPrep';
 
 export default function InterviewPrepPage() {
   const [practicedQuestions, setPracticedQuestions] = useState<string[]>([]);
-  const queryClient = useQueryClient();
-
-  const { data: sessionsData, isLoading: sessionsLoading } = useQuery({
-    queryKey: queryKeys.interview.history(),
-    queryFn: () => interviewApi.getSessions(),
-  });
-
-  const generateMutation = useMutation({
-    mutationFn: () => interviewApi.generateSession({
-      resumeId: 'default', // In a real app, we'd select a resume
-      jobDescription: 'Software Engineer Position',
-      questionCount: 5,
-    }),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.interview.history() });
-      message.success('Interview session generated successfully!');
-    },
-    onError: (error) => {
-      message.error('Failed to generate interview session. Check credits.');
-    }
-  });
-
-  const deleteMutation = useMutation({
-    mutationFn: (id: string) => interviewApi.deleteSession(id),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.interview.history() });
-    }
-  });
+  const {
+    sessions,
+    isSessionsLoading,
+    isGeneratingSession,
+    generateSession,
+    deleteSession,
+  } = useInterviewPrep();
 
   const togglePracticed = (question: string) => {
     setPracticedQuestions((prev) =>
@@ -64,9 +40,7 @@ export default function InterviewPrepPage() {
     keyof typeof interviewQuestions
   >;
 
-  const sessions = sessionsData?.data || [];
-
-  if (sessionsLoading) {
+  if (isSessionsLoading) {
     return (
       <div className="flex h-screen items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-indigo-600" />
@@ -93,11 +67,11 @@ export default function InterviewPrepPage() {
             </p>
           </div>
           <Button
-            onClick={() => generateMutation.mutate()}
-            disabled={generateMutation.isPending}
+            onClick={generateSession}
+            disabled={isGeneratingSession}
             className="bg-gradient-to-r from-indigo-600 to-purple-600"
           >
-            {generateMutation.isPending ? (
+            {isGeneratingSession ? (
               <Loader2 className="h-4 w-4 mr-2 animate-spin" />
             ) : (
               <Wand2 className="h-4 w-4 mr-2" />
@@ -153,9 +127,9 @@ export default function InterviewPrepPage() {
                   </div>
 
                   <Accordion type="single" collapsible className="p-0">
-                    {interviewQuestions[category].map((item: any, idx: number) => (
+                    {interviewQuestions[category].map((item: { question: string; answer: string }, idx: number) => (
                       <AccordionItem
-                        key={idx}
+                        key={`${category as string}-${item.question}`}
                         value={`${category as string}-${idx}`}
                         className="border-b border-slate-200 dark:border-slate-800 last:border-b-0"
                       >
@@ -216,7 +190,7 @@ export default function InterviewPrepPage() {
                           variant="ghost"
                           size="icon"
                           className="h-8 w-8 text-slate-400 hover:text-red-500"
-                          onClick={() => deleteMutation.mutate(session.id)}
+                          onClick={() => deleteSession(session.id)}
                         >
                           <Trash2 className="h-4 w-4" />
                         </Button>
@@ -247,8 +221,8 @@ export default function InterviewPrepPage() {
                   <History className="h-12 w-12 text-slate-300 mx-auto mb-4 opacity-50" />
                   <h3 className="text-lg font-medium text-slate-900 dark:text-white mb-1">No sessions yet</h3>
                   <p className="text-slate-500 mb-6">Generate an AI-powered interview session tailored to your resume.</p>
-                  <Button onClick={() => generateMutation.mutate()} disabled={generateMutation.isPending}>
-                    {generateMutation.isPending ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Wand2 className="h-4 w-4 mr-2" />}
+                  <Button onClick={generateSession} disabled={isGeneratingSession}>
+                    {isGeneratingSession ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Wand2 className="h-4 w-4 mr-2" />}
                     Build AI Interview
                   </Button>
                 </CardContent>

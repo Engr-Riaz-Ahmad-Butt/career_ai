@@ -3,13 +3,9 @@
 import { motion } from 'framer-motion';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { useQuery } from '@tanstack/react-query';
-import { documentApi } from '@/lib/api/endpoints/document.api';
-import { resumeApi } from '@/lib/api/endpoints/resume.api';
-import { FileText, Download, Edit, Copy, Plus, Trash2, Loader2 } from 'lucide-react';
+import { FileText, Download, Edit, Plus, Loader2 } from 'lucide-react';
 import { FeatureErrorBoundary } from '@/components/errors/FeatureErrorBoundary';
-import { queryKeys } from '@/lib/query-keys';
-import { STALE_TIMES, GC_TIMES } from '@/lib/query-config';
+import { useDocumentsLibrary } from '@/hooks/useDocumentsLibrary';
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -32,42 +28,9 @@ const itemVariants = {
 };
 
 export default function DocumentsPage() {
-  const { data: docsData, isLoading: docsLoading } = useQuery({
-    queryKey: queryKeys.documents.all(),
-    queryFn: () => documentApi.list(),
-    staleTime: STALE_TIMES.DOCUMENT_LIST,
-    gcTime: GC_TIMES.DOCUMENT_LIST,
-  });
+  const { items: allDocuments, isLoading } = useDocumentsLibrary();
 
-  const { data: resumesData, isLoading: resumesLoading } = useQuery({
-    queryKey: queryKeys.resumes.all(),
-    queryFn: () => resumeApi.list(),
-    staleTime: STALE_TIMES.RESUME_LIST,
-    gcTime: GC_TIMES.RESUME_LIST,
-  });
-
-  const documents = docsData?.data || [];
-  const resumes = resumesData?.data || [];
-
-  // Combine and format for display
-  const allDocuments = [
-    ...resumes.map((r: any) => ({
-      id: r.id,
-      title: r.title,
-      category: 'Resume',
-      lastModified: new Date(r.updatedAt),
-      link: `/resume-builder?id=${r.id}`
-    })),
-    ...documents.map((d: any) => ({
-      id: d.id,
-      title: d.title,
-      category: d.type.replace('_', ' '),
-      lastModified: new Date(d.updatedAt),
-      link: `/documents/${d.id}`
-    }))
-  ].sort((a, b) => b.lastModified.getTime() - a.lastModified.getTime());
-
-  if (docsLoading || resumesLoading) {
+  if (isLoading) {
     return (
       <div className="flex h-screen items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-indigo-600" />

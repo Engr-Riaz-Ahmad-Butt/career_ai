@@ -9,11 +9,10 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { useAuthStore } from '@/store/authStore';
 import { Zap, Check, X, AlertCircle } from 'lucide-react';
 import { signupSchema } from '@/lib/validation';
 import { z } from 'zod';
-import { authApi } from '@/lib/api/endpoints/auth.api';
+import { useAuth } from '@/hooks/use-auth';
 
 type SignupFormData = z.infer<typeof signupSchema>;
 
@@ -28,8 +27,7 @@ export default function RegisterPage() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   const [serverError, setServerError] = useState('');
-  const setAccessToken = useAuthStore((state) => state.setAccessToken);
-  const setUser = useAuthStore((state) => state.setUser);
+  const { signup } = useAuth();
 
   const {
     register,
@@ -54,17 +52,15 @@ export default function RegisterPage() {
     setIsLoading(true);
 
     try {
-      const result = await authApi.register({
+      await signup.mutateAsync({
         firstName: data.firstName,
         lastName: data.lastName,
         email: data.email,
         password: data.password,
       });
-      setAccessToken(result.accessToken);
-      setUser(result.user);
       router.push('/dashboard');
-    } catch (err: any) {
-      setServerError(err.response?.data?.message || 'Registration failed. Please try again.');
+    } catch (error) {
+      setServerError(error instanceof Error ? error.message : 'Registration failed. Please try again.');
     } finally {
       setIsLoading(false);
     }

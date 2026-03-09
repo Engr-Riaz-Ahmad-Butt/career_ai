@@ -25,8 +25,8 @@ export default function AboutPage() {
             { num: "84/100", label: "Avg ATS score" },
             { num: "4.9/5", label: "User rating" },
             { num: "$1.2B", label: "Market size" },
-          ].map((stat, i) => (
-            <div key={i}>
+          ].map((stat) => (
+            <div key={stat.label}>
               <div className="font-[var(--font-d)] text-[34px] text-[var(--white)] leading-none">
                 {stat.num}
               </div>
@@ -77,9 +77,9 @@ export default function AboutPage() {
               desc: "Built 0-to-100K growth engines at two previous startups. Leads all marketing, partnerships, and community.",
               gradient: "linear-gradient(135deg,#f59e0b,#d97706)",
             },
-          ].map((member, i) => (
+          ].map((member) => (
             <div
-              key={i}
+              key={member.name}
               className="bg-[var(--panel)] border border-[var(--border)] rounded-[14px] p-6 transition-all duration-200 hover:border-[var(--border2)]"
             >
               <div

@@ -9,11 +9,10 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { useAuthStore } from '@/store/authStore';
 import { Zap, AlertCircle } from 'lucide-react';
 import { loginSchema } from '@/lib/validation';
 import { z } from 'zod';
-import { authApi } from '@/lib/api/endpoints/auth.api';
+import { useAuth } from '@/hooks/use-auth';
 
 type LoginFormData = z.infer<typeof loginSchema>;
 
@@ -21,8 +20,7 @@ export default function LoginPage() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   const [serverError, setServerError] = useState('');
-  const setAccessToken = useAuthStore((state) => state.setAccessToken);
-  const setUser = useAuthStore((state) => state.setUser);
+  const { login } = useAuth();
 
   const {
     register,
@@ -41,12 +39,10 @@ export default function LoginPage() {
     setIsLoading(true);
 
     try {
-      const result = await authApi.login({ email: data.email, password: data.password });
-      setAccessToken(result.accessToken);
-      setUser(result.user);
+      await login.mutateAsync({ email: data.email, password: data.password });
       router.push('/dashboard');
-    } catch (err: any) {
-      setServerError(err.response?.data?.message || 'Login failed. Please try again.');
+    } catch (error) {
+      setServerError(error instanceof Error ? error.message : 'Login failed. Please try again.');
     } finally {
       setIsLoading(false);
     }

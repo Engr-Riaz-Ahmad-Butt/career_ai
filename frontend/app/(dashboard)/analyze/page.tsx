@@ -1,320 +1,110 @@
 'use client';
 
-import { motion } from 'framer-motion';
-import { Button } from '@/components/ui/button';
-import { ScoreCircle } from '@/components/common/score-circle';
-import { resumeAnalysis } from '@/lib/mock-data';
-import { useQuery } from '@tanstack/react-query';
-import { resumeApi } from '@/lib/api/endpoints/resume.api';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
-import { Zap, Loader2 } from 'lucide-react';
-import { useEffect, useState } from 'react';
-import { Textarea } from '@/components/ui/textarea';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { FeatureErrorBoundary } from '@/components/errors/FeatureErrorBoundary';
-import { message } from 'antd';
-import { queryKeys } from '@/lib/query-keys';
-import { STALE_TIMES, GC_TIMES } from '@/lib/query-config';
-import { useResumeAtsScoreJob, useJobStatus } from '@/hooks/use-job-poller';
-import { useAIStream } from '@/hooks/use-ai-stream';
 import { AIStreamProgress } from '@/components/common/ai-stream-progress';
-
-const keywordData = [
-  { name: 'JavaScript', value: 45 },
-  { name: 'React', value: 38 },
-  { name: 'Python', value: 28 },
-  { name: 'AWS', value: 22 },
-];
-
-const COLORS = ['#4f46e5', '#a855f7', '#ec4899', '#f59e0b'];
+import { AnalyzeFormCard } from '@/components/analyze/AnalyzeFormCard';
+import { AnalyzePageHeader } from '@/components/analyze/AnalyzePageHeader';
+import { AnalyzeResultsSection } from '@/components/analyze/AnalyzeResultsSection';
+import { AnalyzeStateCard } from '@/components/analyze/AnalyzeStateCard';
+import { ATS_CHART_COLORS, ANALYZE_PAGE_COPY } from '@/constants/analyze.constants';
+import { useAtsAnalysis } from '@/hooks/useAtsAnalysis';
 
 export default function AnalyzePage() {
-  const [jobDescription, setJobDescription] = useState('');
-  const [selectedResumeId, setSelectedResumeId] = useState<string>('');
-  const [analysisResult, setAnalysisResult] = useState<any>(null);
-  const [activeJobId, setActiveJobId] = useState<string | null>(null);
-
-  const { data: resumesData, isLoading: resumesLoading } = useQuery({
-    queryKey: queryKeys.resumes.all(),
-    queryFn: () => resumeApi.list(),
-    staleTime: STALE_TIMES.RESUME_LIST,
-    gcTime: GC_TIMES.RESUME_LIST,
-  });
-
-  const analyzeMutation = useResumeAtsScoreJob();
-  const jobStatusQuery = useJobStatus(activeJobId);
-
   const {
-    isStreaming,
+    analysisState,
+    resumes,
+    selectedResumeId,
+    jobDescription,
+    isBackgroundAnalyzing,
+    isStreamAnalyzing,
+    isResumesLoading,
+    resumesError,
+    hasNoResumes,
+    streamError,
     latestChunk,
-    error: streamError,
-    startAtsScoreStream,
-    closeStream,
-  } = useAIStream();
+    canStartAnalysis,
+    setSelectedResumeId,
+    setJobDescription,
+    handleBackgroundAnalysis,
+    handleLiveAnalysis,
+    handleStopStream,
+    retryLoadResumes,
+  } = useAtsAnalysis();
 
-  useEffect(() => {
-    if (!jobStatusQuery.data) {
-      return;
-    }
-
-    if (jobStatusQuery.data.status === 'complete') {
-      setAnalysisResult(jobStatusQuery.data.result);
-      message.success('ATS analysis complete');
-      setActiveJobId(null);
-    }
-
-    if (jobStatusQuery.data.status === 'failed') {
-      message.error(jobStatusQuery.data.error ?? 'ATS analysis failed');
-      setActiveJobId(null);
-    }
-  }, [jobStatusQuery.data]);
-
-  useEffect(() => {
-    if (latestChunk?.type === 'data' && latestChunk.data) {
-      setAnalysisResult(latestChunk.data);
-    }
-  }, [latestChunk]);
-
-  const runBackgroundAnalysis = () => {
-    analyzeMutation.mutate(
-      {
-        resumeId: selectedResumeId,
-        jobDescription,
-        returnSuggestions: true,
-      },
-      {
-        onSuccess: (job) => {
-          setActiveJobId(job.jobId);
-          message.info('ATS analysis queued. Polling for result...');
-        },
-        onError: () => {
-          message.error('Failed to queue ATS analysis');
-        },
-      }
-    );
-  };
-
-  const runLiveAnalysis = () => {
-    startAtsScoreStream(selectedResumeId, jobDescription);
-  };
-
-  const resumes = resumesData?.data || [];
-  const isAnalyzing =
-    analyzeMutation.isPending ||
-    jobStatusQuery.data?.status === 'processing';
-  const metrics = analysisResult?.score ? [
-    { label: 'Overall Score', score: analysisResult.score },
-    { label: 'Keyword Match', score: analysisResult.keywordMatch || 0 },
-    { label: 'Formatting', score: analysisResult.formatting || 0 },
-    { label: 'Readability', score: analysisResult.readability || 0 },
-  ] : [
-    { label: 'Communication', score: resumeAnalysis.communicationScore },
-    { label: 'Clarity', score: resumeAnalysis.clarityScore },
-    { label: 'Keyword Density', score: resumeAnalysis.keywordDensityScore },
-    { label: 'Readability', score: resumeAnalysis.readabilityScore },
-  ];
-
-  const suggestions = analysisResult?.suggestions || resumeAnalysis.suggestions;
-  const keywords = analysisResult?.keywords || keywordData;
-
-  if (resumesLoading) {
+  if (isResumesLoading) {
     return (
-      <div className="flex h-screen items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-indigo-600" />
-      </div>
+      <AnalyzeStateCard
+        variant="loading"
+        title={ANALYZE_PAGE_COPY.states.loadingResumes}
+      />
+    );
+  }
+
+  if (resumesError) {
+    return (
+      <AnalyzeStateCard
+        variant="error"
+        title={ANALYZE_PAGE_COPY.states.resumeErrorTitle}
+        description={resumesError}
+        actionLabel={ANALYZE_PAGE_COPY.states.retryButton}
+        onAction={retryLoadResumes}
+      />
+    );
+  }
+
+  if (hasNoResumes) {
+    return (
+      <AnalyzeStateCard
+        variant="empty"
+        title={ANALYZE_PAGE_COPY.states.noResumesTitle}
+        description={ANALYZE_PAGE_COPY.states.noResumesDescription}
+      />
     );
   }
 
   return (
-    <FeatureErrorBoundary featureName="ATS Analysis">
-      <div className="p-6 sm:p-8 bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-950 dark:to-slate-900 min-h-screen">
-        <div className="max-w-7xl mx-auto">
-        {/* Header */}
-        <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="flex items-center justify-between mb-8"
-        >
-          <div>
-            <h1 className="text-3xl font-bold text-slate-900 dark:text-white mb-2">
-              ATS Analysis
-            </h1>
-            <p className="text-slate-600 dark:text-slate-400">
-              Optimize your resume for specific job descriptions
-            </p>
-          </div>
-        </motion.div>
+    <FeatureErrorBoundary featureName={ANALYZE_PAGE_COPY.header.title}>
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 p-6 dark:from-slate-950 dark:to-slate-900 sm:p-8">
+        <div className="mx-auto max-w-7xl">
+          <AnalyzePageHeader
+            title={ANALYZE_PAGE_COPY.header.title}
+            description={ANALYZE_PAGE_COPY.header.description}
+          />
 
-        {/* Action Section */}
-        <Card className="mb-8">
-          <CardHeader>
-            <CardTitle className="text-lg">New Analysis</CardTitle>
-            <CardDescription>Select a resume and provide a job description for AI analysis</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Select Resume</label>
-                <select
-                  value={selectedResumeId}
-                  onChange={(e) => setSelectedResumeId(e.target.value)}
-                  className="w-full h-10 px-3 rounded-md border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-sm focus:ring-2 focus:ring-indigo-500 outline-none"
-                >
-                  <option value="">Select a resume...</option>
-                  {resumes.map((r: any) => (
-                    <option key={r.id} value={r.id}>{r.title}</option>
-                  ))}
-                </select>
-              </div>
-            </div>
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Job Description</label>
-              <Textarea
-                placeholder="Paste the job description here (at least 50 characters)..."
-                value={jobDescription}
-                onChange={(e) => setJobDescription(e.target.value)}
-                className="min-h-[150px]"
-              />
-            </div>
-            <div className="flex flex-wrap gap-3">
-              <Button
-                className="bg-indigo-600 hover:bg-indigo-700 h-11 px-8"
-                disabled={!selectedResumeId || jobDescription.length < 50 || isAnalyzing}
-                onClick={runBackgroundAnalysis}
-              >
-                {isAnalyzing ? (
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                ) : (
-                  <Zap className="mr-2 h-4 w-4" />
-                )}
-                Analyze In Background
-              </Button>
+          <AnalyzeFormCard
+            labels={ANALYZE_PAGE_COPY.form}
+            resumes={resumes}
+            selectedResumeId={selectedResumeId}
+            jobDescription={jobDescription}
+            canStartAnalysis={canStartAnalysis}
+            isBackgroundAnalyzing={isBackgroundAnalyzing}
+            isStreamAnalyzing={isStreamAnalyzing}
+            onSelectResume={setSelectedResumeId}
+            onJobDescriptionChange={setJobDescription}
+            onRunBackground={handleBackgroundAnalysis}
+            onRunStream={handleLiveAnalysis}
+          />
 
-              <Button
-                variant="outline"
-                className="h-11 px-8"
-                disabled={!selectedResumeId || jobDescription.length < 50 || isStreaming}
-                onClick={runLiveAnalysis}
-              >
-                {isStreaming ? (
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                ) : (
-                  <Zap className="mr-2 h-4 w-4" />
-                )}
-                Live Stream Analysis
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
+          <AIStreamProgress
+            isStreaming={isStreamAnalyzing}
+            latestChunk={latestChunk}
+            error={streamError}
+            onStop={handleStopStream}
+          />
 
-        <AIStreamProgress
-          isStreaming={isStreaming}
-          latestChunk={latestChunk}
-          error={streamError}
-          onStop={closeStream}
-        />
-
-        {/* Results Sections (Shown always with mock/real data) */}
-        <div className={isAnalyzing ? 'opacity-50 pointer-events-none' : ''}>
-          {/* Scores Grid */}
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-8"
-          >
-            {metrics.map((metric) => (
-              <Card key={metric.label} className="flex flex-col items-center justify-center p-6 h-48">
-                <ScoreCircle
-                  score={metric.score}
-                  label={metric.label}
-                  size="sm"
-                  showLabel={true}
-                />
-              </Card>
-            ))}
-          </motion.div>
-
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-            {/* Keyword Frequency Chart */}
-            <Card className="p-6">
-              <h3 className="font-semibold text-slate-900 dark:text-white mb-6">
-                Top Keywords Match
-              </h3>
-              <ResponsiveContainer width="100%" height={300}>
-                <BarChart data={keywords}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
-                  <XAxis dataKey="name" stroke="#94a3b8" />
-                  <YAxis stroke="#94a3b8" />
-                  <Tooltip
-                    contentStyle={{
-                      backgroundColor: '#1e293b',
-                      border: '1px solid #475569',
-                      borderRadius: '8px',
-                    }}
-                    labelStyle={{ color: '#e2e8f0' }}
-                  />
-                  <Bar dataKey="value" fill="#4f46e5" radius={[8, 8, 0, 0]} />
-                </BarChart>
-              </ResponsiveContainer>
-            </Card>
-
-            {/* Keyword Distribution Pie Chart */}
-            <Card className="p-6">
-              <h3 className="font-semibold text-slate-900 dark:text-white mb-6">
-                Keyword Distribution
-              </h3>
-              <ResponsiveContainer width="100%" height={300}>
-                <PieChart>
-                  <Pie
-                    data={keywords}
-                    cx="50%"
-                    cy="50%"
-                    labelLine={false}
-                    label={({ name, percent }: any) =>
-                      `${name} ${(percent * 100).toFixed(0)}%`
-                    }
-                    outerRadius={80}
-                    fill="#8884d8"
-                    dataKey="value"
-                  >
-                    {keywords.map((entry: any, index: number) => (
-                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                    ))}
-                  </Pie>
-                  <Tooltip
-                    contentStyle={{
-                      backgroundColor: '#1e293b',
-                      border: '1px solid #475569',
-                      borderRadius: '8px',
-                    }}
-                    labelStyle={{ color: '#e2e8f0' }}
-                  />
-                </PieChart>
-              </ResponsiveContainer>
-            </Card>
-          </div>
-
-          {/* Suggestions */}
-          <Card className="p-6">
-            <h3 className="font-semibold text-slate-900 dark:text-white mb-6">
-              AI Recommendations
-            </h3>
-            <ul className="space-y-4">
-              {suggestions.map((suggestion: string, index: number) => (
-                <li key={index} className="flex items-start gap-3">
-                  <div className="mt-1 flex-shrink-0 w-5 h-5 rounded-full bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center">
-                    <span className="text-xs font-bold text-indigo-600 dark:text-indigo-400">
-                      {index + 1}
-                    </span>
-                  </div>
-                  <div>
-                    <p className="text-slate-700 dark:text-slate-300">{suggestion}</p>
-                  </div>
-                </li>
-              ))}
-            </ul>
-          </Card>
-        </div>
+          <AnalyzeResultsSection
+            labels={{
+              loadingAnalysis: ANALYZE_PAGE_COPY.states.loadingAnalysis,
+              analysisErrorTitle: ANALYZE_PAGE_COPY.states.analysisErrorTitle,
+              noAnalysisTitle: ANALYZE_PAGE_COPY.states.noAnalysisTitle,
+              noAnalysisDescription: ANALYZE_PAGE_COPY.states.noAnalysisDescription,
+              recommendationsTitle: ANALYZE_PAGE_COPY.results.recommendationsTitle,
+              keywordMatchTitle: ANALYZE_PAGE_COPY.results.keywordMatchTitle,
+              keywordDistributionTitle: ANALYZE_PAGE_COPY.results.keywordDistributionTitle,
+            }}
+            state={analysisState}
+            chartColors={ATS_CHART_COLORS}
+          />
         </div>
       </div>
     </FeatureErrorBoundary>

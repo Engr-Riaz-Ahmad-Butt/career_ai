@@ -118,9 +118,9 @@ export function PromptToCVMode({ onComplete, onCancel }: PromptToCVModeProps) {
                             <div className="space-y-2">
                                 <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Example prompts:</p>
                                 <div className="space-y-2">
-                                    {EXAMPLE_PROMPTS.map((ex, i) => (
+                                    {EXAMPLE_PROMPTS.map((ex) => (
                                         <button
-                                            key={i}
+                                            key={ex.slice(0, 50)}
                                             onClick={() => setPrompt(ex)}
                                             className="w-full text-left p-3 rounded-xl bg-slate-50 dark:bg-slate-800 hover:bg-orange-50 dark:hover:bg-orange-950/30 hover:border-orange-200 border border-slate-100 dark:border-slate-700 transition-all"
                                         >
@@ -170,8 +170,8 @@ export function PromptToCVMode({ onComplete, onCancel }: PromptToCVModeProps) {
                         {loading && (
                             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-center space-y-2 py-2">
                                 <div className="flex justify-center gap-1">
-                                    {['Analyzing your prompt…', 'Extracting experience…', 'Structuring CV data…', 'Almost done…'].map((msg, i) => (
-                                        <motion.span key={i} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: i * 0.6 }} className="sr-only" />
+                                    {['Analyzing your prompt…', 'Extracting experience…', 'Structuring CV data…', 'Almost done…'].map((msg) => (
+                                        <motion.span key={msg} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.3 }} className="sr-only" />
                                     ))}
                                 </div>
                                 <p className="text-sm text-slate-500 animate-pulse">AI is building your CV. This takes about 5–10 seconds…</p>

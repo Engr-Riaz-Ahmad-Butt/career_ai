@@ -9,10 +9,10 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { useAuthStore } from '@/store/authStore';
+import { useAuthStore, type User as AuthUser } from '@/store/authStore';
 import { useRouter } from 'next/navigation';
-import { userApi } from '@/lib/api/endpoints/user.api';
-import { authApi } from '@/lib/api/endpoints/auth.api';
+import { useAuth } from '@/hooks/use-auth';
+import { usePasswordChangeMutation, useProfileUpdateMutation } from '@/hooks/useAccountSettings';
 import { updateProfileSchema, changePasswordSchema } from '@/lib/validation';
 import { z } from 'zod';
 import {
@@ -24,15 +24,16 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
-import { User, Lock, Bell, Zap, CheckCircle2 } from 'lucide-react';
+import { User as UserIcon, Lock, Bell, Zap, CheckCircle2 } from 'lucide-react';
 import { message } from 'antd';
 import { FeatureErrorBoundary } from '@/components/errors/FeatureErrorBoundary';
 
 type ProfileData = z.infer<typeof updateProfileSchema>;
 type PasswordData = z.infer<typeof changePasswordSchema>;
 
-function ProfileTab({ user, onUpdate }: { user: any, onUpdate: (data: any) => void }) {
+function ProfileTab({ user, onUpdate }: { user: AuthUser | null; onUpdate: (data: AuthUser) => void }) {
   const [isSaving, setIsSaving] = useState(false);
+  const updateProfileMutation = useProfileUpdateMutation();
   const {
     register,
     handleSubmit,
@@ -49,20 +50,11 @@ function ProfileTab({ user, onUpdate }: { user: any, onUpdate: (data: any) => vo
   const onSubmit = async (values: ProfileData) => {
     setIsSaving(true);
     try {
-      const [firstName, ...rest] = values.fullName.split(' ');
-      const lastName = rest.join(' ') || '.';
-
-      const profile = await userApi.updateProfile({
-        firstName,
-        lastName,
-        phone: values.phone,
-        // other fields like bio if needed by backend
-      });
-
-      onUpdate(profile);
+      const profile = await updateProfileMutation.mutateAsync(values);
+      onUpdate(profile as AuthUser);
       message.success('Profile updated successfully');
-    } catch (error: any) {
-      message.error(error.message || 'Failed to update profile');
+    } catch (error) {
+      message.error(error instanceof Error ? error.message : 'Failed to update profile');
     } finally {
       setIsSaving(false);
     }
@@ -130,6 +122,7 @@ function ProfileTab({ user, onUpdate }: { user: any, onUpdate: (data: any) => vo
 
 function SecurityTab() {
   const [isLoading, setIsLoading] = useState(false);
+  const changePasswordMutation = usePasswordChangeMutation();
   const {
     register,
     handleSubmit,
@@ -142,14 +135,14 @@ function SecurityTab() {
   const onSubmit = async (values: PasswordData) => {
     setIsLoading(true);
     try {
-      await userApi.changePassword({
+      await changePasswordMutation.mutateAsync({
         currentPassword: values.currentPassword,
         newPassword: values.newPassword,
       });
       message.success('Password changed successfully');
       reset();
-    } catch (error: any) {
-      message.error(error.message || 'Failed to change password');
+    } catch (error) {
+      message.error(error instanceof Error ? error.message : 'Failed to change password');
     } finally {
       setIsLoading(false);
     }
@@ -220,14 +213,13 @@ function SecurityTab() {
 export default function SettingsPage() {
   const user = useAuthStore((state) => state.user);
   const setUser = useAuthStore((state) => state.setUser);
-  const clearAuth = useAuthStore((state) => state.clearAuth);
   const router = useRouter();
+  const { logout } = useAuth();
 
   const handleLogout = async () => {
     try {
-      await authApi.logout();
+      await logout.mutateAsync();
     } finally {
-      clearAuth();
       router.push('/auth/login');
     }
   };
@@ -260,7 +252,7 @@ export default function SettingsPage() {
           <Tabs defaultValue="profile" className="w-full">
             <TabsList className="grid w-full grid-cols-4 rounded-none border-b border-slate-200 dark:border-slate-800 bg-transparent p-0 h-auto">
               <TabsTrigger value="profile" className="rounded-none border-b-2 border-transparent data-[state=active]:border-indigo-600">
-                <User className="h-4 w-4 mr-2" />
+                <UserIcon className="h-4 w-4 mr-2" />
                 Profile
               </TabsTrigger>
               <TabsTrigger value="security" className="rounded-none border-b-2 border-transparent data-[state=active]:border-indigo-600">
