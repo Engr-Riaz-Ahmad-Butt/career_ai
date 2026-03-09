@@ -35,36 +35,86 @@ function generateReferralCode(): string {
     return crypto.randomBytes(4).toString('hex').toUpperCase();
 }
 
+// ── Request Interfaces ────────────────────────────────────────────────────
+
+interface RegisterData {
+    readonly firstName: string;
+    readonly lastName: string;
+    readonly email: string;
+    readonly password: string;
+    readonly referralCode?: string;
+}
+
+interface LoginData {
+    readonly email: string;
+    readonly password: string;
+}
+
+// ── Helper Functions ──────────────────────────────────────────────────────
+
+/** Check if email is already registered */
+async function checkEmailExists(email: string): Promise<void> {
+    const existing = await prisma.user.findUnique({ where: { email } });
+    if (existing) throw new ApiError(409, 'Email already registered');
+}
+
+/** Resolve referrer ID from referral code */
+async function resolveReferrer(referralCode?: string): Promise<string | undefined> {
+    if (!referralCode) return undefined;
+    const referrer = await prisma.user.findUnique({ where: { referralCode } });
+    return referrer?.id;
+}
+
+/** Create credit transactions for signup and referral */
+async function recordSignupTransaction(userId: string, referredById?: string): Promise<void> {
+    // Signup bonus for new user
+    await prisma.creditTransaction.create({
+        data: {
+            userId,
+            amount: 10,
+            type: 'SIGNUP_BONUS',
+            description: 'Welcome bonus credits',
+            balanceAfter: 10,
+        },
+    });
+
+    // Referral bonus for referrer
+    if (!referredById) return;
+    const referrer = await prisma.user.update({
+        where: { id: referredById },
+        data: { credits: { increment: 5 }, lifetimeCreditsEarned: { increment: 5 } },
+        select: { credits: true }
+    });
+    await prisma.creditTransaction.create({
+        data: {
+            userId: referredById,
+            amount: 5,
+            type: 'REFERRAL',
+            description: `Referral bonus — new sign-up`,
+            balanceAfter: referrer.credits,
+        },
+    });
+}
+
+/** Validate user is active and has local auth */
+async function validateUserActive(user: any): Promise<void> {
+    if (!user || user.deletedAt) throw new ApiError(401, 'Invalid email or password');
+    if (!user.password) throw new ApiError(401, 'Please login with Google');
+    if (!user.isActive) throw new ApiError(403, 'Account suspended');
+}
+
 // ─────────────────────────────────────────────────────────────────────────
 
 export class AuthService {
 
     // ── Register ─────────────────────────────────────────────────────────
 
-    async register(data: {
-        firstName: string;
-        lastName: string;
-        email: string;
-        password: string;
-        referralCode?: string;
-    }) {
-        const existing = await prisma.user.findUnique({ where: { email: data.email } });
-        if (existing) throw new ApiError(409, 'Email already registered');
-
+    async register(data: RegisterData) {
+        await checkEmailExists(data.email);
+        const referredById = await resolveReferrer(data.referralCode);
         const hashedPassword = await hashPassword(data.password);
-
-        // Resolve referrer
-        let referredById: string | undefined;
-        if (data.referralCode) {
-            const referrer = await prisma.user.findUnique({ where: { referralCode: data.referralCode } });
-            if (referrer) referredById = referrer.id;
-        }
-
-        // Generate email verification token
         const emailVerificationToken = crypto.randomBytes(32).toString('hex');
-        const emailVerificationExpires = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24h
-
-        const referralCode = generateReferralCode();
+        const emailVerificationExpires = new Date(Date.now() + 24 * 60 * 60 * 1000);
 
         const user = await prisma.user.create({
             data: {
@@ -75,7 +125,7 @@ export class AuthService {
                 provider: 'email',
                 plan: 'FREE',
                 credits: 10,
-                referralCode,
+                referralCode: generateReferralCode(),
                 referredById,
                 emailVerificationToken,
                 emailVerificationExpires,
@@ -83,99 +133,45 @@ export class AuthService {
             select: USER_SELECT,
         });
 
-        // Give referrer bonus credits
-        if (referredById) {
-            const updatedReferrer = await prisma.user.update({
-                where: { id: referredById },
-                data: { credits: { increment: 5 }, lifetimeCreditsEarned: { increment: 5 } },
-                select: { credits: true }
-            });
-
-            await prisma.creditTransaction.create({
-                data: {
-                    userId: referredById,
-                    amount: 5,
-                    type: 'REFERRAL',
-                    description: `Referral bonus — ${user.firstName!} signed up`,
-                    balanceAfter: updatedReferrer.credits,
-                },
-            });
-        }
-
-        // Record signup bonus transaction
-        await prisma.creditTransaction.create({
-            data: {
-                userId: user.id,
-                amount: 10,
-                type: 'SIGNUP_BONUS',
-                description: 'Welcome bonus credits',
-                balanceAfter: 10,
-            },
-        });
-
-        // Send verification email
+        await recordSignupTransaction(user.id, referredById);
         await emailService.sendVerificationEmail(user.email!, emailVerificationToken);
-
         const tokens = await this.generateTokens(user);
         return { user, ...tokens };
     }
 
     // ── Login ─────────────────────────────────────────────────────────────
 
-    async login(data: { email: string; password: string }) {
+    async login(data: LoginData) {
         const user = await prisma.user.findUnique({ where: { email: data.email } });
-
-        if (!user || user.deletedAt) throw new ApiError(401, 'Invalid email or password');
-        if (!user.password) throw new ApiError(401, 'Please login with Google');
-        if (!user.isActive) throw new ApiError(403, 'Account suspended');
-
-        const isValid = await comparePassword(data.password, user.password);
+        await validateUserActive(user);
+        const isValid = await comparePassword(data.password, user!.password!);
         if (!isValid) throw new ApiError(401, 'Invalid email or password');
 
-        // Update last login
-        await prisma.user.update({
-            where: { id: user.id },
-            data: { lastLoginAt: new Date() },
-        });
-
-        const profile = await prisma.user.findUnique({ where: { id: user.id }, select: USER_SELECT });
-        const tokens = await this.generateTokens(user);
+        await prisma.user.update({ where: { id: user!.id }, data: { lastLoginAt: new Date() } });
+        const profile = await prisma.user.findUnique({ where: { id: user!.id }, select: USER_SELECT });
+        const tokens = await this.generateTokens(user!);
         return { user: profile, ...tokens };
     }
 
     // ── Google OAuth ──────────────────────────────────────────────────────
 
     async googleAuth(googleToken: string) {
-        const ticket = await googleClient.verifyIdToken({
-            idToken: googleToken,
-            audience: env.GOOGLE_CLIENT_ID,
-        });
-
+        const ticket = await googleClient.verifyIdToken({ idToken: googleToken, audience: env.GOOGLE_CLIENT_ID });
         const payload = ticket.getPayload();
         if (!payload?.email) throw new ApiError(400, 'Invalid Google token');
 
-        const { email, given_name, family_name, picture, sub: googleId } = payload;
-
         let user = await prisma.user.findFirst({
-            where: { OR: [{ googleId }, { email }] },
+            where: { OR: [{ googleId: payload.sub }, { email: payload.email }] },
         });
 
-        if (user) {
-            if (!user.googleId) {
-                user = await prisma.user.update({
-                    where: { id: user.id },
-                    data: { googleId, provider: 'google', emailVerified: true, avatar: picture },
-                });
-            }
-            await prisma.user.update({ where: { id: user.id }, data: { lastLoginAt: new Date() } });
-        } else {
+        if (!user) {
             user = await prisma.user.create({
                 data: {
-                    email,
-                    googleId,
-                    firstName: given_name,
-                    lastName: family_name,
-                    avatar: picture,
+                    email: payload.email,
+                    googleId: payload.sub,
+                    firstName: payload.given_name,
+                    lastName: payload.family_name,
+                    avatar: payload.picture,
                     provider: 'google',
                     emailVerified: true,
                     plan: 'FREE',
@@ -183,17 +179,15 @@ export class AuthService {
                     referralCode: generateReferralCode(),
                 },
             });
-            await prisma.creditTransaction.create({
-                data: {
-                    userId: user.id,
-                    amount: 10,
-                    type: 'SIGNUP_BONUS',
-                    description: 'Welcome bonus',
-                    balanceAfter: 10
-                },
+            await recordSignupTransaction(user.id);
+        } else if (!user.googleId) {
+            user = await prisma.user.update({
+                where: { id: user.id },
+                data: { googleId: payload.sub, provider: 'google', emailVerified: true, avatar: payload.picture },
             });
         }
 
+        await prisma.user.update({ where: { id: user.id }, data: { lastLoginAt: new Date() } });
         const profile = await prisma.user.findUnique({ where: { id: user.id }, select: USER_SELECT });
         const tokens = await this.generateTokens(user);
         return { user: profile, ...tokens };
@@ -201,11 +195,9 @@ export class AuthService {
 
     // ── Logout ────────────────────────────────────────────────────────────
 
-    async logout(refreshToken: string) {
+    async logout(refreshToken: string): Promise<void> {
         const token = await prisma.refreshToken.findUnique({ where: { token: refreshToken } });
-        if (token) {
-            await prisma.refreshToken.update({ where: { token: refreshToken }, data: { revoked: true } });
-        }
+        if (token) await prisma.refreshToken.update({ where: { token: refreshToken }, data: { revoked: true } });
     }
 
     // ── Refresh Token ─────────────────────────────────────────────────────
@@ -226,118 +218,71 @@ export class AuthService {
         const user = await prisma.user.findUnique({ where: { id: decoded.userId } });
         if (!user || !user.isActive) throw new ApiError(401, 'User not found');
 
-        // Rotate: revoke old token, issue new pair
         await prisma.refreshToken.update({ where: { token: refreshToken }, data: { revoked: true } });
-
         const tokens = await this.generateTokens(user);
-
-        // Also return user profile so refresh endpoint can hydrate client state
         const profile = await prisma.user.findUnique({ where: { id: user.id }, select: USER_SELECT });
         return { ...tokens, user: profile };
     }
 
     // ── Forgot Password ───────────────────────────────────────────────────
 
-    async forgotPassword(email: string) {
+    async forgotPassword(email: string): Promise<void> {
         const user = await prisma.user.findUnique({ where: { email } });
-        // Don't reveal if email exists
-        if (!user || user.deletedAt) return;
-
+        if (!user || user.deletedAt) return; // Silent
         const resetToken = crypto.randomBytes(32).toString('hex');
-        const resetExpires = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
-
-        await prisma.user.update({
-            where: { id: user.id },
-            data: { passwordResetToken: resetToken, passwordResetExpires: resetExpires },
-        });
-
+        const resetExpires = new Date(Date.now() + 10 * 60 * 1000);
+        await prisma.user.update({ where: { id: user.id }, data: { passwordResetToken: resetToken, passwordResetExpires: resetExpires } });
         await emailService.sendPasswordResetEmail(user.email!, resetToken);
     }
 
     // ── Reset Password ────────────────────────────────────────────────────
 
-    async resetPassword(token: string, newPassword: string) {
+    async resetPassword(token: string, newPassword: string): Promise<void> {
         const user = await prisma.user.findFirst({
-            where: {
-                passwordResetToken: token,
-                passwordResetExpires: { gt: new Date() },
-            },
+            where: { passwordResetToken: token, passwordResetExpires: { gt: new Date() } },
         });
-
         if (!user) throw new ApiError(400, 'Invalid or expired reset token');
-
         const hashedPassword = await hashPassword(newPassword);
         await prisma.user.update({
             where: { id: user.id },
-            data: {
-                password: hashedPassword,
-                passwordResetToken: null,
-                passwordResetExpires: null,
-            },
+            data: { password: hashedPassword, passwordResetToken: null, passwordResetExpires: null },
         });
-
-        // Revoke all refresh tokens
         await prisma.refreshToken.updateMany({ where: { userId: user.id }, data: { revoked: true } });
     }
 
     // ── Email Verification ────────────────────────────────────────────────
 
-    async verifyEmail(token: string) {
+    async verifyEmail(token: string): Promise<{ message: string }> {
         const user = await prisma.user.findFirst({
-            where: {
-                emailVerificationToken: token,
-                emailVerificationExpires: { gt: new Date() },
-            },
+            where: { emailVerificationToken: token, emailVerificationExpires: { gt: new Date() } },
         });
-
         if (!user) throw new ApiError(400, 'Invalid or expired verification token');
-
         await prisma.user.update({
             where: { id: user.id },
-            data: {
-                emailVerified: true,
-                emailVerificationToken: null,
-                emailVerificationExpires: null,
-            },
+            data: { emailVerified: true, emailVerificationToken: null, emailVerificationExpires: null },
         });
-
         return { message: 'Email verified successfully' };
     }
 
     // ── Resend Verification ───────────────────────────────────────────────
 
-    async resendVerification(email: string) {
+    async resendVerification(email: string): Promise<void> {
         const user = await prisma.user.findUnique({ where: { email } });
         if (!user || user.deletedAt) return; // Silent
-
         if (user.emailVerified) throw new ApiError(400, 'Email already verified');
-
         const token = crypto.randomBytes(32).toString('hex');
         const expires = new Date(Date.now() + 24 * 60 * 60 * 1000);
-
-        await prisma.user.update({
-            where: { id: user.id },
-            data: { emailVerificationToken: token, emailVerificationExpires: expires },
-        });
-
+        await prisma.user.update({ where: { id: user.id }, data: { emailVerificationToken: token, emailVerificationExpires: expires } });
         await emailService.sendVerificationEmail(user.email!, token);
     }
 
     // ── Internal Helpers ──────────────────────────────────────────────────
 
-    async generateTokens(user: { id: string; email: string; plan: string }) {
+    private async generateTokens(user: { id: string; email: string; plan: string }) {
         const payload = { userId: user.id, email: user.email, plan: user.plan };
         const accessToken = generateAccessToken(payload);
         const refreshToken = generateRefreshToken(payload);
-
-        await prisma.refreshToken.create({
-            data: {
-                userId: user.id,
-                token: refreshToken,
-                expiresAt: getRefreshTokenExpiry(),
-            },
-        });
-
+        await prisma.refreshToken.create({ data: { userId: user.id, token: refreshToken, expiresAt: getRefreshTokenExpiry() } });
         return { accessToken, refreshToken };
     }
 }
