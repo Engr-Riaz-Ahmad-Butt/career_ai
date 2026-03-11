@@ -96,7 +96,7 @@ export const AccordionTrigger = ({
 }
 
 // Internal context to pass value down from Item to Trigger/Content
-const AccordionItemContext = React.createContext<{ value: string } | undefined>(undefined)
+
 
 const AccordionItemProvider = ({ value, children }: { value: string, children: React.ReactNode }) => (
     <AccordionItemContext.Provider value={{ value }}>

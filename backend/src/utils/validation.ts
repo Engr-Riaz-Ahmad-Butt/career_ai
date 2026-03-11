@@ -81,6 +81,7 @@ export const createResumeSchema = z.object({
     category: z.string(),
     items: z.array(z.string()),
   })).optional(),
+  styling: z.record(z.any()).optional(),
 });
 
 export const updateResumeSchema = createResumeSchema.partial();

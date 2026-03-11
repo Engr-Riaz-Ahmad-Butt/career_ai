@@ -1,18 +1,12 @@
-/** @type {import('ts-jest').JestConfigWithTsJest} */
 module.exports = {
-    transform: {
-        '^.+\\.tsx?$': ['ts-jest', {
-            isolatedModules: true,
-        }],
-    },
-    moduleNameMapper: {
-        '^@/(.*)$': '<rootDir>/src/$1',
-    },
-    testEnvironment: 'node',
-    testMatch: ['**/tests/**/*.test.ts'],
-    verbose: true,
-    forceExit: true,
-    clearMocks: true,
-    resetMocks: true,
-    restoreMocks: true,
+  preset: 'ts-jest',
+  testEnvironment: 'node',
+  moduleNameMapper: {
+    '^@/(.*)$': '<rootDir>/src/$1',
+  },
+  setupFilesAfterEnv: ['<rootDir>/src/tests/setup.ts'],
+  testMatch: ['<rootDir>/src/tests/**/*.test.ts'],
+  transform: {
+    '^.+\\.tsx?$': ['ts-jest', {}],
+  },
 };

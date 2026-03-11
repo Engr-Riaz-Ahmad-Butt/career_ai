@@ -355,7 +355,7 @@ export function ResumeBuilder({
     if (isLoadingResume) {
         return (
             <div className="min-h-screen flex items-center justify-center">
-                <LoadingSpinner size="lg" message="Loading resume..." />
+                <LoadingSpinner size="lg" label="Loading resume..." />
             </div>
         );
     }

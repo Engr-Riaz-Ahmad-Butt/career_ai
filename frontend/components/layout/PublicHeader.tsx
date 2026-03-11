@@ -4,13 +4,18 @@ import { motion } from 'framer-motion';
 import { Menu, X, Zap } from 'lucide-react';
 import Link from 'next/link';
 import { useTheme } from 'next-themes';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import { Button } from '@/components/ui/button';
 
 export function PublicHeader() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
   const { theme, setTheme } = useTheme();
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const links = [
     { href: '/pricing', label: 'Pricing' },
@@ -49,7 +54,7 @@ export function PublicHeader() {
             onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
             className="hidden md:inline-flex p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
           >
-            {theme === 'dark' ? '☀️' : '🌙'}
+            {!mounted ? '🌙' : theme === 'dark' ? '☀️' : '🌙'}
           </button>
 
           <Link href="/auth/login" className="hidden md:inline-block">

@@ -48,7 +48,7 @@ export function TemplateRenderer({ resume, zoom = 1 }: TemplateRendererProps) {
       className="origin-top flex justify-center w-full"
     >
       <PreviewComponent
-        template={resume.template}
+        template={templateObject}
         data={resume}
         isSelected={false}
       />
