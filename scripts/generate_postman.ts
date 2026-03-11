@@ -124,7 +124,7 @@ function parseRoutes() {
     routeFiles.forEach(file => {
         const folderName = file.replace('.routes.ts', '');
         const folderDesc = folderName.charAt(0).toUpperCase() + folderName.slice(1);
-        
+
         let folderItem: any = {
             name: folderDesc,
             description: `Endpoints for ${folderDesc}`,
@@ -133,7 +133,7 @@ function parseRoutes() {
 
         const filePath = path.join(BACKEND_SRC_ROUTES_DIR, file);
         const content = fs.readFileSync(filePath, 'utf-8');
-        
+
         // Match lines like router.get('/path', ...)
         const routeRegex = /router\.(get|post|put|delete|patch)\((['"`])(.*?)['"`]/g;
         let match;
@@ -158,7 +158,7 @@ function parseRoutes() {
             }
 
             const endpointName = routePath === '' ? `[${method}] Root/List` : `[${method}] ${routePath}`;
-            
+
             let requestObj: any = {
                 name: endpointName,
                 event: getEventScripts(folderName, routePath),
@@ -167,7 +167,12 @@ function parseRoutes() {
                     header: [
                         {
                             key: "Origin",
-                            value: "http://localhost:3000",
+                            value: "http://localhost:5000",
+                            type: "text"
+                        },
+                        {
+                            key: "Content-Type",
+                            value: "application/json",
                             type: "text"
                         }
                     ],
@@ -210,7 +215,7 @@ function parseRoutes() {
         }
     });
 
-    if (!fs.existsSync(POSTMAN_DIR)){
+    if (!fs.existsSync(POSTMAN_DIR)) {
         fs.mkdirSync(POSTMAN_DIR);
     }
 
