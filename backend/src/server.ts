@@ -14,6 +14,7 @@ import prisma from '@/config/database';
 // Routes
 import authRoutes from '@/routes/auth.routes';
 import userRoutes from '@/routes/user.routes';
+import profileRoutes from '@/routes/profile.routes';
 import resumeRoutes from '@/routes/resume.routes';
 import documentRoutes from '@/routes/document.routes';
 import aiRoutes from '@/routes/ai.routes';
@@ -49,11 +50,13 @@ const allowedOrigins = env.ALLOWED_ORIGINS
   ? env.ALLOWED_ORIGINS.split(',').map((origin) => origin.trim()).filter(Boolean)
   : [env.FRONTEND_URL];
 
+const allowNoOriginRequests = env.CORS_ALLOW_NO_ORIGIN || env.NODE_ENV !== 'production';
+
 app.use(
   cors({
     origin: (origin, callback) => {
       if (!origin) {
-        if (env.CORS_ALLOW_NO_ORIGIN) {
+        if (allowNoOriginRequests) {
           return callback(null, true);
         }
         return callback(new Error('CORS policy: Missing origin header'), false);
@@ -127,8 +130,12 @@ const v1 = '/api/v1';
 
 app.use(`${v1}/auth`, authRoutes);
 app.use(`${v1}/users`, userRoutes);
+app.use(`${v1}/user`, userRoutes);
+app.use(`${v1}/profile`, profileRoutes);
 app.use(`${v1}/resumes`, resumeRoutes);
+app.use(`${v1}/resume`, resumeRoutes);
 app.use(`${v1}/documents`, documentRoutes);
+app.use(`${v1}/document`, documentRoutes);
 app.use(`${v1}/ai`, aiRoutes);
 app.use(`${v1}/dashboard`, dashboardRoutes);
 app.use(`${v1}/interview`, interviewRoutes);
@@ -140,10 +147,18 @@ app.use(`${v1}/admin`, adminRoutes);
 app.use(`${v1}/analyze`, analyzeRoutes);
 app.use(`${v1}/stream`, streamRoutes);
 app.use(`${v1}/jobs`, jobRoutes);
+app.use(`${v1}/job`, jobRoutes);
 
 // Backwards compatibility alias (old /api prefix)
 app.use('/api/auth', authRoutes);
+app.use('/api/user', userRoutes);
+app.use('/api/profile', profileRoutes);
 app.use('/api/resumes', resumeRoutes);
+app.use('/api/resume', resumeRoutes);
+app.use('/api/documents', documentRoutes);
+app.use('/api/document', documentRoutes);
+app.use('/api/jobs', jobRoutes);
+app.use('/api/job', jobRoutes);
 app.use('/api/ai', aiRoutes);
 
 // ── Error Handling ─────────────────────────────────────────────────────────
