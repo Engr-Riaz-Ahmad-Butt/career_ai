@@ -17,6 +17,7 @@ router.use(authenticate);
  * @desc    Get current user profile
  * @access  Private
  */
+router.get('/', getCurrentUser);
 router.get('/me', getCurrentUser);
 
 /**
