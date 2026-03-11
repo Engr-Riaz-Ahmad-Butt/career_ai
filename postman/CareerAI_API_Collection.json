@@ -13,7 +13,13 @@
           "event": [],
           "request": {
             "method": "GET",
-            "header": [],
+            "header": [
+              {
+                "key": "Origin",
+                "value": "http://localhost:3000",
+                "type": "text"
+              }
+            ],
             "url": {
               "raw": "{{base_url}}/admin/users",
               "host": [
@@ -42,7 +48,13 @@
           "event": [],
           "request": {
             "method": "GET",
-            "header": [],
+            "header": [
+              {
+                "key": "Origin",
+                "value": "http://localhost:3000",
+                "type": "text"
+              }
+            ],
             "url": {
               "raw": "{{base_url}}/admin/users/{{id}}",
               "host": [
@@ -72,7 +84,13 @@
           "event": [],
           "request": {
             "method": "PUT",
-            "header": [],
+            "header": [
+              {
+                "key": "Origin",
+                "value": "http://localhost:3000",
+                "type": "text"
+              }
+            ],
             "url": {
               "raw": "{{base_url}}/admin/users/{{id}}/plan",
               "host": [
@@ -112,7 +130,13 @@
           "event": [],
           "request": {
             "method": "POST",
-            "header": [],
+            "header": [
+              {
+                "key": "Origin",
+                "value": "http://localhost:3000",
+                "type": "text"
+              }
+            ],
             "url": {
               "raw": "{{base_url}}/admin/users/{{id}}/credits",
               "host": [
@@ -152,7 +176,13 @@
           "event": [],
           "request": {
             "method": "GET",
-            "header": [],
+            "header": [
+              {
+                "key": "Origin",
+                "value": "http://localhost:3000",
+                "type": "text"
+              }
+            ],
             "url": {
               "raw": "{{base_url}}/admin/stats",
               "host": [
@@ -181,7 +211,13 @@
           "event": [],
           "request": {
             "method": "GET",
-            "header": [],
+            "header": [
+              {
+                "key": "Origin",
+                "value": "http://localhost:3000",
+                "type": "text"
+              }
+            ],
             "url": {
               "raw": "{{base_url}}/admin/ai-costs",
               "host": [
@@ -210,7 +246,13 @@
           "event": [],
           "request": {
             "method": "GET",
-            "header": [],
+            "header": [
+              {
+                "key": "Origin",
+                "value": "http://localhost:3000",
+                "type": "text"
+              }
+            ],
             "url": {
               "raw": "{{base_url}}/admin/revenue",
               "host": [
@@ -239,7 +281,13 @@
           "event": [],
           "request": {
             "method": "POST",
-            "header": [],
+            "header": [
+              {
+                "key": "Origin",
+                "value": "http://localhost:3000",
+                "type": "text"
+              }
+            ],
             "url": {
               "raw": "{{base_url}}/admin/broadcast",
               "host": [
@@ -283,7 +331,13 @@
           "event": [],
           "request": {
             "method": "POST",
-            "header": [],
+            "header": [
+              {
+                "key": "Origin",
+                "value": "http://localhost:3000",
+                "type": "text"
+              }
+            ],
             "url": {
               "raw": "{{base_url}}/ai/resume/enhance",
               "host": [
@@ -322,7 +376,13 @@
           "event": [],
           "request": {
             "method": "POST",
-            "header": [],
+            "header": [
+              {
+                "key": "Origin",
+                "value": "http://localhost:3000",
+                "type": "text"
+              }
+            ],
             "url": {
               "raw": "{{base_url}}/ai/resume/tailor",
               "host": [
@@ -361,7 +421,13 @@
           "event": [],
           "request": {
             "method": "POST",
-            "header": [],
+            "header": [
+              {
+                "key": "Origin",
+                "value": "http://localhost:3000",
+                "type": "text"
+              }
+            ],
             "url": {
               "raw": "{{base_url}}/ai/resume/ats-score",
               "host": [
@@ -400,7 +466,13 @@
           "event": [],
           "request": {
             "method": "POST",
-            "header": [],
+            "header": [
+              {
+                "key": "Origin",
+                "value": "http://localhost:3000",
+                "type": "text"
+              }
+            ],
             "url": {
               "raw": "{{base_url}}/ai/resume/suggestions",
               "host": [
@@ -439,7 +511,13 @@
           "event": [],
           "request": {
             "method": "POST",
-            "header": [],
+            "header": [
+              {
+                "key": "Origin",
+                "value": "http://localhost:3000",
+                "type": "text"
+              }
+            ],
             "url": {
               "raw": "{{base_url}}/ai/cover-letter/generate",
               "host": [
@@ -478,7 +556,13 @@
           "event": [],
           "request": {
             "method": "POST",
-            "header": [],
+            "header": [
+              {
+                "key": "Origin",
+                "value": "http://localhost:3000",
+                "type": "text"
+              }
+            ],
             "url": {
               "raw": "{{base_url}}/ai/sop/generate",
               "host": [
@@ -517,7 +601,13 @@
           "event": [],
           "request": {
             "method": "POST",
-            "header": [],
+            "header": [
+              {
+                "key": "Origin",
+                "value": "http://localhost:3000",
+                "type": "text"
+              }
+            ],
             "url": {
               "raw": "{{base_url}}/ai/motivation-letter/generate",
               "host": [
@@ -556,7 +646,13 @@
           "event": [],
           "request": {
             "method": "POST",
-            "header": [],
+            "header": [
+              {
+                "key": "Origin",
+                "value": "http://localhost:3000",
+                "type": "text"
+              }
+            ],
             "url": {
               "raw": "{{base_url}}/ai/bio/generate",
               "host": [
@@ -595,7 +691,13 @@
           "event": [],
           "request": {
             "method": "POST",
-            "header": [],
+            "header": [
+              {
+                "key": "Origin",
+                "value": "http://localhost:3000",
+                "type": "text"
+              }
+            ],
             "url": {
               "raw": "{{base_url}}/ai/study-plan/generate",
               "host": [
@@ -634,7 +736,13 @@
           "event": [],
           "request": {
             "method": "POST",
-            "header": [],
+            "header": [
+              {
+                "key": "Origin",
+                "value": "http://localhost:3000",
+                "type": "text"
+              }
+            ],
             "url": {
               "raw": "{{base_url}}/ai/interview/generate",
               "host": [
@@ -673,7 +781,13 @@
           "event": [],
           "request": {
             "method": "POST",
-            "header": [],
+            "header": [
+              {
+                "key": "Origin",
+                "value": "http://localhost:3000",
+                "type": "text"
+              }
+            ],
             "url": {
               "raw": "{{base_url}}/ai/interview/feedback",
               "host": [
@@ -712,7 +826,13 @@
           "event": [],
           "request": {
             "method": "POST",
-            "header": [],
+            "header": [
+              {
+                "key": "Origin",
+                "value": "http://localhost:3000",
+                "type": "text"
+              }
+            ],
             "url": {
               "raw": "{{base_url}}/ai/communication/analyze",
               "host": [
@@ -751,7 +871,13 @@
           "event": [],
           "request": {
             "method": "POST",
-            "header": [],
+            "header": [
+              {
+                "key": "Origin",
+                "value": "http://localhost:3000",
+                "type": "text"
+              }
+            ],
             "url": {
               "raw": "{{base_url}}/ai/keywords/extract",
               "host": [
@@ -790,7 +916,13 @@
           "event": [],
           "request": {
             "method": "POST",
-            "header": [],
+            "header": [
+              {
+                "key": "Origin",
+                "value": "http://localhost:3000",
+                "type": "text"
+              }
+            ],
             "url": {
               "raw": "{{base_url}}/ai/grammar/fix",
               "host": [
@@ -829,7 +961,13 @@
           "event": [],
           "request": {
             "method": "POST",
-            "header": [],
+            "header": [
+              {
+                "key": "Origin",
+                "value": "http://localhost:3000",
+                "type": "text"
+              }
+            ],
             "url": {
               "raw": "{{base_url}}/ai/text/improve",
               "host": [
@@ -874,7 +1012,13 @@
           "event": [],
           "request": {
             "method": "POST",
-            "header": [],
+            "header": [
+              {
+                "key": "Origin",
+                "value": "http://localhost:3000",
+                "type": "text"
+              }
+            ],
             "url": {
               "raw": "{{base_url}}/analyze/communication",
               "host": [
@@ -912,7 +1056,13 @@
           "event": [],
           "request": {
             "method": "GET",
-            "header": [],
+            "header": [
+              {
+                "key": "Origin",
+                "value": "http://localhost:3000",
+                "type": "text"
+              }
+            ],
             "url": {
               "raw": "{{base_url}}/analyze/communication/history",
               "host": [
@@ -942,7 +1092,13 @@
           "event": [],
           "request": {
             "method": "GET",
-            "header": [],
+            "header": [
+              {
+                "key": "Origin",
+                "value": "http://localhost:3000",
+                "type": "text"
+              }
+            ],
             "url": {
               "raw": "{{base_url}}/analyze/communication/{{id}}",
               "host": [
@@ -978,7 +1134,13 @@
           "event": [],
           "request": {
             "method": "POST",
-            "header": [],
+            "header": [
+              {
+                "key": "Origin",
+                "value": "http://localhost:3000",
+                "type": "text"
+              }
+            ],
             "url": {
               "raw": "{{base_url}}/auth/register",
               "host": [
@@ -1019,7 +1181,13 @@
           ],
           "request": {
             "method": "POST",
-            "header": [],
+            "header": [
+              {
+                "key": "Origin",
+                "value": "http://localhost:3000",
+                "type": "text"
+              }
+            ],
             "url": {
               "raw": "{{base_url}}/auth/login",
               "host": [
@@ -1047,7 +1215,13 @@
           "event": [],
           "request": {
             "method": "POST",
-            "header": [],
+            "header": [
+              {
+                "key": "Origin",
+                "value": "http://localhost:3000",
+                "type": "text"
+              }
+            ],
             "url": {
               "raw": "{{base_url}}/auth/google",
               "host": [
@@ -1075,7 +1249,13 @@
           "event": [],
           "request": {
             "method": "POST",
-            "header": [],
+            "header": [
+              {
+                "key": "Origin",
+                "value": "http://localhost:3000",
+                "type": "text"
+              }
+            ],
             "url": {
               "raw": "{{base_url}}/auth/refresh",
               "host": [
@@ -1103,7 +1283,13 @@
           "event": [],
           "request": {
             "method": "POST",
-            "header": [],
+            "header": [
+              {
+                "key": "Origin",
+                "value": "http://localhost:3000",
+                "type": "text"
+              }
+            ],
             "url": {
               "raw": "{{base_url}}/auth/logout",
               "host": [
@@ -1141,7 +1327,13 @@
           "event": [],
           "request": {
             "method": "POST",
-            "header": [],
+            "header": [
+              {
+                "key": "Origin",
+                "value": "http://localhost:3000",
+                "type": "text"
+              }
+            ],
             "url": {
               "raw": "{{base_url}}/auth/forgot-password",
               "host": [
@@ -1169,7 +1361,13 @@
           "event": [],
           "request": {
             "method": "POST",
-            "header": [],
+            "header": [
+              {
+                "key": "Origin",
+                "value": "http://localhost:3000",
+                "type": "text"
+              }
+            ],
             "url": {
               "raw": "{{base_url}}/auth/reset-password",
               "host": [
@@ -1197,7 +1395,13 @@
           "event": [],
           "request": {
             "method": "POST",
-            "header": [],
+            "header": [
+              {
+                "key": "Origin",
+                "value": "http://localhost:3000",
+                "type": "text"
+              }
+            ],
             "url": {
               "raw": "{{base_url}}/auth/verify-email",
               "host": [
@@ -1225,7 +1429,13 @@
           "event": [],
           "request": {
             "method": "POST",
-            "header": [],
+            "header": [
+              {
+                "key": "Origin",
+                "value": "http://localhost:3000",
+                "type": "text"
+              }
+            ],
             "url": {
               "raw": "{{base_url}}/auth/resend-verification",
               "host": [
@@ -1259,7 +1469,13 @@
           "event": [],
           "request": {
             "method": "POST",
-            "header": [],
+            "header": [
+              {
+                "key": "Origin",
+                "value": "http://localhost:3000",
+                "type": "text"
+              }
+            ],
             "url": {
               "raw": "{{base_url}}/billing/webhook",
               "host": [
@@ -1297,7 +1513,13 @@
           "event": [],
           "request": {
             "method": "GET",
-            "header": [],
+            "header": [
+              {
+                "key": "Origin",
+                "value": "http://localhost:3000",
+                "type": "text"
+              }
+            ],
             "url": {
               "raw": "{{base_url}}/billing/plans",
               "host": [
@@ -1326,7 +1548,13 @@
           "event": [],
           "request": {
             "method": "POST",
-            "header": [],
+            "header": [
+              {
+                "key": "Origin",
+                "value": "http://localhost:3000",
+                "type": "text"
+              }
+            ],
             "url": {
               "raw": "{{base_url}}/billing/checkout",
               "host": [
@@ -1364,7 +1592,13 @@
           "event": [],
           "request": {
             "method": "POST",
-            "header": [],
+            "header": [
+              {
+                "key": "Origin",
+                "value": "http://localhost:3000",
+                "type": "text"
+              }
+            ],
             "url": {
               "raw": "{{base_url}}/billing/portal",
               "host": [
@@ -1402,7 +1636,13 @@
           "event": [],
           "request": {
             "method": "GET",
-            "header": [],
+            "header": [
+              {
+                "key": "Origin",
+                "value": "http://localhost:3000",
+                "type": "text"
+              }
+            ],
             "url": {
               "raw": "{{base_url}}/billing/subscription",
               "host": [
@@ -1431,7 +1671,13 @@
           "event": [],
           "request": {
             "method": "POST",
-            "header": [],
+            "header": [
+              {
+                "key": "Origin",
+                "value": "http://localhost:3000",
+                "type": "text"
+              }
+            ],
             "url": {
               "raw": "{{base_url}}/billing/cancel",
               "host": [
@@ -1469,7 +1715,13 @@
           "event": [],
           "request": {
             "method": "POST",
-            "header": [],
+            "header": [
+              {
+                "key": "Origin",
+                "value": "http://localhost:3000",
+                "type": "text"
+              }
+            ],
             "url": {
               "raw": "{{base_url}}/billing/reactivate",
               "host": [
@@ -1507,7 +1759,13 @@
           "event": [],
           "request": {
             "method": "POST",
-            "header": [],
+            "header": [
+              {
+                "key": "Origin",
+                "value": "http://localhost:3000",
+                "type": "text"
+              }
+            ],
             "url": {
               "raw": "{{base_url}}/billing/credits/purchase",
               "host": [
@@ -1546,7 +1804,13 @@
           "event": [],
           "request": {
             "method": "GET",
-            "header": [],
+            "header": [
+              {
+                "key": "Origin",
+                "value": "http://localhost:3000",
+                "type": "text"
+              }
+            ],
             "url": {
               "raw": "{{base_url}}/billing/invoices",
               "host": [
@@ -1581,7 +1845,13 @@
           "event": [],
           "request": {
             "method": "GET",
-            "header": [],
+            "header": [
+              {
+                "key": "Origin",
+                "value": "http://localhost:3000",
+                "type": "text"
+              }
+            ],
             "url": {
               "raw": "{{base_url}}/credits/costs",
               "host": [
@@ -1610,7 +1880,13 @@
           "event": [],
           "request": {
             "method": "GET",
-            "header": [],
+            "header": [
+              {
+                "key": "Origin",
+                "value": "http://localhost:3000",
+                "type": "text"
+              }
+            ],
             "url": {
               "raw": "{{base_url}}/credits/balance",
               "host": [
@@ -1639,7 +1915,13 @@
           "event": [],
           "request": {
             "method": "GET",
-            "header": [],
+            "header": [
+              {
+                "key": "Origin",
+                "value": "http://localhost:3000",
+                "type": "text"
+              }
+            ],
             "url": {
               "raw": "{{base_url}}/credits/history",
               "host": [
@@ -1668,7 +1950,13 @@
           "event": [],
           "request": {
             "method": "POST",
-            "header": [],
+            "header": [
+              {
+                "key": "Origin",
+                "value": "http://localhost:3000",
+                "type": "text"
+              }
+            ],
             "url": {
               "raw": "{{base_url}}/credits/referral/apply",
               "host": [
@@ -1713,7 +2001,13 @@
           "event": [],
           "request": {
             "method": "GET",
-            "header": [],
+            "header": [
+              {
+                "key": "Origin",
+                "value": "http://localhost:3000",
+                "type": "text"
+              }
+            ],
             "url": {
               "raw": "{{base_url}}/dashboard",
               "host": [
@@ -1741,7 +2035,13 @@
           "event": [],
           "request": {
             "method": "GET",
-            "header": [],
+            "header": [
+              {
+                "key": "Origin",
+                "value": "http://localhost:3000",
+                "type": "text"
+              }
+            ],
             "url": {
               "raw": "{{base_url}}/dashboard/recent",
               "host": [
@@ -1770,7 +2070,13 @@
           "event": [],
           "request": {
             "method": "GET",
-            "header": [],
+            "header": [
+              {
+                "key": "Origin",
+                "value": "http://localhost:3000",
+                "type": "text"
+              }
+            ],
             "url": {
               "raw": "{{base_url}}/dashboard/stats",
               "host": [
@@ -1799,7 +2105,13 @@
           "event": [],
           "request": {
             "method": "GET",
-            "header": [],
+            "header": [
+              {
+                "key": "Origin",
+                "value": "http://localhost:3000",
+                "type": "text"
+              }
+            ],
             "url": {
               "raw": "{{base_url}}/dashboard/activity",
               "host": [
@@ -1834,7 +2146,13 @@
           "event": [],
           "request": {
             "method": "POST",
-            "header": [],
+            "header": [
+              {
+                "key": "Origin",
+                "value": "http://localhost:3000",
+                "type": "text"
+              }
+            ],
             "url": {
               "raw": "{{base_url}}/document/cover-letter/generate",
               "host": [
@@ -1873,7 +2191,13 @@
           "event": [],
           "request": {
             "method": "POST",
-            "header": [],
+            "header": [
+              {
+                "key": "Origin",
+                "value": "http://localhost:3000",
+                "type": "text"
+              }
+            ],
             "url": {
               "raw": "{{base_url}}/document/cover-letter/{{id}}/regenerate",
               "host": [
@@ -1913,7 +2237,13 @@
           "event": [],
           "request": {
             "method": "POST",
-            "header": [],
+            "header": [
+              {
+                "key": "Origin",
+                "value": "http://localhost:3000",
+                "type": "text"
+              }
+            ],
             "url": {
               "raw": "{{base_url}}/document/sop/generate",
               "host": [
@@ -1952,7 +2282,13 @@
           "event": [],
           "request": {
             "method": "POST",
-            "header": [],
+            "header": [
+              {
+                "key": "Origin",
+                "value": "http://localhost:3000",
+                "type": "text"
+              }
+            ],
             "url": {
               "raw": "{{base_url}}/document/motivation-letter/generate",
               "host": [
@@ -1991,7 +2327,13 @@
           "event": [],
           "request": {
             "method": "POST",
-            "header": [],
+            "header": [
+              {
+                "key": "Origin",
+                "value": "http://localhost:3000",
+                "type": "text"
+              }
+            ],
             "url": {
               "raw": "{{base_url}}/document/study-plan/generate",
               "host": [
@@ -2030,7 +2372,13 @@
           "event": [],
           "request": {
             "method": "POST",
-            "header": [],
+            "header": [
+              {
+                "key": "Origin",
+                "value": "http://localhost:3000",
+                "type": "text"
+              }
+            ],
             "url": {
               "raw": "{{base_url}}/document/financial-letter/generate",
               "host": [
@@ -2069,7 +2417,13 @@
           "event": [],
           "request": {
             "method": "POST",
-            "header": [],
+            "header": [
+              {
+                "key": "Origin",
+                "value": "http://localhost:3000",
+                "type": "text"
+              }
+            ],
             "url": {
               "raw": "{{base_url}}/document/bio/generate",
               "host": [
@@ -2108,7 +2462,13 @@
           "event": [],
           "request": {
             "method": "GET",
-            "header": [],
+            "header": [
+              {
+                "key": "Origin",
+                "value": "http://localhost:3000",
+                "type": "text"
+              }
+            ],
             "url": {
               "raw": "{{base_url}}/document",
               "host": [
@@ -2136,7 +2496,13 @@
           "event": [],
           "request": {
             "method": "GET",
-            "header": [],
+            "header": [
+              {
+                "key": "Origin",
+                "value": "http://localhost:3000",
+                "type": "text"
+              }
+            ],
             "url": {
               "raw": "{{base_url}}/document/{{id}}",
               "host": [
@@ -2165,7 +2531,13 @@
           "event": [],
           "request": {
             "method": "PUT",
-            "header": [],
+            "header": [
+              {
+                "key": "Origin",
+                "value": "http://localhost:3000",
+                "type": "text"
+              }
+            ],
             "url": {
               "raw": "{{base_url}}/document/{{id}}",
               "host": [
@@ -2203,7 +2575,13 @@
           "event": [],
           "request": {
             "method": "DELETE",
-            "header": [],
+            "header": [
+              {
+                "key": "Origin",
+                "value": "http://localhost:3000",
+                "type": "text"
+              }
+            ],
             "url": {
               "raw": "{{base_url}}/document/{{id}}",
               "host": [
@@ -2232,7 +2610,13 @@
           "event": [],
           "request": {
             "method": "POST",
-            "header": [],
+            "header": [
+              {
+                "key": "Origin",
+                "value": "http://localhost:3000",
+                "type": "text"
+              }
+            ],
             "url": {
               "raw": "{{base_url}}/document/{{id}}/pdf",
               "host": [
@@ -2271,7 +2655,13 @@
           "event": [],
           "request": {
             "method": "POST",
-            "header": [],
+            "header": [
+              {
+                "key": "Origin",
+                "value": "http://localhost:3000",
+                "type": "text"
+              }
+            ],
             "url": {
               "raw": "{{base_url}}/document/{{id}}/duplicate",
               "host": [
@@ -2310,7 +2700,13 @@
           "event": [],
           "request": {
             "method": "GET",
-            "header": [],
+            "header": [
+              {
+                "key": "Origin",
+                "value": "http://localhost:3000",
+                "type": "text"
+              }
+            ],
             "url": {
               "raw": "{{base_url}}/document/cover-letter",
               "host": [
@@ -2339,7 +2735,13 @@
           "event": [],
           "request": {
             "method": "GET",
-            "header": [],
+            "header": [
+              {
+                "key": "Origin",
+                "value": "http://localhost:3000",
+                "type": "text"
+              }
+            ],
             "url": {
               "raw": "{{base_url}}/document/cover-letter/{{id}}",
               "host": [
@@ -2369,7 +2771,13 @@
           "event": [],
           "request": {
             "method": "PUT",
-            "header": [],
+            "header": [
+              {
+                "key": "Origin",
+                "value": "http://localhost:3000",
+                "type": "text"
+              }
+            ],
             "url": {
               "raw": "{{base_url}}/document/cover-letter/{{id}}",
               "host": [
@@ -2408,7 +2816,13 @@
           "event": [],
           "request": {
             "method": "DELETE",
-            "header": [],
+            "header": [
+              {
+                "key": "Origin",
+                "value": "http://localhost:3000",
+                "type": "text"
+              }
+            ],
             "url": {
               "raw": "{{base_url}}/document/cover-letter/{{id}}",
               "host": [
@@ -2438,7 +2852,13 @@
           "event": [],
           "request": {
             "method": "POST",
-            "header": [],
+            "header": [
+              {
+                "key": "Origin",
+                "value": "http://localhost:3000",
+                "type": "text"
+              }
+            ],
             "url": {
               "raw": "{{base_url}}/document/cover-letter/{{id}}/pdf",
               "host": [
@@ -2484,7 +2904,13 @@
           "event": [],
           "request": {
             "method": "POST",
-            "header": [],
+            "header": [
+              {
+                "key": "Origin",
+                "value": "http://localhost:3000",
+                "type": "text"
+              }
+            ],
             "url": {
               "raw": "{{base_url}}/interview/generate",
               "host": [
@@ -2522,7 +2948,13 @@
           "event": [],
           "request": {
             "method": "GET",
-            "header": [],
+            "header": [
+              {
+                "key": "Origin",
+                "value": "http://localhost:3000",
+                "type": "text"
+              }
+            ],
             "url": {
               "raw": "{{base_url}}/interview",
               "host": [
@@ -2550,7 +2982,13 @@
           "event": [],
           "request": {
             "method": "GET",
-            "header": [],
+            "header": [
+              {
+                "key": "Origin",
+                "value": "http://localhost:3000",
+                "type": "text"
+              }
+            ],
             "url": {
               "raw": "{{base_url}}/interview/{{id}}",
               "host": [
@@ -2579,7 +3017,13 @@
           "event": [],
           "request": {
             "method": "POST",
-            "header": [],
+            "header": [
+              {
+                "key": "Origin",
+                "value": "http://localhost:3000",
+                "type": "text"
+              }
+            ],
             "url": {
               "raw": "{{base_url}}/interview/{{id}}/feedback",
               "host": [
@@ -2618,7 +3062,13 @@
           "event": [],
           "request": {
             "method": "DELETE",
-            "header": [],
+            "header": [
+              {
+                "key": "Origin",
+                "value": "http://localhost:3000",
+                "type": "text"
+              }
+            ],
             "url": {
               "raw": "{{base_url}}/interview/{{id}}",
               "host": [
@@ -2653,7 +3103,13 @@
           "event": [],
           "request": {
             "method": "GET",
-            "header": [],
+            "header": [
+              {
+                "key": "Origin",
+                "value": "http://localhost:3000",
+                "type": "text"
+              }
+            ],
             "url": {
               "raw": "{{base_url}}/job/health",
               "host": [
@@ -2682,7 +3138,13 @@
           "event": [],
           "request": {
             "method": "GET",
-            "header": [],
+            "header": [
+              {
+                "key": "Origin",
+                "value": "http://localhost:3000",
+                "type": "text"
+              }
+            ],
             "url": {
               "raw": "{{base_url}}/job/mine",
               "host": [
@@ -2711,7 +3173,13 @@
           "event": [],
           "request": {
             "method": "POST",
-            "header": [],
+            "header": [
+              {
+                "key": "Origin",
+                "value": "http://localhost:3000",
+                "type": "text"
+              }
+            ],
             "url": {
               "raw": "{{base_url}}/job/resume/{{id}}/pdf",
               "host": [
@@ -2751,7 +3219,13 @@
           "event": [],
           "request": {
             "method": "POST",
-            "header": [],
+            "header": [
+              {
+                "key": "Origin",
+                "value": "http://localhost:3000",
+                "type": "text"
+              }
+            ],
             "url": {
               "raw": "{{base_url}}/job/resume/{{id}}/ats-score",
               "host": [
@@ -2791,7 +3265,13 @@
           "event": [],
           "request": {
             "method": "GET",
-            "header": [],
+            "header": [
+              {
+                "key": "Origin",
+                "value": "http://localhost:3000",
+                "type": "text"
+              }
+            ],
             "url": {
               "raw": "{{base_url}}/job/{{jobId}}",
               "host": [
@@ -2826,7 +3306,13 @@
           "event": [],
           "request": {
             "method": "GET",
-            "header": [],
+            "header": [
+              {
+                "key": "Origin",
+                "value": "http://localhost:3000",
+                "type": "text"
+              }
+            ],
             "url": {
               "raw": "{{base_url}}/profile/me",
               "host": [
@@ -2855,7 +3341,13 @@
           "event": [],
           "request": {
             "method": "PUT",
-            "header": [],
+            "header": [
+              {
+                "key": "Origin",
+                "value": "http://localhost:3000",
+                "type": "text"
+              }
+            ],
             "url": {
               "raw": "{{base_url}}/profile",
               "host": [
@@ -2898,7 +3390,13 @@
           "event": [],
           "request": {
             "method": "POST",
-            "header": [],
+            "header": [
+              {
+                "key": "Origin",
+                "value": "http://localhost:3000",
+                "type": "text"
+              }
+            ],
             "url": {
               "raw": "{{base_url}}/resume/upload",
               "host": [
@@ -2936,7 +3434,13 @@
           "event": [],
           "request": {
             "method": "POST",
-            "header": [],
+            "header": [
+              {
+                "key": "Origin",
+                "value": "http://localhost:3000",
+                "type": "text"
+              }
+            ],
             "url": {
               "raw": "{{base_url}}/resume/tailor",
               "host": [
@@ -2974,7 +3478,13 @@
           "event": [],
           "request": {
             "method": "GET",
-            "header": [],
+            "header": [
+              {
+                "key": "Origin",
+                "value": "http://localhost:3000",
+                "type": "text"
+              }
+            ],
             "url": {
               "raw": "{{base_url}}/resume/tailor/history",
               "host": [
@@ -3004,7 +3514,13 @@
           "event": [],
           "request": {
             "method": "GET",
-            "header": [],
+            "header": [
+              {
+                "key": "Origin",
+                "value": "http://localhost:3000",
+                "type": "text"
+              }
+            ],
             "url": {
               "raw": "{{base_url}}/resume/tailor/{{id}}",
               "host": [
@@ -3034,7 +3550,13 @@
           "event": [],
           "request": {
             "method": "DELETE",
-            "header": [],
+            "header": [
+              {
+                "key": "Origin",
+                "value": "http://localhost:3000",
+                "type": "text"
+              }
+            ],
             "url": {
               "raw": "{{base_url}}/resume/tailor/{{id}}",
               "host": [
@@ -3064,7 +3586,13 @@
           "event": [],
           "request": {
             "method": "GET",
-            "header": [],
+            "header": [
+              {
+                "key": "Origin",
+                "value": "http://localhost:3000",
+                "type": "text"
+              }
+            ],
             "url": {
               "raw": "{{base_url}}/resume",
               "host": [
@@ -3092,7 +3620,13 @@
           "event": [],
           "request": {
             "method": "POST",
-            "header": [],
+            "header": [
+              {
+                "key": "Origin",
+                "value": "http://localhost:3000",
+                "type": "text"
+              }
+            ],
             "url": {
               "raw": "{{base_url}}/resume",
               "host": [
@@ -3129,7 +3663,13 @@
           "event": [],
           "request": {
             "method": "GET",
-            "header": [],
+            "header": [
+              {
+                "key": "Origin",
+                "value": "http://localhost:3000",
+                "type": "text"
+              }
+            ],
             "url": {
               "raw": "{{base_url}}/resume/{{id}}",
               "host": [
@@ -3158,7 +3698,13 @@
           "event": [],
           "request": {
             "method": "PUT",
-            "header": [],
+            "header": [
+              {
+                "key": "Origin",
+                "value": "http://localhost:3000",
+                "type": "text"
+              }
+            ],
             "url": {
               "raw": "{{base_url}}/resume/{{id}}",
               "host": [
@@ -3196,7 +3742,13 @@
           "event": [],
           "request": {
             "method": "DELETE",
-            "header": [],
+            "header": [
+              {
+                "key": "Origin",
+                "value": "http://localhost:3000",
+                "type": "text"
+              }
+            ],
             "url": {
               "raw": "{{base_url}}/resume/{{id}}",
               "host": [
@@ -3225,7 +3777,13 @@
           "event": [],
           "request": {
             "method": "POST",
-            "header": [],
+            "header": [
+              {
+                "key": "Origin",
+                "value": "http://localhost:3000",
+                "type": "text"
+              }
+            ],
             "url": {
               "raw": "{{base_url}}/resume/{{id}}/duplicate",
               "host": [
@@ -3264,7 +3822,13 @@
           "event": [],
           "request": {
             "method": "POST",
-            "header": [],
+            "header": [
+              {
+                "key": "Origin",
+                "value": "http://localhost:3000",
+                "type": "text"
+              }
+            ],
             "url": {
               "raw": "{{base_url}}/resume/{{id}}/pdf",
               "host": [
@@ -3303,7 +3867,13 @@
           "event": [],
           "request": {
             "method": "GET",
-            "header": [],
+            "header": [
+              {
+                "key": "Origin",
+                "value": "http://localhost:3000",
+                "type": "text"
+              }
+            ],
             "url": {
               "raw": "{{base_url}}/resume/{{id}}/versions",
               "host": [
@@ -3333,7 +3903,13 @@
           "event": [],
           "request": {
             "method": "POST",
-            "header": [],
+            "header": [
+              {
+                "key": "Origin",
+                "value": "http://localhost:3000",
+                "type": "text"
+              }
+            ],
             "url": {
               "raw": "{{base_url}}/resume/{{id}}/restore/{{versionId}}",
               "host": [
@@ -3373,7 +3949,13 @@
           "event": [],
           "request": {
             "method": "POST",
-            "header": [],
+            "header": [
+              {
+                "key": "Origin",
+                "value": "http://localhost:3000",
+                "type": "text"
+              }
+            ],
             "url": {
               "raw": "{{base_url}}/resume/{{id}}/enhance",
               "host": [
@@ -3412,7 +3994,13 @@
           "event": [],
           "request": {
             "method": "POST",
-            "header": [],
+            "header": [
+              {
+                "key": "Origin",
+                "value": "http://localhost:3000",
+                "type": "text"
+              }
+            ],
             "url": {
               "raw": "{{base_url}}/resume/{{id}}/ats-score",
               "host": [
@@ -3451,7 +4039,13 @@
           "event": [],
           "request": {
             "method": "POST",
-            "header": [],
+            "header": [
+              {
+                "key": "Origin",
+                "value": "http://localhost:3000",
+                "type": "text"
+              }
+            ],
             "url": {
               "raw": "{{base_url}}/resume/extract",
               "host": [
@@ -3489,7 +4083,13 @@
           "event": [],
           "request": {
             "method": "POST",
-            "header": [],
+            "header": [
+              {
+                "key": "Origin",
+                "value": "http://localhost:3000",
+                "type": "text"
+              }
+            ],
             "url": {
               "raw": "{{base_url}}/resume/{{id}}/optimize",
               "host": [
@@ -3534,7 +4134,13 @@
           "event": [],
           "request": {
             "method": "GET",
-            "header": [],
+            "header": [
+              {
+                "key": "Origin",
+                "value": "http://localhost:3000",
+                "type": "text"
+              }
+            ],
             "url": {
               "raw": "{{base_url}}/stream/ping",
               "host": [
@@ -3563,7 +4169,13 @@
           "event": [],
           "request": {
             "method": "GET",
-            "header": [],
+            "header": [
+              {
+                "key": "Origin",
+                "value": "http://localhost:3000",
+                "type": "text"
+              }
+            ],
             "url": {
               "raw": "{{base_url}}/stream/enhance-resume/{{resumeId}}",
               "host": [
@@ -3593,7 +4205,13 @@
           "event": [],
           "request": {
             "method": "GET",
-            "header": [],
+            "header": [
+              {
+                "key": "Origin",
+                "value": "http://localhost:3000",
+                "type": "text"
+              }
+            ],
             "url": {
               "raw": "{{base_url}}/stream/ats-score/{{resumeId}}",
               "host": [
@@ -3623,7 +4241,13 @@
           "event": [],
           "request": {
             "method": "POST",
-            "header": [],
+            "header": [
+              {
+                "key": "Origin",
+                "value": "http://localhost:3000",
+                "type": "text"
+              }
+            ],
             "url": {
               "raw": "{{base_url}}/stream/document/generate",
               "host": [
@@ -3662,7 +4286,13 @@
           "event": [],
           "request": {
             "method": "GET",
-            "header": [],
+            "header": [
+              {
+                "key": "Origin",
+                "value": "http://localhost:3000",
+                "type": "text"
+              }
+            ],
             "url": {
               "raw": "{{base_url}}/stream/interview/generate",
               "host": [
@@ -3698,7 +4328,13 @@
           "event": [],
           "request": {
             "method": "GET",
-            "header": [],
+            "header": [
+              {
+                "key": "Origin",
+                "value": "http://localhost:3000",
+                "type": "text"
+              }
+            ],
             "url": {
               "raw": "{{base_url}}/templates/resume",
               "host": [
@@ -3727,7 +4363,13 @@
           "event": [],
           "request": {
             "method": "GET",
-            "header": [],
+            "header": [
+              {
+                "key": "Origin",
+                "value": "http://localhost:3000",
+                "type": "text"
+              }
+            ],
             "url": {
               "raw": "{{base_url}}/templates/resume/{{id}}",
               "host": [
@@ -3757,7 +4399,13 @@
           "event": [],
           "request": {
             "method": "GET",
-            "header": [],
+            "header": [
+              {
+                "key": "Origin",
+                "value": "http://localhost:3000",
+                "type": "text"
+              }
+            ],
             "url": {
               "raw": "{{base_url}}/templates/documents",
               "host": [
@@ -3792,7 +4440,13 @@
           "event": [],
           "request": {
             "method": "GET",
-            "header": [],
+            "header": [
+              {
+                "key": "Origin",
+                "value": "http://localhost:3000",
+                "type": "text"
+              }
+            ],
             "url": {
               "raw": "{{base_url}}/user/me",
               "host": [
@@ -3821,7 +4475,13 @@
           "event": [],
           "request": {
             "method": "PUT",
-            "header": [],
+            "header": [
+              {
+                "key": "Origin",
+                "value": "http://localhost:3000",
+                "type": "text"
+              }
+            ],
             "url": {
               "raw": "{{base_url}}/user/me",
               "host": [
@@ -3859,7 +4519,13 @@
           "event": [],
           "request": {
             "method": "DELETE",
-            "header": [],
+            "header": [
+              {
+                "key": "Origin",
+                "value": "http://localhost:3000",
+                "type": "text"
+              }
+            ],
             "url": {
               "raw": "{{base_url}}/user/me",
               "host": [
@@ -3888,7 +4554,13 @@
           "event": [],
           "request": {
             "method": "PUT",
-            "header": [],
+            "header": [
+              {
+                "key": "Origin",
+                "value": "http://localhost:3000",
+                "type": "text"
+              }
+            ],
             "url": {
               "raw": "{{base_url}}/user/me/password",
               "host": [
@@ -3927,7 +4599,13 @@
           "event": [],
           "request": {
             "method": "POST",
-            "header": [],
+            "header": [
+              {
+                "key": "Origin",
+                "value": "http://localhost:3000",
+                "type": "text"
+              }
+            ],
             "url": {
               "raw": "{{base_url}}/user/me/avatar",
               "host": [
@@ -3966,7 +4644,13 @@
           "event": [],
           "request": {
             "method": "GET",
-            "header": [],
+            "header": [
+              {
+                "key": "Origin",
+                "value": "http://localhost:3000",
+                "type": "text"
+              }
+            ],
             "url": {
               "raw": "{{base_url}}/user/me/credits",
               "host": [
@@ -3996,7 +4680,13 @@
           "event": [],
           "request": {
             "method": "GET",
-            "header": [],
+            "header": [
+              {
+                "key": "Origin",
+                "value": "http://localhost:3000",
+                "type": "text"
+              }
+            ],
             "url": {
               "raw": "{{base_url}}/user/me/usage",
               "host": [
@@ -4026,7 +4716,13 @@
           "event": [],
           "request": {
             "method": "GET",
-            "header": [],
+            "header": [
+              {
+                "key": "Origin",
+                "value": "http://localhost:3000",
+                "type": "text"
+              }
+            ],
             "url": {
               "raw": "{{base_url}}/user/me/referrals",
               "host": [

@@ -164,10 +164,18 @@ function parseRoutes() {
                 event: getEventScripts(folderName, routePath),
                 request: {
                     method: method,
-                    header: [],
+                    header: [
+                        {
+                            key: "Origin",
+                            value: "http://localhost:3000",
+                            type: "text"
+                        }
+                    ],
                     url: {
                         raw: `{{base_url}}/${folderName}${finalPathString ? '/' + finalPathString : ''}`,
-                        host: ["{{base_url}}"],
+                        host: [
+                            "{{base_url}}"
+                        ],
                         path: [folderName].concat(postmanPath.filter(p => p !== ''))
                     }
                 },
