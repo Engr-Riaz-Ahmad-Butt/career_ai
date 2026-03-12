@@ -7,6 +7,7 @@ import { useForm, useFieldArray } from 'react-hook-form';
 import { z } from 'zod';
 
 import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
@@ -27,6 +28,7 @@ export function ExperienceSection({ data, onChange }: ExperienceSectionProps) {
         formState: { errors },
         watch,
         reset,
+        setValue,
     } = useForm<{ experiences: ExperienceData[] }>({
         resolver: zodResolver(z.object({ experiences: z.array(experienceSchema) })),
         mode: 'onChange',
@@ -45,7 +47,7 @@ export function ExperienceSection({ data, onChange }: ExperienceSectionProps) {
         if (JSON.stringify(data) !== JSON.stringify(watchedExperiences)) {
             reset({ experiences: data });
         }
-    }, [data, reset]);
+    }, [data, reset, watchedExperiences]);
 
     // Sync back to store on any change
     useEffect(() => {
@@ -113,8 +115,8 @@ export function ExperienceSection({ data, onChange }: ExperienceSectionProps) {
                         <div className="space-y-1.5">
                             <Label className="text-xs font-semibold text-slate-500">Start Date</Label>
                             <Input
+                                type="date"
                                 {...register(`experiences.${index}.startDate`)}
-                                placeholder="Jan 2022"
                                 className={`h-10 rounded-xl ${errors.experiences?.[index]?.startDate ? 'border-rose-500' : ''}`}
                             />
                             {errors.experiences?.[index]?.startDate && (
@@ -124,10 +126,22 @@ export function ExperienceSection({ data, onChange }: ExperienceSectionProps) {
                         <div className="space-y-1.5">
                             <Label className="text-xs font-semibold text-slate-500">End Date</Label>
                             <Input
+                                type="date"
                                 {...register(`experiences.${index}.endDate`)}
-                                placeholder="Present"
-                                className="h-10 rounded-xl"
+                                disabled={Boolean(watchedExperiences?.[index]?.currentlyWorking)}
+                                className="h-10 rounded-xl disabled:opacity-60"
                             />
+                            <div className="flex items-center gap-2 pt-1">
+                                <Checkbox
+                                    checked={Boolean(watchedExperiences?.[index]?.currentlyWorking)}
+                                    onCheckedChange={(checked) => {
+                                        setValue(`experiences.${index}.currentlyWorking`, checked, { shouldDirty: true, shouldValidate: true });
+                                        setValue(`experiences.${index}.endDate`, checked ? 'Present' : '', { shouldDirty: true, shouldValidate: true });
+                                    }}
+                                    onClick={(e) => e.stopPropagation()}
+                                />
+                                <span className="text-xs text-slate-500">Present</span>
+                            </div>
                         </div>
                     </div>
 

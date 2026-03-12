@@ -17,7 +17,7 @@ import {
     Loader2
 } from 'lucide-react';
 import { useSearchParams } from 'next/navigation';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 
 import { ComponentErrorBoundary } from '@/components/errors/ComponentErrorBoundary';
 import { ATSScorePanel } from '@/components/resume/ATSScorePanel';
@@ -57,6 +57,10 @@ import { ImproveCVMode } from '@/features/resume/components/ImproveCVMode';
 import { PromptToCVMode } from '@/features/resume/components/PromptToCVMode';
 import { useDebounce } from '@/hooks/use-debounce';
 import { useResumes, useResume, useCreateResume, useUpdateResume, useDeleteResume } from '@/hooks/use-resumes';
+import apiClient from '@/lib/api/client';
+import { jobsApi } from '@/lib/api/endpoints/jobs.api';
+import { resumeApi } from '@/lib/api/endpoints/resume.api';
+import { toApiResumePayload } from '@/lib/mappers/resume.mapper';
 import { resumeTemplates } from '@/lib/resumeTemplates';
 import { useDocumentStore } from '@/store/documentStore';
 import { useUIStore } from '@/store/uiStore';
@@ -73,51 +77,62 @@ export type FlowState =
     | 'editor';
 
 function mapWizardDataToResumeData(data: Partial<WizardData>, template: ResumeTemplate): Partial<ResumeData> {
+    const portfolioUrl = data.contact?.website || data.contact?.github || '';
+
     return {
         template: template.id,
         personalInfo: {
-            fullName: data.contact?.fullName ?? '',
-            email: data.contact?.email ?? '',
+            fullName: data.contact?.fullName && data.contact.fullName.trim() !== '' ? data.contact.fullName : 'Anonymous User',
+            email: data.contact?.email && data.contact.email.trim() !== '' ? data.contact.email : 'user@example.com',
             phone: data.contact?.phone ?? '',
             location: data.contact?.location ?? '',
-            linkedin: data.contact?.linkedin ?? '',
-            portfolio: data.contact?.website ?? '',
+            linkedin: data.contact?.linkedin && data.contact.linkedin.trim() !== '' 
+                ? (data.contact.linkedin.startsWith('http') ? data.contact.linkedin : `https://${data.contact.linkedin}`) 
+                : '',
+            portfolio: portfolioUrl && portfolioUrl.trim() !== '' 
+                ? (portfolioUrl.startsWith('http') ? portfolioUrl : `https://${portfolioUrl}`) 
+                : '',
         },
         summary: data.summary ?? '',
         experience: (data.experience ?? []).map(e => ({
             id: e.id,
-            company: e.company,
-            position: e.position,
-            location: e.location,
-            startDate: e.startDate,
-            endDate: e.endDate,
-            description: e.description,
-            achievements: e.achievements,
+            company: e.company || '',
+            position: e.position || '',
+            location: e.location || '',
+            startDate: e.startDate || new Date().toISOString().split('T')[0],
+            endDate: e.endDate || 'Present',
+            description: e.description || '',
+            achievements: e.achievements || [],
         })),
         education: (data.education ?? []).map(e => ({
             id: e.id,
-            school: e.school,
-            degree: e.degree,
-            field: e.field,
-            startDate: e.startDate,
-            endDate: e.endDate,
+            school: e.school || '',
+            degree: e.degree || '',
+            field: e.field || '',
+            location: e.location || '',
+            startDate: e.startDate || new Date().toISOString().split('T')[0],
+            endDate: e.endDate || '',
+            gpa: e.gpa || '',
+            description: e.description || '',
         })),
         skills: {
-            technical: [...(data.skills?.technical ?? []), ...(data.skills?.tools ?? [])],
-            soft: [...(data.skills?.soft ?? []), ...(data.skills?.languages ?? [])],
+            technical: data.skills?.technical ?? [],
+            soft: data.skills?.soft ?? [],
+            tools: data.skills?.tools ?? [],
+            languages: data.skills?.languages ?? []
         },
         projects: (data.projects ?? []).map(p => ({
             id: p.id,
-            name: p.name,
-            description: p.description,
-            technologies: p.techStack,
-            url: p.url,
+            name: p.name || '',
+            description: p.description || '',
+            technologies: p.techStack || [],
+            url: p.url || '',
         })),
         certifications: (data.certifications ?? []).map(c => ({
             id: c.id,
-            name: c.name,
-            issuer: c.issuer,
-            date: c.date,
+            name: c.name || '',
+            issuer: c.issuer || '',
+            date: c.date || '',
         })),
         languages: [],
         interests: [],
@@ -153,6 +168,12 @@ export function ResumeBuilder({
     const [newResumeName, setNewResumeName] = useState('');
     const [showATSScore, setShowATSScore] = useState(false);
 
+    const [jobDescription, setJobDescription] = useState('');
+    const [atsData, setAtsData] = useState<{ score: number, missingKeywords: string[], weakSections: string[] } | null>(null);
+    const [isCalculatingAts, setIsCalculatingAts] = useState(false);
+    const [atsError, setAtsError] = useState<string | null>(null);
+    const [activeTab, setActiveTab] = useState(initialTab);
+
     // Store
     const {
         currentResume,
@@ -171,7 +192,7 @@ export function ResumeBuilder({
 
     // Queries & Mutations
     const { data: resumesResponse } = useResumes();
-    const resumes = resumesResponse?.data || [];
+    const resumes = useMemo(() => resumesResponse?.data || [], [resumesResponse]);
     const { data: resumeResponse, isLoading: isLoadingResume } = useResume(resumeId);
     const createMutation = useCreateResume();
     const updateMutation = useUpdateResume();
@@ -190,7 +211,7 @@ export function ResumeBuilder({
 
     useEffect(() => {
         if (isDirty && debouncedResume && resumeId) {
-            updateMutation.mutate({ id: resumeId, data: debouncedResume }, {
+            updateMutation.mutate({ id: resumeId, data: toApiResumePayload(debouncedResume) }, {
                 onSuccess: () => markSaved()
             });
         }
@@ -227,7 +248,7 @@ export function ResumeBuilder({
             ? `${pendingWizardData.contact.fullName}'s CV`
             : 'My New CV';
 
-        createMutation.mutate({ ...resumeData, title }, {
+        createMutation.mutate(toApiResumePayload({ ...resumeData, title }), {
             onSuccess: (resume) => {
                 setResume(resume);
                 setFlow('editor');
@@ -266,8 +287,73 @@ export function ResumeBuilder({
         });
     };
 
+    const handleCalculateAts = async () => {
+        if (!jobDescription.trim()) {
+            setAtsError('Please enter a job description.');
+            return;
+        }
+        setAtsError(null);
+        setIsCalculatingAts(true);
+        try {
+            const result: any = await resumeApi.getAtsScore(currentResume!.id, { jobDescription, returnSuggestions: true });
+
+            setAtsData({
+                score: result?.score || 0,
+                missingKeywords: result?.missingKeywords ?? [],
+                weakSections: result?.weakSections ?? []
+            });
+            if (result?.score) {
+                setFullResume({ atsScore: result.score });
+            }
+        } catch (err: any) {
+            setAtsError(err?.response?.data?.message || 'Failed to calculate ATS score');
+        } finally {
+            setIsCalculatingAts(false);
+        }
+    };
+
+    // Open the ATS/Download modal (simple UI)
     const handleDownload = () => {
-        setShowATSScore(!showATSScore);
+        setShowATSScore(true);
+    };
+
+    // Download PDF directly (using html2pdf.js)
+    const handleDownloadPdf = () => {
+        void (async () => {
+            if (!currentResume?.id) {
+                message.error('No resume selected');
+                return;
+            }
+
+            try {
+                message.loading({ content: 'Preparing your PDF…', key: 'resume-pdf' });
+                const originalZoom = previewZoom;
+                setPreviewZoom(100);
+
+                await new Promise(r => setTimeout(r, 200));
+
+                const element = document.getElementById('preview-renderer-container');
+                if (!element) throw new Error('Preview container not found');
+
+                const opt = {
+                    margin: 0,
+                    filename: `${currentResume.title || 'resume'}.pdf`,
+                    image: { type: 'jpeg', quality: 0.98 },
+                    html2canvas: { scale: 2, useCORS: true },
+                    jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
+                };
+
+                const html2pdf = (await import('html2pdf.js')).default;
+
+                // @ts-ignore
+                await html2pdf().set(opt).from(element).save();
+
+                setPreviewZoom(originalZoom);
+                message.success({ content: 'PDF downloaded successfully!', key: 'resume-pdf' });
+            } catch (err: any) {
+                message.error({ content: err?.message || 'Failed to generate PDF', key: 'resume-pdf' });
+            }
+        })();
     };
 
     useEffect(() => {
@@ -421,7 +507,9 @@ export function ResumeBuilder({
 
                 <Button
                     size="sm"
-                    onClick={() => setShowATSScore(!showATSScore)}
+                    onClick={() => {
+                        setShowATSScore(true);
+                    }}
                     className="rounded-xl text-xs h-9 gap-1.5 bg-indigo-600 hover:bg-indigo-700 text-white"
                 >
                     <Zap className="w-3.5 h-3.5" /> ATS Score
@@ -467,11 +555,16 @@ export function ResumeBuilder({
                     >
                         <ComponentErrorBoundary componentName="ATSScorePanel">
                             <ATSScorePanel
-                                score={currentResume.atsScore ?? 62}
-                                missingKeywords={['leadership', 'agile', 'stakeholder management', 'cross-functional']}
-                                weakSections={['Summary — too generic', 'Experience — missing quantifiable results']}
-                                onDownload={() => { setShowATSScore(false); window.print(); }}
-                                onFixWithAI={() => setShowATSScore(false)}
+                                score={atsData ? atsData.score : (currentResume.atsScore ?? 62)}
+                                missingKeywords={atsData ? atsData.missingKeywords : []}
+                                weakSections={atsData ? atsData.weakSections : []}
+                                jobDescription={jobDescription}
+                                onJobDescriptionChange={setJobDescription}
+                                onCalculate={handleCalculateAts}
+                                isCalculating={isCalculatingAts}
+                                error={atsError}
+                                onDownload={() => { setShowATSScore(false); handleDownloadPdf(); }}
+                                onFixWithAI={() => { setShowATSScore(false); setActiveTab('optimizer'); }}
                                 onClose={() => setShowATSScore(false)}
                             />
                         </ComponentErrorBoundary>
@@ -480,7 +573,7 @@ export function ResumeBuilder({
             </AnimatePresence>
 
             <main className="flex-1 max-w-[1600px] mx-auto w-full px-6 py-8">
-                <Tabs defaultValue={initialTab} className="space-y-6">
+                <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
                     <TabsList className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-sm p-1 gap-1 h-auto">
                         {['overview', 'editor', 'customize', 'optimizer'].map(tab => (
                             <TabsTrigger
@@ -651,7 +744,7 @@ export function ResumeBuilder({
 
                             <div className="xl:col-span-7 sticky top-[80px] h-[calc(100vh-130px)] bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-xl overflow-hidden flex flex-col">
                                 <div className="flex-1 overflow-auto p-8 bg-slate-50/50 dark:bg-slate-900/50 flex justify-center items-start">
-                                    <div className="shadow-2xl bg-white origin-top" style={{ transform: `scale(${previewZoom / 100})` }}>
+                                    <div id="preview-renderer-container" className="shadow-2xl bg-white origin-top" style={{ transform: `scale(${previewZoom / 100})` }}>
                                         <TemplateRenderer resume={currentResume} zoom={1} />
                                     </div>
                                 </div>

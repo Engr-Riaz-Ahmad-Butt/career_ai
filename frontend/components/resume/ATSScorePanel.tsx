@@ -2,14 +2,20 @@
 
 import { motion, AnimatePresence } from 'framer-motion';
 import { Download, Sparkles, X, AlertTriangle, CheckCircle, Tag, ChevronRight } from 'lucide-react';
-import { useState, useEffect } from 'react';
 
 import { Button } from '@/components/ui/button';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
 
 interface ATSScorePanelProps {
     score: number;
     missingKeywords?: string[];
     weakSections?: string[];
+    jobDescription?: string;
+    isCalculating?: boolean;
+    error?: string | null;
+    onJobDescriptionChange?: (value: string) => void;
+    onCalculate?: () => void;
     onDownload: () => void;
     onFixWithAI?: () => void;
     onClose?: () => void;
@@ -57,6 +63,11 @@ export function ATSScorePanel({
     score,
     missingKeywords = [],
     weakSections = [],
+    jobDescription,
+    isCalculating,
+    error,
+    onJobDescriptionChange,
+    onCalculate,
     onDownload,
     onFixWithAI,
     onClose,
@@ -96,6 +107,32 @@ export function ATSScorePanel({
 
             {/* Body */}
             <div className="p-6 space-y-6">
+                {(onCalculate || onJobDescriptionChange) && (
+                    <div className="space-y-2">
+                        <Label className="text-xs font-bold uppercase tracking-wider text-slate-500">
+                            Job Description (required)
+                        </Label>
+                        <Textarea
+                            value={jobDescription ?? ''}
+                            onChange={(e) => onJobDescriptionChange?.(e.target.value)}
+                            placeholder="Paste the job description here to calculate ATS score…"
+                            className="min-h-[120px] rounded-xl resize-none"
+                        />
+                        {error && (
+                            <p className="text-xs text-red-600">{error}</p>
+                        )}
+                        {onCalculate && (
+                            <Button
+                                onClick={onCalculate}
+                                disabled={Boolean(isCalculating)}
+                                className="w-full h-11 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold"
+                            >
+                                {isCalculating ? 'Calculating…' : 'Calculate ATS Score'}
+                            </Button>
+                        )}
+                    </div>
+                )}
+
                 {missingKeywords.length > 0 && (
                     <div>
                         <div className="flex items-center gap-2 mb-3">

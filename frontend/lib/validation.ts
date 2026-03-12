@@ -48,8 +48,8 @@ export const personalInfoSchema = z.object({
     email: z.string().email('Invalid email address'),
     phone: z.string().optional(),
     location: z.string().optional(),
-    linkedin: z.string().url('Invalid LinkedIn URL').optional().or(z.literal('')),
-    portfolio: z.string().url('Invalid Website URL').optional().or(z.literal('')),
+    linkedin: z.string().optional().or(z.literal('')),
+    portfolio: z.string().optional().or(z.literal('')),
 });
 
 export const experienceSchema = z.object({
@@ -68,12 +68,12 @@ export const educationSchema = z.object({
     id: z.string(),
     degree: z.string().min(1, 'Degree is required'),
     school: z.string().min(1, 'School is required'),
-    field: z.string(),
-    location: z.string(),
-    startDate: z.string(),
-    endDate: z.string(),
-    gpa: z.string(),
-    description: z.string(),
+    field: z.string().optional().default(''),
+    location: z.string().optional().default(''),
+    startDate: z.string().optional().default(''),
+    endDate: z.string().optional().default(''),
+    gpa: z.string().optional().default(''),
+    description: z.string().optional().default(''),
 });
 
 export const createResumeSchema = z.object({

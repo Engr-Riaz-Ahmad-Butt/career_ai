@@ -7,6 +7,7 @@ import { useForm, useFieldArray } from 'react-hook-form';
 import { z } from 'zod';
 
 import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { educationSchema } from '@/lib/validation';
@@ -26,6 +27,7 @@ export function EducationSection({ data, onChange }: EducationSectionProps) {
         formState: { errors },
         watch,
         reset,
+        setValue,
     } = useForm<{ education: EducationData[] }>({
         resolver: zodResolver(z.object({ education: z.array(educationSchema) })),
         mode: 'onChange',
@@ -43,7 +45,7 @@ export function EducationSection({ data, onChange }: EducationSectionProps) {
         if (JSON.stringify(data) !== JSON.stringify(watchedEducation)) {
             reset({ education: data });
         }
-    }, [data, reset]);
+    }, [data, reset, watchedEducation]);
 
     useEffect(() => {
         onChange(watchedEducation);
@@ -105,8 +107,8 @@ export function EducationSection({ data, onChange }: EducationSectionProps) {
                         <div className="space-y-1.5">
                             <Label className="text-xs font-semibold text-slate-500">Start Date</Label>
                             <Input
+                                type="date"
                                 {...register(`education.${index}.startDate`)}
-                                placeholder="Sep 2018"
                                 className={`h-10 rounded-xl ${errors.education?.[index]?.startDate ? 'border-rose-500' : ''}`}
                             />
                             {errors.education?.[index]?.startDate && (
@@ -116,10 +118,21 @@ export function EducationSection({ data, onChange }: EducationSectionProps) {
                         <div className="space-y-1.5">
                             <Label className="text-xs font-semibold text-slate-500">End Date</Label>
                             <Input
+                                type="date"
                                 {...register(`education.${index}.endDate`)}
-                                placeholder="Jun 2022"
-                                className="h-10 rounded-xl"
+                                disabled={watchedEducation?.[index]?.endDate === 'Present'}
+                                className="h-10 rounded-xl disabled:opacity-60"
                             />
+                            <div className="flex items-center gap-2 pt-1">
+                                <Checkbox
+                                    checked={watchedEducation?.[index]?.endDate === 'Present'}
+                                    onCheckedChange={(checked) => {
+                                        setValue(`education.${index}.endDate`, checked ? 'Present' : '', { shouldDirty: true, shouldValidate: true });
+                                    }}
+                                    onClick={(e) => e.stopPropagation()}
+                                />
+                                <span className="text-xs text-slate-500">Present</span>
+                            </div>
                         </div>
                     </div>
                 </div>
