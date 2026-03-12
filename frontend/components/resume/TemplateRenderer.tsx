@@ -1,18 +1,19 @@
 'use client';
 
 import { resumeTemplates } from '@/lib/resumeTemplates';
-import { ResumeData, ResumeTemplate } from '@/types/resume';
+import { ResumeData } from '@/types/resume';
 
-import {
-  ClassicProfessionalPreview,
-  ModernTechPreview,
-  MinimalistCleanPreview,
-  CreativeDesignerPreview,
-  ExecutiveElegantPreview,
-  StartupVibrantPreview,
-  AcademicStructuredPreview,
-  GradientModernPreview,
-} from './template-preview';
+import { 
+  SimpleProfessionalPreview,
+  ModernTemplatePreview,
+  ClassicTemplatePreview,
+  MinimalTemplatePreview,
+  SidebarTemplatePreview,
+  ExecutiveTemplatePreview,
+  CreativeTemplatePreview,
+  TwoColumnTemplatePreview,
+  AtsClassicTemplatePreview
+} from './templates';
 
 interface TemplateRendererProps {
   resume: ResumeData;
@@ -20,14 +21,15 @@ interface TemplateRendererProps {
 }
 
 const previewMap: Record<string, React.ComponentType<any>> = {
-  'classic-professional': ClassicProfessionalPreview,
-  'modern-tech': ModernTechPreview,
-  'minimalist-clean': MinimalistCleanPreview,
-  'creative-designer': CreativeDesignerPreview,
-  'executive-elegant': ExecutiveElegantPreview,
-  'startup-vibrant': StartupVibrantPreview,
-  'academic-structured': AcademicStructuredPreview,
-  'gradient-modern': GradientModernPreview,
+  'simple-professional': SimpleProfessionalPreview,
+  'modern': ModernTemplatePreview,
+  'classic': ClassicTemplatePreview,
+  'minimal': MinimalTemplatePreview,
+  'sidebar': SidebarTemplatePreview,
+  'executive': ExecutiveTemplatePreview,
+  'creative': CreativeTemplatePreview,
+  'two-column': TwoColumnTemplatePreview,
+  'ats-classic': AtsClassicTemplatePreview
 };
 
 export function TemplateRenderer({ resume, zoom = 1 }: TemplateRendererProps) {
@@ -55,4 +57,3 @@ export function TemplateRenderer({ resume, zoom = 1 }: TemplateRendererProps) {
     </div>
   );
 }
-

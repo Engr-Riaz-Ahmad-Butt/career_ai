@@ -81,6 +81,7 @@ export interface ResumeStyling {
     };
     colors: {
         primary: string;
+        secondary?: string;
         accent: string;
         applyToName: boolean;
         applyToTitle: boolean;

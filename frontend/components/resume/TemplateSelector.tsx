@@ -10,15 +10,16 @@ import { resumeTemplates } from '@/lib/resumeTemplates';
 import { ResumeTemplate } from '@/types/resume';
 
 import {
-  ClassicProfessionalPreview,
-  ModernTechPreview,
-  MinimalistCleanPreview,
-  CreativeDesignerPreview,
-  ExecutiveElegantPreview,
-  StartupVibrantPreview,
-  AcademicStructuredPreview,
-  GradientModernPreview,
-} from './template-preview';
+  SimpleProfessionalPreview,
+  ModernTemplatePreview,
+  ClassicTemplatePreview,
+  MinimalTemplatePreview,
+  SidebarTemplatePreview,
+  ExecutiveTemplatePreview,
+  CreativeTemplatePreview,
+  TwoColumnTemplatePreview,
+  AtsClassicTemplatePreview
+} from './templates';
 
 
 interface TemplateSelectorProps {
@@ -29,14 +30,15 @@ interface TemplateSelectorProps {
 }
 
 const previewMap: Record<string, React.ComponentType<{ template: ResumeTemplate; isSelected: boolean }>> = {
-  'classic-professional': ClassicProfessionalPreview,
-  'modern-tech': ModernTechPreview,
-  'minimalist-clean': MinimalistCleanPreview,
-  'creative-designer': CreativeDesignerPreview,
-  'executive-elegant': ExecutiveElegantPreview,
-  'startup-vibrant': StartupVibrantPreview,
-  'academic-structured': AcademicStructuredPreview,
-  'gradient-modern': GradientModernPreview,
+  'simple-professional': SimpleProfessionalPreview,
+  'modern': ModernTemplatePreview,
+  'classic': ClassicTemplatePreview,
+  'minimal': MinimalTemplatePreview,
+  'sidebar': SidebarTemplatePreview,
+  'executive': ExecutiveTemplatePreview,
+  'creative': CreativeTemplatePreview,
+  'two-column': TwoColumnTemplatePreview,
+  'ats-classic': AtsClassicTemplatePreview
 };
 
 const categories = ['classic', 'modern', 'minimal', 'creative'] as const;
@@ -215,5 +217,3 @@ export function TemplateSelector({
     </AnimatePresence>
   );
 }
-
-
