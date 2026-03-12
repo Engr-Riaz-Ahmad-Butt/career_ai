@@ -24,6 +24,12 @@ const postmanEnvironment = {
             enabled: true
         },
         {
+            key: "frontend_url",
+            value: "http://localhost:3001",
+            type: "default",
+            enabled: true
+        },
+        {
             key: "token",
             value: "",
             type: "secret",
@@ -59,6 +65,24 @@ function getSampleBody(folderName: string, endpointName: string, method: string)
         bodyObj = {
             title: "Software Engineer Resume",
             template: "modern",
+            personalInfo: {
+                fullName: "Test User",
+                email: "testuser@example.com",
+                linkedin: "https://www.linkedin.com/in/testuser"
+            },
+            experience: [
+                {
+                    title: "Senior Developer",
+                    company: "Tech Corp",
+                    startDate: "2020-01-01"
+                }
+            ],
+            skills: [
+                {
+                    category: "Languages",
+                    items: ["TypeScript", "Python"]
+                }
+            ],
             styling: {
                 theme: "light",
                 color: "#000000"
@@ -167,7 +191,7 @@ function parseRoutes() {
                     header: [
                         {
                             key: "Origin",
-                            value: "http://localhost:5000",
+                            value: "{{frontend_url}}",
                             type: "text"
                         },
                         {
