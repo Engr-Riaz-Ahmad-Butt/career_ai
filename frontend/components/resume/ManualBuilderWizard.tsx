@@ -8,15 +8,16 @@ import {
 import { useState, useCallback, useRef, useEffect } from 'react';
 
 import {
-    ClassicProfessionalPreview,
-    ModernTechPreview,
-    MinimalistCleanPreview,
-    CreativeDesignerPreview,
-    ExecutiveElegantPreview,
-    StartupVibrantPreview,
-    AcademicStructuredPreview,
-    GradientModernPreview,
-} from '@/components/resume/TemplatePreview';
+    SimpleProfessionalPreview,
+    ModernTemplatePreview,
+    ClassicTemplatePreview,
+    MinimalTemplatePreview,
+    SidebarTemplatePreview,
+    ExecutiveTemplatePreview,
+    CreativeTemplatePreview,
+    TwoColumnTemplatePreview,
+    AtsClassicTemplatePreview
+} from '@/components/resume/templates';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -26,14 +27,15 @@ import { resumeTemplates } from '@/lib/resumeTemplates';
 import { ResumeTemplate } from '@/types/resume';
 
 const PREVIEW_MAP: Record<string, React.ComponentType<any>> = {
-    'classic-professional': ClassicProfessionalPreview,
-    'modern-tech': ModernTechPreview,
-    'minimalist-clean': MinimalistCleanPreview,
-    'creative-designer': CreativeDesignerPreview,
-    'executive-elegant': ExecutiveElegantPreview,
-    'startup-vibrant': StartupVibrantPreview,
-    'academic-structured': AcademicStructuredPreview,
-    'gradient-modern': GradientModernPreview,
+    'simple-professional': SimpleProfessionalPreview,
+    'modern': ModernTemplatePreview,
+    'classic': ClassicTemplatePreview,
+    'minimal': MinimalTemplatePreview,
+    'sidebar': SidebarTemplatePreview,
+    'executive': ExecutiveTemplatePreview,
+    'creative': CreativeTemplatePreview,
+    'two-column': TwoColumnTemplatePreview,
+    'ats-classic': AtsClassicTemplatePreview,
 };
 
 const STEPS = [
@@ -62,6 +64,7 @@ export interface WizardData {
         location: string;
         startDate: string;
         endDate: string;
+        currentlyWorking?: boolean;
         description: string;
         achievements: string[];
     }>;
@@ -180,7 +183,7 @@ export function ManualBuilderWizard({ initialData, selectedTemplate, onComplete,
     const [enhancing, setEnhancing] = useState(false);
     const saveTimerRef = useRef<NodeJS.Timeout>();
     const previewTemplate = selectedTemplate || resumeTemplates[0];
-    const PreviewComp = PREVIEW_MAP[previewTemplate.id] || ClassicProfessionalPreview;
+    const PreviewComp = PREVIEW_MAP[previewTemplate.id] || SimpleProfessionalPreview;
     const previewData = mapToPreviewData(data, previewTemplate);
 
     // Auto-save every 30s
@@ -193,8 +196,82 @@ export function ManualBuilderWizard({ initialData, selectedTemplate, onComplete,
     }, []);
 
     const handleNext = () => {
-        if (step < STEPS.length - 1) setStep(step + 1);
-        else onComplete(data);
+        import('antd').then(({ message }) => {
+            const stepId = STEPS[step].id;
+
+            if (stepId === 'personal') {
+                if (!data.contact.fullName.trim()) return message.error('Full Name is required');
+                if (!data.contact.email.trim()) return message.error('Email is required');
+                if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.contact.email.trim())) return message.error('Valid Email is required');
+                if (!data.contact.phone.trim()) return message.error('Phone is required');
+
+                const urlRegex = /^(https?:\/\/)?([\w.-]+)\.([a-z]{2,})(:\d{1,5})?(\/.*)?$/i;
+                if (data.contact.linkedin && data.contact.linkedin.trim() !== '' && !urlRegex.test(data.contact.linkedin)) return message.error('LinkedIn must be a valid URL (e.g. linkedin.com/in/myname)');
+                if (data.contact.website && data.contact.website.trim() !== '' && !urlRegex.test(data.contact.website)) return message.error('Website must be a valid URL');
+                if (data.contact.github && data.contact.github.trim() !== '' && !urlRegex.test(data.contact.github)) return message.error('GitHub must be a valid URL');
+            }
+
+            if (stepId === 'experience') {
+                if (data.experience.length === 0) {
+                    message.open({
+                        type: 'error',
+                        duration: 3,
+                        content: (
+                            <div className="flex items-start gap-3">
+                                <div className="mt-0.5 h-8 w-8 rounded-full bg-rose-50 flex items-center justify-center text-rose-600 font-black">
+                                    !
+                                </div>
+                                <div className="leading-tight">
+                                    <div className="font-extrabold text-slate-900">Add your first work experience</div>
+                                    <div className="text-slate-600 text-sm mt-1">
+                                        Please add at least <span className="font-bold">1</span> work experience to continue.
+                                    </div>
+                                </div>
+                            </div>
+                        ),
+                    });
+                    return;
+                }
+                for (let i = 0; i < data.experience.length; i += 1) {
+                    const exp = data.experience[i];
+                    if (!exp.position.trim()) return message.error(`Experience #${i + 1}: Job Title is required`);
+                    if (!exp.company.trim()) return message.error(`Experience #${i + 1}: Company is required`);
+                    if (!exp.startDate.trim()) return message.error(`Experience #${i + 1}: Start Date is required`);
+                }
+            }
+
+            if (stepId === 'education') {
+                if (data.education.length === 0) {
+                    message.open({
+                        type: 'error',
+                        duration: 3,
+                        content: (
+                            <div className="flex items-start gap-3">
+                                <div className="mt-0.5 h-8 w-8 rounded-full bg-rose-50 flex items-center justify-center text-rose-600 font-black">
+                                    !
+                                </div>
+                                <div className="leading-tight">
+                                    <div className="font-extrabold text-slate-900">Add your education</div>
+                                    <div className="text-slate-600 text-sm mt-1">
+                                        Please add at least <span className="font-bold">1</span> education entry to continue.
+                                    </div>
+                                </div>
+                            </div>
+                        ),
+                    });
+                    return;
+                }
+                for (let i = 0; i < data.education.length; i += 1) {
+                    const edu = data.education[i];
+                    if (!edu.school.trim()) return message.error(`Education #${i + 1}: Institution is required`);
+                    if (!edu.degree.trim()) return message.error(`Education #${i + 1}: Degree is required`);
+                    if (!edu.startDate.trim()) return message.error(`Education #${i + 1}: Start Date is required`);
+                }
+            }
+
+            if (step < STEPS.length - 1) setStep(step + 1);
+            else onComplete(data);
+        });
     };
 
     const handleBack = () => {
@@ -211,7 +288,7 @@ export function ManualBuilderWizard({ initialData, selectedTemplate, onComplete,
     };
 
     const addExp = () => setData(d => ({
-        ...d, experience: [...d.experience, { id: uid(), company: '', position: '', location: '', startDate: '', endDate: '', description: '', achievements: [] }]
+        ...d, experience: [...d.experience, { id: uid(), company: '', position: '', location: '', startDate: '', endDate: '', currentlyWorking: false, description: '', achievements: [] }]
     }));
     const removeExp = (id: string) => setData(d => ({ ...d, experience: d.experience.filter(e => e.id !== id) }));
     const updateExp = (id: string, field: string, value: any) => setData(d => ({
@@ -331,11 +408,29 @@ export function ManualBuilderWizard({ initialData, selectedTemplate, onComplete,
                                     </div>
                                     <div className="space-y-1.5">
                                         <Label className="text-xs font-semibold text-slate-500">Start Date</Label>
-                                        <Input value={exp.startDate} onChange={e => updateExp(exp.id, 'startDate', e.target.value)} placeholder="Jan 2022" className="h-10 rounded-xl" />
+                                        <Input type="date" value={exp.startDate} onChange={e => updateExp(exp.id, 'startDate', e.target.value)} className="h-10 rounded-xl" />
                                     </div>
                                     <div className="space-y-1.5">
                                         <Label className="text-xs font-semibold text-slate-500">End Date</Label>
-                                        <Input value={exp.endDate} onChange={e => updateExp(exp.id, 'endDate', e.target.value)} placeholder="Present" className="h-10 rounded-xl" />
+                                        <Input
+                                            type="date"
+                                            value={exp.currentlyWorking ? '' : exp.endDate}
+                                            onChange={e => updateExp(exp.id, 'endDate', e.target.value)}
+                                            disabled={Boolean(exp.currentlyWorking)}
+                                            className="h-10 rounded-xl disabled:opacity-60"
+                                        />
+                                        <div className="flex items-center gap-2 pt-1">
+                                            <input
+                                                type="checkbox"
+                                                checked={Boolean(exp.currentlyWorking)}
+                                                onChange={(e) => {
+                                                    const checked = e.target.checked;
+                                                    updateExp(exp.id, 'currentlyWorking', checked);
+                                                    updateExp(exp.id, 'endDate', checked ? 'Present' : '');
+                                                }}
+                                            />
+                                            <span className="text-xs text-slate-500">Present</span>
+                                        </div>
                                     </div>
                                 </div>
                                 <div className="space-y-1.5">
@@ -392,11 +487,19 @@ export function ManualBuilderWizard({ initialData, selectedTemplate, onComplete,
                                 <div className="grid grid-cols-3 gap-4">
                                     <div className="space-y-1.5">
                                         <Label className="text-xs font-semibold text-slate-500">Start Date</Label>
-                                        <Input value={edu.startDate} onChange={e => updateEdu(edu.id, 'startDate', e.target.value)} placeholder="Sep 2018" className="h-10 rounded-xl" />
+                                        <Input type="date" value={edu.startDate} onChange={e => updateEdu(edu.id, 'startDate', e.target.value)} className="h-10 rounded-xl" />
                                     </div>
                                     <div className="space-y-1.5">
                                         <Label className="text-xs font-semibold text-slate-500">End Date</Label>
-                                        <Input value={edu.endDate} onChange={e => updateEdu(edu.id, 'endDate', e.target.value)} placeholder="Jun 2022" className="h-10 rounded-xl" />
+                                        <Input type="date" value={edu.endDate === 'Present' ? '' : edu.endDate} onChange={e => updateEdu(edu.id, 'endDate', e.target.value)} className="h-10 rounded-xl" />
+                                        <div className="flex items-center gap-2 pt-1">
+                                            <input
+                                                type="checkbox"
+                                                checked={edu.endDate === 'Present'}
+                                                onChange={(e) => updateEdu(edu.id, 'endDate', e.target.checked ? 'Present' : '')}
+                                            />
+                                            <span className="text-xs text-slate-500">Present</span>
+                                        </div>
                                     </div>
                                     <div className="space-y-1.5">
                                         <Label className="text-xs font-semibold text-slate-500">GPA (optional)</Label>

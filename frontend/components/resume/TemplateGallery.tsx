@@ -5,15 +5,16 @@ import { Check, Crown, ChevronRight } from 'lucide-react';
 import { useState } from 'react';
 
 import {
-    ClassicProfessionalPreview,
-    ModernTechPreview,
-    MinimalistCleanPreview,
-    CreativeDesignerPreview,
-    ExecutiveElegantPreview,
-    StartupVibrantPreview,
-    AcademicStructuredPreview,
-    GradientModernPreview,
-} from '@/components/resume/TemplatePreview';
+    SimpleProfessionalPreview,
+    ModernTemplatePreview,
+    ClassicTemplatePreview,
+    MinimalTemplatePreview,
+    SidebarTemplatePreview,
+    ExecutiveTemplatePreview,
+    CreativeTemplatePreview,
+    TwoColumnTemplatePreview,
+    AtsClassicTemplatePreview
+} from '@/components/resume/templates';
 import { Button } from '@/components/ui/button';
 import { resumeTemplates } from '@/lib/resumeTemplates';
 import { ResumeTemplate } from '@/types/resume';
@@ -31,25 +32,27 @@ const FILTERS: { id: FilterStyle; label: string }[] = [
 ];
 
 const TEMPLATE_STYLES: Record<string, FilterStyle[]> = {
-    'classic-professional': ['ats-friendly', 'simple'],
-    'modern-tech': ['modern', 'ats-friendly'],
-    'minimalist-clean': ['simple', 'ats-friendly'],
-    'creative-designer': ['creative'],
-    'executive-elegant': ['executive'],
-    'startup-vibrant': ['creative', 'modern'],
-    'academic-structured': ['simple', 'ats-friendly'],
-    'gradient-modern': ['modern', 'creative'],
+    'simple-professional': ['ats-friendly', 'simple'],
+    'modern': ['modern'],
+    'classic': ['ats-friendly'],
+    'minimal': ['simple', 'ats-friendly'],
+    'sidebar': ['modern'],
+    'executive': ['executive'],
+    'two-column': ['modern'],
+    'ats-classic': ['ats-friendly'],
+    'creative': ['creative'],
 };
 
 const PREVIEW_MAP: Record<string, React.ComponentType<any>> = {
-    'classic-professional': ClassicProfessionalPreview,
-    'modern-tech': ModernTechPreview,
-    'minimalist-clean': MinimalistCleanPreview,
-    'creative-designer': CreativeDesignerPreview,
-    'executive-elegant': ExecutiveElegantPreview,
-    'startup-vibrant': StartupVibrantPreview,
-    'academic-structured': AcademicStructuredPreview,
-    'gradient-modern': GradientModernPreview,
+    'simple-professional': SimpleProfessionalPreview,
+    'modern': ModernTemplatePreview,
+    'classic': ClassicTemplatePreview,
+    'minimal': MinimalTemplatePreview,
+    'sidebar': SidebarTemplatePreview,
+    'executive': ExecutiveTemplatePreview,
+    'creative': CreativeTemplatePreview,
+    'two-column': TwoColumnTemplatePreview,
+    'ats-classic': AtsClassicTemplatePreview,
 };
 
 interface TemplateGalleryProps {
@@ -180,4 +183,3 @@ export function TemplateGallery({ selectedTemplate, onSelect, onContinue, previe
         </div>
     );
 }
-
