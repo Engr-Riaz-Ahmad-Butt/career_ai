@@ -5,16 +5,15 @@ import { getCacheService } from '../services/cache.service';
 beforeAll(async () => {
     try {
         execSync('npx prisma migrate deploy', { stdio: 'inherit' });
-        console.log('Test database migrations completed.');
         await seedTestData();
     } catch (error) {
-        console.error('Error during test setup:', error);
+        process.stderr.write(`Error during test setup: ${String(error)}\n`);
         process.exit(1);
     }
 });
 
 afterEach(async () => {
-    const tablenames = await prisma.$queryRaw<any[]>`SELECT tablename FROM pg_tables WHERE schemaname='public'`;
+    const tablenames = await prisma.$queryRaw<Array<{ tablename: string }>>`SELECT tablename FROM pg_tables WHERE schemaname='public'`;
 
     const tables = tablenames
         .map((row) => row.tablename)
@@ -25,8 +24,8 @@ afterEach(async () => {
     if (tables.length > 0) {
         try {
             await prisma.$executeRawUnsafe(`TRUNCATE TABLE ${tables} CASCADE;`);
-        } catch (error) {
-            console.log({ error });
+        } catch {
+            // Ignore truncation errors during cleanup
         }
     }
 
@@ -42,6 +41,6 @@ afterAll(async () => {
     await cache.disconnect();
 });
 
-async function seedTestData() {
-    console.log('Seeding minimal test data...');
+async function seedTestData(): Promise<void> {
+    // Seed test data here when needed
 }

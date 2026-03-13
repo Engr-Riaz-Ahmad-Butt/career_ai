@@ -71,6 +71,11 @@ apiClient.interceptors.response.use(
             return Promise.reject(error);
         }
 
+        // Prevent interceptor loop: do not retry if the failing request is itself a refresh request
+        if (originalRequest.url === '/auth/refresh') {
+            return Promise.reject(error);
+        }
+
         if (error.response?.status === 401 && !originalRequest._retry) {
             if (isRefreshing) {
                 // Queue this request until the ongoing refresh completes

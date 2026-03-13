@@ -81,10 +81,44 @@ export const createResumeSchema = z.object({
     category: z.string(),
     items: z.array(z.string()),
   })).optional(),
-  styling: z.record(z.any()).optional(),
+  certifications: z.array(z.object({
+    name: z.string(),
+    issuer: z.string().optional(),
+    date: z.string().optional(),
+    url: z.string().url().optional(),
+  })).optional(),
+  projects: z.array(z.object({
+    name: z.string(),
+    description: z.string().optional(),
+    url: z.string().url().optional(),
+    technologies: z.array(z.string()).optional(),
+    startDate: z.string().optional(),
+    endDate: z.string().optional(),
+  })).optional(),
+  languages: z.array(z.object({
+    language: z.string(),
+    proficiency: z.string().optional(),
+  })).optional(),
+  styling: z.object({
+    primaryColor: z.string().regex(/^#[0-9A-Fa-f]{6}$/).optional(),
+    secondaryColor: z.string().regex(/^#[0-9A-Fa-f]{6}$/).optional(),
+    fontFamily: z.string().max(64).optional(),
+    fontSize: z.number().min(8).max(20).optional(),
+    lineHeight: z.number().min(1).max(3).optional(),
+    margins: z.object({
+      top: z.number().min(0).max(100).optional(),
+      bottom: z.number().min(0).max(100).optional(),
+      left: z.number().min(0).max(100).optional(),
+      right: z.number().min(0).max(100).optional(),
+    }).optional(),
+  }).optional(),
 });
 
-export const updateResumeSchema = createResumeSchema.partial();
+// updateResumeSchema only allows content fields — internal fields (userId, version, atsScore) are never updatable
+export const updateResumeSchema = createResumeSchema
+  .omit({ template: true })
+  .extend({ template: z.string().optional() })
+  .partial();
 
 export const tailorResumeSchema = z.object({
   baseResumeId: z.string().uuid('Invalid resume ID'),

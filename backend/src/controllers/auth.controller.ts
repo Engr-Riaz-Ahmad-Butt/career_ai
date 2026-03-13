@@ -41,12 +41,14 @@ function clearRefreshCookie(res: Response): void {
 }
 
 /** Send auth success response with cookies */
+type AuthUser = Record<string, unknown>;
+
 function sendAuthResponse(
   res: Response,
   statusCode: number,
   refreshToken: string,
   accessToken: string,
-  user: any,
+  user: AuthUser,
   message: string
 ): void {
   setRefreshCookie(res, refreshToken);

@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import { authenticate, requireCredits } from '@/middleware/auth';
+import { aiRateLimit, heavyAiRateLimit } from '@/middleware/userRateLimit';
 import {
   enhanceResume, scoreAts, getSuggestions, extractKeywords, fixGrammar, improveText
 } from '@/controllers/ai.controller';
@@ -23,20 +24,20 @@ import {
 
 const router = Router();
 router.use(authenticate);
+router.use(aiRateLimit); // 30 AI requests per 10 min per user
 
 // ── Resume AI ─────────────────────────────────────────────────────────────
 router.post('/resume/enhance', validate(enhanceResumeSchema), requireCredits(2), enhanceResume);
-router.post('/resume/tailor', validate(tailorResumeSchema), requireCredits(3), tailorResume);
+router.post('/resume/tailor', heavyAiRateLimit, validate(tailorResumeSchema), requireCredits(3), tailorResume);
 router.post('/resume/ats-score', validate(atsScoreSchema), requireCredits(1), scoreAts);
 router.post('/resume/suggestions', validate(aiSuggestionsSchema), getSuggestions);
 
 // ── Document Generators (aliases at /ai/* per spec) ──────────────────────
-// Document validation schemas will be added when refactoring document routes
 router.post('/cover-letter/generate', requireCredits(2), generateCoverLetter);
-router.post('/sop/generate', requireCredits(3), generateSOP);
+router.post('/sop/generate', heavyAiRateLimit, requireCredits(3), generateSOP);
 router.post('/motivation-letter/generate', requireCredits(2), generateMotivationLetter);
 router.post('/bio/generate', requireCredits(1), generateBio);
-router.post('/study-plan/generate', requireCredits(2), generateStudyPlan);
+router.post('/study-plan/generate', heavyAiRateLimit, requireCredits(2), generateStudyPlan);
 
 // ── Interview ─────────────────────────────────────────────────────────────
 router.post('/interview/generate', requireCredits(2), generateSession);

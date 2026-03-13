@@ -175,6 +175,12 @@ export const resumeApi = {
   ): Promise<{ jobId: string; status: 'processing' }> =>
     apiClient.post(`/jobs/resume/${id}/pdf`).then((r) => r.data.data),
 
+  /** POST /resumes/:id/pdf — direct (no background jobs) */
+  generatePdfDirect: (
+    id: string
+  ): Promise<{ pdfUrl: string; expiresAt: string }> =>
+    apiClient.post(`/resumes/${id}/pdf`).then((r) => r.data.data),
+
   /** GET /jobs/:jobId — poll for job status (BullMQ flow) */
   getPdfStatus: (jobId: string): Promise<JobStatusResponse> =>
     apiClient.get(`/jobs/${jobId}`).then((r) => r.data.data),

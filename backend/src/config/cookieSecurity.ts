@@ -174,7 +174,15 @@ export const HTTPONLY_SECURITY_CHECKLIST = {
 /**
  * Helper to verify cookie options are properly secured
  */
-export function verifyCookieSecurity(options: any): { isSecure: boolean; issues: string[] } {
+interface CookieOptions {
+  httpOnly?: boolean;
+  secure?: boolean;
+  sameSite?: string;
+  path?: string;
+  maxAge?: number;
+}
+
+export function verifyCookieSecurity(options: CookieOptions): { isSecure: boolean; issues: string[] } {
   const issues: string[] = [];
 
   if (!options.httpOnly) issues.push('httpOnly flag not set');

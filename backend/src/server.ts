@@ -6,6 +6,8 @@ import compression from 'compression';
 import rateLimit from 'express-rate-limit';
 import cookieParser from 'cookie-parser';
 import 'express-async-errors';
+import swaggerUi from 'swagger-ui-express';
+import { swaggerSpec } from '@/config/swagger';
 
 // Centralized env config — validates all env vars at startup
 import { env } from '@/config/env';
@@ -103,6 +105,16 @@ const limiter = rateLimit({
 });
 
 app.use('/api/', limiter);
+
+// ── API Docs (Swagger UI) ──────────────────────────────────────────────────
+// Available at /api/docs (non-production only to avoid leaking schema details)
+if (env.NODE_ENV !== 'production') {
+  app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec, {
+    customSiteTitle: 'CareerForge AI — API Docs',
+    swaggerOptions: { persistAuthorization: true },
+  }));
+  app.get('/api/docs.json', (_req, res) => res.json(swaggerSpec));
+}
 
 // ── Health Check ───────────────────────────────────────────────────────────
 

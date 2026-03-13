@@ -5,10 +5,16 @@ import { PAGINATION } from '@/constants/pagination';
 import { createHttpError } from '@/utils/errorHandler';
 import { findResourceByIdOrThrow, paginateQuery } from '@/utils/dbHelpers';
 import aiService from '@/services/ai/aiService';
-import pdf from 'pdf-parse';
-import mammoth from 'mammoth';
-import { z } from 'zod';
+import { updateResumeSchema } from '@/utils/validation';
+import type { z } from 'zod';
 import { Prisma } from '@prisma/client';
+
+// Dynamic import to avoid type issues with the pdf-parse CommonJS module
+const parsePdf = (buffer: Buffer): Promise<{ text: string }> =>
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    (require('pdf-parse') as (buf: Buffer) => Promise<{ text: string }>)(buffer);
+
+import mammoth from 'mammoth';
 
 const RESUME_SELECT = {
     id: true,
@@ -37,6 +43,16 @@ const RESUME_SELECT = {
 
 type ResumeRecord = Prisma.ResumeGetPayload<{ select: typeof RESUME_SELECT }>;
 
+type ResumeVersionRecord = {
+    id: string;
+    resumeId: string;
+    versionNum: number;
+    data: Prisma.JsonValue;
+    createdAt: Date;
+};
+
+type UpdateResumeInput = z.infer<typeof updateResumeSchema>;
+
 // ─── Types & Interfaces ──────────────────────────────────────────────────
 
 interface ListResumesOptions {
@@ -53,7 +69,7 @@ interface CreateResumeOptions {
     readonly industry?: string;
 }
 
-// ─── Validation ──────────────────────────────────────────────────────
+// ─── Helpers ──────────────────────────────────────────────────────
 
 function normalizeListOptions(options: ListResumesOptions = {}): {
     readonly page: number;
@@ -138,19 +154,26 @@ export class ResumeService {
     async getResumeById(userId: string, id: string): Promise<ResumeRecord> {
         if (!userId || !id) throw createHttpError(400, 'userId and id are required');
 
-           return findResourceByIdOrThrow<ResumeRecord>(
+        return findResourceByIdOrThrow<ResumeRecord>(
             prisma.resume,
             id,
             { userId },
-               RESUME_SELECT,
+            RESUME_SELECT,
             'Resume not found'
         );
     }
 
-    // PUT /resumes/:id - Update resume
-    async updateResume(userId: string, id: string, data: Record<string, unknown>): Promise<ResumeRecord> {
+    // PUT /resumes/:id - Update resume (validated + whitelisted fields only)
+    async updateResume(userId: string, id: string, raw: unknown): Promise<ResumeRecord> {
         if (!userId || !id) throw createHttpError(400, 'userId and id are required');
-        if (!data || Object.keys(data).length === 0) throw createHttpError(400, 'No data to update');
+
+        const parsed = updateResumeSchema.safeParse(raw);
+        if (!parsed.success) {
+            throw createHttpError(400, parsed.error.errors.map((e) => e.message).join(', '));
+        }
+
+        const data: UpdateResumeInput = parsed.data;
+        if (Object.keys(data).length === 0) throw createHttpError(400, 'No data to update');
 
         const existing = await this.getResumeById(userId, id);
         await this.createSnapshot(existing);
@@ -177,9 +200,7 @@ export class ResumeService {
         if (!userId || !id) throw createHttpError(400, 'userId and id are required');
 
         const original = await this.getResumeById(userId, id);
-        const duplicate = await this.createResumeFromTemplate(userId, original);
-
-        return duplicate;
+        return this.createResumeFromTemplate(userId, original);
     }
 
     // POST /resumes/:id/pdf - Generate PDF
@@ -200,14 +221,12 @@ export class ResumeService {
 
         await this.getResumeById(userId, id); // Verify ownership
 
-        const versions = await prisma.resumeVersion.findMany({
+        return prisma.resumeVersion.findMany({
             where: { resumeId: id },
             orderBy: { versionNum: 'desc' },
             take: 5,
             select: { id: true, versionNum: true, createdAt: true },
         });
-
-        return versions;
     }
 
     // POST /resumes/:id/restore/:versionId - Restore version
@@ -219,9 +238,11 @@ export class ResumeService {
 
         await this.createSnapshot(existing);
 
+        const versionData = version.data as Prisma.InputJsonObject;
+
         const restored = await prisma.resume.update({
             where: { id },
-            data: { ...version.data, version: { increment: 1 } },
+            data: { ...versionData, version: { increment: 1 } },
             select: RESUME_SELECT,
         });
 
@@ -278,21 +299,21 @@ export class ResumeService {
     // ── Private Helpers ──────────────────────────────────────────────────
 
     private async getUserOrThrow(userId: string) {
-           return findResourceByIdOrThrow<{ id: string; credits: number }>(
+        return findResourceByIdOrThrow<{ id: string; credits: number }>(
             prisma.user,
             userId,
             undefined,
-               { id: true, credits: true },
+            { id: true, credits: true },
             'User not found'
         );
     }
 
-    private async getVersionOrThrow(versionId: string, resumeId: string) {
-           return findResourceByIdOrThrow<any>(
+    private async getVersionOrThrow(versionId: string, resumeId: string): Promise<ResumeVersionRecord> {
+        return findResourceByIdOrThrow<ResumeVersionRecord>(
             prisma.resumeVersion,
             versionId,
             { resumeId },
-               undefined,
+            undefined,
             'Version not found'
         );
     }
@@ -374,7 +395,7 @@ export class ResumeService {
 
     private async extractTextFromBuffer(buffer: Buffer, mimetype: string): Promise<string> {
         if (mimetype === FILE_UPLOAD.MIME_TYPES.PDF) {
-            const data = await (pdf as any)(buffer);
+            const data = await parsePdf(buffer);
             return data.text || '';
         }
 
@@ -386,5 +407,3 @@ export class ResumeService {
         throw createHttpError(400, 'Unsupported file type. Please upload PDF or DOCX.');
     }
 }
-
-

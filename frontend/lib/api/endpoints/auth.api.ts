@@ -36,6 +36,8 @@ export interface AuthResponse {
 
 // ── API Module ──────────────────────────────────────────────────────────────
 
+let refreshPromise: Promise<AuthResponse> | null = null;
+
 export const authApi = {
   /** POST /auth/register — sets HttpOnly refreshToken cookie */
   register: (data: RegisterRequest): Promise<AuthResponse> =>
@@ -52,9 +54,19 @@ export const authApi = {
    * POST /auth/refresh
    * Browser sends HttpOnly cookie automatically (withCredentials: true).
    * Returns new accessToken + refreshed user profile.
+   * Uses Promise deduplication to prevent race conditions (e.g. React Strict Mode double-invocations).
    */
-  refresh: (): Promise<AuthResponse> =>
-    apiClient.post('/auth/refresh', {}).then((r) => r.data.data),
+  refresh: (): Promise<AuthResponse> => {
+    if (!refreshPromise) {
+      refreshPromise = apiClient
+        .post('/auth/refresh', {})
+        .then((r) => r.data.data)
+        .finally(() => {
+          refreshPromise = null;
+        });
+    }
+    return refreshPromise;
+  },
 
   /** POST /auth/forgot-password */
   forgotPassword: (email: string): Promise<void> =>

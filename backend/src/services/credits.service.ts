@@ -22,7 +22,7 @@ export class CreditsService {
         const limit = Math.min(+(query.limit || PAGINATION.DEFAULT_LIMIT_FALLBACK), PAGINATION.SERVICE_MAX_LIMIT);
         const skip = (page - 1) * limit;
 
-        const where: any = { userId };
+        const where: { userId: string; type?: string } = { userId };
         if (query.type) where.type = query.type.toUpperCase();
 
         const [data, total] = await Promise.all([

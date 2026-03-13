@@ -73,6 +73,8 @@ export interface WizardData {
         school: string;
         degree: string;
         field: string;
+        location: string;
+        description: string;
         gpa: string;
         startDate: string;
         endDate: string;
@@ -146,6 +148,8 @@ function mapToPreviewData(data: WizardData, template: ResumeTemplate) {
             school: e.school,
             degree: e.degree,
             field: e.field,
+            location: e.location,
+            description: e.description,
             startDate: e.startDate,
             endDate: e.endDate,
         })),
@@ -296,7 +300,7 @@ export function ManualBuilderWizard({ initialData, selectedTemplate, onComplete,
     }));
 
     const addEdu = () => setData(d => ({
-        ...d, education: [...d.education, { id: uid(), school: '', degree: '', field: '', gpa: '', startDate: '', endDate: '' }]
+        ...d, education: [...d.education, { id: uid(), school: '', degree: '', field: '', location: '', description: '', gpa: '', startDate: '', endDate: '' }]
     }));
     const removeEdu = (id: string) => setData(d => ({ ...d, education: d.education.filter(e => e.id !== id) }));
     const updateEdu = (id: string, field: string, value: string) => setData(d => ({
@@ -442,7 +446,7 @@ export function ManualBuilderWizard({ initialData, selectedTemplate, onComplete,
                                     <Textarea
                                         value={exp.achievements.join('\n')}
                                         onChange={e => updateExp(exp.id, 'achievements', e.target.value.split('\n').filter(Boolean))}
-                                        placeholder="Increased revenue by 30%&#10;Managed a team of 8 engineers"
+                                        placeholder={"Increased revenue by 30%\nManaged a team of 8 engineers"}
                                         className="min-h-[80px] rounded-xl resize-none"
                                     />
                                 </div>
@@ -484,10 +488,9 @@ export function ManualBuilderWizard({ initialData, selectedTemplate, onComplete,
                                         <Input value={edu.field} onChange={e => updateEdu(edu.id, 'field', e.target.value)} placeholder="Software Engineering" className="h-10 rounded-xl" />
                                     </div>
                                 </div>
-                                <div className="grid grid-cols-3 gap-4">
                                     <div className="space-y-1.5">
-                                        <Label className="text-xs font-semibold text-slate-500">Start Date</Label>
-                                        <Input type="date" value={edu.startDate} onChange={e => updateEdu(edu.id, 'startDate', e.target.value)} className="h-10 rounded-xl" />
+                                        <Label className="text-xs font-semibold text-slate-500">Location</Label>
+                                        <Input value={edu.location} onChange={e => updateEdu(edu.id, 'location', e.target.value)} placeholder="City, Country" className="h-10 rounded-xl" />
                                     </div>
                                     <div className="space-y-1.5">
                                         <Label className="text-xs font-semibold text-slate-500">End Date</Label>
@@ -505,6 +508,15 @@ export function ManualBuilderWizard({ initialData, selectedTemplate, onComplete,
                                         <Label className="text-xs font-semibold text-slate-500">GPA (optional)</Label>
                                         <Input value={edu.gpa} onChange={e => updateEdu(edu.id, 'gpa', e.target.value)} placeholder="3.8/4.0" className="h-10 rounded-xl" />
                                     </div>
+                                </div>
+                                <div className="space-y-1.5">
+                                    <Label className="text-xs font-semibold text-slate-500">Description / Key Achievements</Label>
+                                    <Textarea
+                                        value={edu.description}
+                                        onChange={e => updateEdu(edu.id, 'description', e.target.value)}
+                                        placeholder="Briefly describe your roles or key achievements..."
+                                        className="min-h-[80px] rounded-xl resize-none"
+                                    />
                                 </div>
                             </Card>
                         ))}
