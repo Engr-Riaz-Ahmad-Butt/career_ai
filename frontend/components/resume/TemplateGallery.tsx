@@ -1,7 +1,7 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { Check, Crown, ChevronRight } from 'lucide-react';
+import { Check, Crown, ChevronRight, ArrowLeft } from 'lucide-react';
 import { useState } from 'react';
 
 import {
@@ -13,7 +13,12 @@ import {
     ExecutiveTemplatePreview,
     CreativeTemplatePreview,
     TwoColumnTemplatePreview,
-    AtsClassicTemplatePreview
+    AtsClassicTemplatePreview,
+    HarvardTemplatePreview,
+    TechTemplatePreview,
+    CleanProTemplatePreview,
+    EuropassTemplatePreview,
+    BoldLeaderTemplatePreview,
 } from '@/components/resume/templates';
 import { Button } from '@/components/ui/button';
 import { resumeTemplates } from '@/lib/resumeTemplates';
@@ -41,6 +46,11 @@ const TEMPLATE_STYLES: Record<string, FilterStyle[]> = {
     'two-column': ['modern'],
     'ats-classic': ['ats-friendly'],
     'creative': ['creative'],
+    'harvard': ['ats-friendly', 'simple'],
+    'tech': ['modern'],
+    'clean-pro': ['simple', 'modern'],
+    'europass': ['ats-friendly', 'simple'],
+    'bold-leader': ['executive', 'modern'],
 };
 
 const PREVIEW_MAP: Record<string, React.ComponentType<any>> = {
@@ -53,6 +63,11 @@ const PREVIEW_MAP: Record<string, React.ComponentType<any>> = {
     'creative': CreativeTemplatePreview,
     'two-column': TwoColumnTemplatePreview,
     'ats-classic': AtsClassicTemplatePreview,
+    'harvard': HarvardTemplatePreview,
+    'tech': TechTemplatePreview,
+    'clean-pro': CleanProTemplatePreview,
+    'europass': EuropassTemplatePreview,
+    'bold-leader': BoldLeaderTemplatePreview,
 };
 
 interface TemplateGalleryProps {
@@ -60,9 +75,11 @@ interface TemplateGalleryProps {
     onSelect: (template: ResumeTemplate) => void;
     onContinue: () => void;
     previewData?: ResumeData;
+    onBack?: () => void;
+    continueLabel?: string;
 }
 
-export function TemplateGallery({ selectedTemplate, onSelect, onContinue, previewData }: TemplateGalleryProps) {
+export function TemplateGallery({ selectedTemplate, onSelect, onContinue, previewData, onBack, continueLabel = 'Continue with this design' }: TemplateGalleryProps) {
     const [activeFilter, setActiveFilter] = useState<FilterStyle>('all');
 
     const filtered = resumeTemplates.filter((t) => {
@@ -75,16 +92,23 @@ export function TemplateGallery({ selectedTemplate, onSelect, onContinue, previe
             {/* Header */}
             <div className="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 sticky top-[61px] z-40 px-6 py-4">
                 <div className="max-w-7xl mx-auto flex items-center justify-between">
-                    <div>
-                        <h2 className="text-xl font-black text-slate-900 dark:text-white">Choose a Template</h2>
-                        <p className="text-sm text-slate-500">Click to select, switch freely — your data is never affected</p>
+                    <div className="flex items-center gap-3">
+                        {onBack && (
+                            <button onClick={onBack} className="p-2 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 transition-colors">
+                                <ArrowLeft className="w-5 h-5" />
+                            </button>
+                        )}
+                        <div>
+                            <h2 className="text-xl font-black text-slate-900 dark:text-white">Choose a Template</h2>
+                            <p className="text-sm text-slate-500">Click to select, switch freely — your data is never affected</p>
+                        </div>
                     </div>
                     <Button
                         onClick={onContinue}
                         disabled={!selectedTemplate}
                         className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl px-8 h-11 font-bold flex items-center gap-2 shadow-lg disabled:opacity-50"
                     >
-                        Continue with this design <ChevronRight className="w-4 h-4" />
+                        {continueLabel} <ChevronRight className="w-4 h-4" />
                     </Button>
                 </div>
 

@@ -23,7 +23,7 @@ export default function DashboardLayout({
             >
                 <AppNavbar />
                 <main className="flex-1 pt-16 p-6">
-                    <FeatureErrorBoundary featureName="Dashboard">
+                    <FeatureErrorBoundary featureName="This page">
                         {children}
                     </FeatureErrorBoundary>
                 </main>

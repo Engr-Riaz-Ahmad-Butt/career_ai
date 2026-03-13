@@ -118,6 +118,71 @@ export const resumeTemplates: ResumeTemplate[] = [
     layout: 'sidebar',
     features: ['Portfolio-ready', 'Unique Layout', 'Strong Visuals'],
   },
+  {
+    id: 'harvard',
+    name: 'Harvard Classic',
+    description: 'Timeless academic-style CV with a centered header, serif typography, and clean section rules.',
+    category: 'classic',
+    colors: {
+      primary: '#1a1a1a',
+      secondary: '#ffffff',
+      accent: '#1a1a1a',
+    },
+    layout: 'single-column',
+    features: ['Academic Style', 'Serif Typography', 'ATS Optimized'],
+  },
+  {
+    id: 'tech',
+    name: 'Tech Engineer',
+    description: 'Dark sidebar with skills stack, clean right panel — built for software engineers and developers.',
+    category: 'modern',
+    colors: {
+      primary: '#0f172a',
+      secondary: '#f8fafc',
+      accent: '#0ea5e9',
+    },
+    layout: 'sidebar',
+    features: ['Tech-Focused', 'Skills Sidebar', 'Dark & Modern'],
+  },
+  {
+    id: 'clean-pro',
+    name: 'Clean Pro',
+    description: 'Ultra-modern with a bold gradient header accent, generous whitespace, and clear hierarchy.',
+    category: 'minimal',
+    colors: {
+      primary: '#0f172a',
+      secondary: '#ffffff',
+      accent: '#6366f1',
+    },
+    layout: 'two-column',
+    features: ['High Contrast', 'Clean Layout', 'Professional'],
+  },
+  {
+    id: 'europass',
+    name: 'Europass',
+    description: 'European standard CV format with structured two-column rows and a dark header banner.',
+    category: 'classic',
+    colors: {
+      primary: '#003399',
+      secondary: '#ffffff',
+      accent: '#003399',
+    },
+    layout: 'single-column',
+    features: ['EU Standard', 'Structured Format', 'Government-Ready'],
+  },
+  {
+    id: 'bold-leader',
+    name: 'Bold Leader',
+    description: 'High-impact dark header with an accent color strip — commanding presence for senior roles.',
+    category: 'modern',
+    colors: {
+      primary: '#111827',
+      secondary: '#ffffff',
+      accent: '#dc2626',
+    },
+    layout: 'two-column',
+    features: ['Executive Impact', 'Bold Typography', 'Eye-Catching'],
+  },
 ];
 
 export const getTemplateById = (id: string): ResumeTemplate | undefined => {

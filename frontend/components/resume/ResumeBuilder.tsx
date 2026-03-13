@@ -86,12 +86,12 @@ function mapWizardDataToResumeData(data: Partial<WizardData>, template: ResumeTe
             email: data.contact?.email && data.contact.email.trim() !== '' ? data.contact.email : 'user@example.com',
             phone: data.contact?.phone ?? '',
             location: data.contact?.location ?? '',
-            linkedin: data.contact?.linkedin && data.contact.linkedin.trim() !== '' 
-                ? (data.contact.linkedin.startsWith('http') ? data.contact.linkedin : `https://${data.contact.linkedin}`) 
-                : '',
-            portfolio: portfolioUrl && portfolioUrl.trim() !== '' 
-                ? (portfolioUrl.startsWith('http') ? portfolioUrl : `https://${portfolioUrl}`) 
-                : '',
+            linkedin: data.contact?.linkedin && data.contact.linkedin.trim() !== ''
+                ? (data.contact.linkedin.startsWith('http') ? data.contact.linkedin : `https://${data.contact.linkedin}`)
+                : undefined,
+            portfolio: portfolioUrl && portfolioUrl.trim() !== ''
+                ? (portfolioUrl.startsWith('http') ? portfolioUrl : `https://${portfolioUrl}`)
+                : undefined,
         },
         summary: data.summary ?? '',
         experience: (data.experience ?? []).map(e => ({
@@ -223,19 +223,39 @@ export function ResumeBuilder({
 
     const handleModeSelect = (mode: CVMode) => {
         setSelectedMode(mode);
-        if (mode === 'manual') setFlow('manual-wizard');
+        // For manual: show template gallery FIRST so user picks a template before filling fields
+        if (mode === 'manual') setFlow('template-gallery');
         else if (mode === 'ai-generate') setFlow('ai-generate');
         else if (mode === 'improve-cv') setFlow('improve-cv');
         else if (mode === 'prompt-to-cv') setFlow('prompt-to-cv');
     };
 
     const handleWizardComplete = (data: Partial<WizardData>) => {
-        setPendingWizardData(data);
-        setFlow('template-gallery');
+        // Wizard done → create the resume directly with already-selected template
+        const template = selectedTemplate || resumeTemplates[0];
+        const resumeData = mapWizardDataToResumeData(data, template);
+        const title = data?.title?.trim()
+            || (data?.contact?.fullName ? `${data.contact.fullName}'s CV` : 'My New CV');
+
+        createMutation.mutate(toApiResumePayload({ ...resumeData, title }), {
+            onSuccess: (resume) => {
+                setResume(resume);
+                setFlow('editor');
+                message.success('Your CV is ready — customise it now!');
+            }
+        });
     };
 
     const handleTemplateChosen = (template: ResumeTemplate) => {
+        setSelectedTemplate(template);
+
         if (!pendingWizardData) {
+            // Came from mode-selection (initial pick) → go to wizard with chosen template
+            if (selectedMode === 'manual') {
+                setFlow('manual-wizard');
+                return;
+            }
+            // Came from editor "Change Template" button
             if (currentResume) {
                 updateTemplate(template.id);
             }
@@ -243,6 +263,7 @@ export function ResumeBuilder({
             return;
         }
 
+        // Came from an AI/improve flow with pending data → create resume
         const resumeData = mapWizardDataToResumeData(pendingWizardData, template);
         const title = pendingWizardData?.contact?.fullName
             ? `${pendingWizardData.contact.fullName}'s CV`
@@ -428,12 +449,15 @@ export function ResumeBuilder({
     }
 
     if (flow === 'template-gallery') {
+        const isInitialManualPick = selectedMode === 'manual' && !pendingWizardData && !currentResume;
         return (
             <TemplateGallery
                 selectedTemplate={selectedTemplate}
                 onSelect={setSelectedTemplate}
                 onContinue={() => handleTemplateChosen(selectedTemplate!)}
                 previewData={currentResume ?? undefined}
+                onBack={isInitialManualPick ? () => setFlow('mode-selection') : undefined}
+                continueLabel={isInitialManualPick ? 'Build with this template' : 'Continue with this design'}
             />
         );
     }

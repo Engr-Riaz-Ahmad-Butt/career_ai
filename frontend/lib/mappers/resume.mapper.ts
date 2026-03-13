@@ -114,8 +114,15 @@ export function toApiResumePayload(
           .map(([category, items]) => ({ category, items: items as string[] }))
       : undefined;
 
+  // Strip undefined/empty values from personalInfo so URL fields don't fail backend validation
+  const rawInfo = (data as any).personalInfo as Record<string, unknown> | undefined;
+  const apiPersonalInfo = rawInfo
+    ? Object.fromEntries(Object.entries(rawInfo).filter(([, v]) => v !== undefined && v !== ''))
+    : undefined;
+
   return {
     ...data,
+    personalInfo: apiPersonalInfo,
     experience: apiExperience.length ? apiExperience : undefined,
     skills: apiSkills,
   } as CreateResumeRequest;

@@ -86,9 +86,11 @@ export function AIGenerateMode({ onComplete, onCancel }: AIGenerateModeProps) {
                     school: '',
                     degree: minimalFields.highestEducation || '',
                     field: '',
+                    location: '',
                     gpa: '',
                     startDate: '',
                     endDate: '',
+                    description: '',
                 }],
                 skills: {
                     technical: (minimalFields.keySkills || '').split(',').map(s => s.trim()).filter(Boolean),

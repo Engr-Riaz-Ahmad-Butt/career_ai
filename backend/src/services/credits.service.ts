@@ -1,3 +1,5 @@
+import { CreditTransactionType, Prisma } from '@prisma/client';
+
 import prisma from '@/config/database';
 import { CREDIT_COSTS } from '@/constants/creditCosts';
 import { PAGINATION } from '@/constants/pagination';
@@ -22,8 +24,8 @@ export class CreditsService {
         const limit = Math.min(+(query.limit || PAGINATION.DEFAULT_LIMIT_FALLBACK), PAGINATION.SERVICE_MAX_LIMIT);
         const skip = (page - 1) * limit;
 
-        const where: { userId: string; type?: string } = { userId };
-        if (query.type) where.type = query.type.toUpperCase();
+        const where: Prisma.CreditTransactionWhereInput = { userId };
+        if (query.type) where.type = query.type.toUpperCase() as CreditTransactionType;
 
         const [data, total] = await Promise.all([
             prisma.creditTransaction.findMany({ where, orderBy: { createdAt: 'desc' }, skip, take: limit }),

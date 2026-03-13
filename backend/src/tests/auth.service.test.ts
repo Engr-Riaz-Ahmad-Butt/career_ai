@@ -63,7 +63,7 @@ describe('AuthService', () => {
                 lastName: 'User',
                 email: `referred-${Date.now()}@example.com`,
                 password: 'Password123!',
-                referralCode: referrer.referralCode,
+                referralCode: referrer.referralCode ?? undefined,
             });
 
             const updatedReferrer = await prisma.user.findUnique({ where: { id: referrer.id } });

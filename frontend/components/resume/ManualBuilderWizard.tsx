@@ -16,7 +16,12 @@ import {
     ExecutiveTemplatePreview,
     CreativeTemplatePreview,
     TwoColumnTemplatePreview,
-    AtsClassicTemplatePreview
+    AtsClassicTemplatePreview,
+    HarvardTemplatePreview,
+    TechTemplatePreview,
+    CleanProTemplatePreview,
+    EuropassTemplatePreview,
+    BoldLeaderTemplatePreview,
 } from '@/components/resume/templates';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -36,6 +41,11 @@ const PREVIEW_MAP: Record<string, React.ComponentType<any>> = {
     'creative': CreativeTemplatePreview,
     'two-column': TwoColumnTemplatePreview,
     'ats-classic': AtsClassicTemplatePreview,
+    'harvard': HarvardTemplatePreview,
+    'tech': TechTemplatePreview,
+    'clean-pro': CleanProTemplatePreview,
+    'europass': EuropassTemplatePreview,
+    'bold-leader': BoldLeaderTemplatePreview,
 };
 
 const STEPS = [
@@ -47,6 +57,7 @@ const STEPS = [
 ];
 
 export interface WizardData {
+    title: string;
     contact: {
         fullName: string;
         email: string;
@@ -101,6 +112,7 @@ export interface WizardData {
 }
 
 const INITIAL_DATA: WizardData = {
+    title: '',
     contact: { fullName: '', email: '', phone: '', location: '', linkedin: '', github: '', website: '' },
     summary: '',
     experience: [],
@@ -124,13 +136,13 @@ function mapToPreviewData(data: WizardData, template: ResumeTemplate) {
         id: 'preview',
         name: 'Preview',
         template,
-        contact: {
-            fullName: data.contact.fullName,
-            email: data.contact.email,
-            phone: data.contact.phone,
-            location: data.contact.location,
-            linkedin: data.contact.linkedin,
-            portfolio: data.contact.website,
+        personalInfo: {
+            fullName: data.contact.fullName || 'Your Name',
+            email: data.contact.email || 'you@example.com',
+            phone: data.contact.phone || '',
+            location: data.contact.location || '',
+            linkedin: data.contact.linkedin || '',
+            portfolio: data.contact.website || '',
         },
         summary: data.summary,
         experience: data.experience.map(e => ({
@@ -185,7 +197,7 @@ export function ManualBuilderWizard({ initialData, selectedTemplate, onComplete,
     const [data, setData] = useState<WizardData>({ ...INITIAL_DATA, ...initialData });
     const [saving, setSaving] = useState(false);
     const [enhancing, setEnhancing] = useState(false);
-    const saveTimerRef = useRef<NodeJS.Timeout>();
+    const saveTimerRef = useRef<NodeJS.Timeout | undefined>(undefined);
     const previewTemplate = selectedTemplate || resumeTemplates[0];
     const PreviewComp = PREVIEW_MAP[previewTemplate.id] || SimpleProfessionalPreview;
     const previewData = mapToPreviewData(data, previewTemplate);
@@ -335,6 +347,16 @@ export function ManualBuilderWizard({ initialData, selectedTemplate, onComplete,
             case 'personal':
                 return (
                     <div className="space-y-5">
+                        <div className="space-y-2">
+                            <Label className="text-xs font-bold uppercase tracking-wider text-slate-500">Resume Title *</Label>
+                            <Input
+                                value={data.title}
+                                onChange={e => setData(d => ({ ...d, title: e.target.value }))}
+                                placeholder="e.g. Senior Software Engineer CV"
+                                className="h-11 rounded-xl"
+                            />
+                            <p className="text-xs text-slate-400">This is the name of your resume in your dashboard.</p>
+                        </div>
                         <div className="space-y-2">
                             <Label className="text-xs font-bold uppercase tracking-wider text-slate-500">Full Name *</Label>
                             <Input value={data.contact.fullName} onChange={e => updateContact('fullName', e.target.value)} placeholder="e.g. Jane Smith" className="h-11 rounded-xl" />
@@ -488,13 +510,14 @@ export function ManualBuilderWizard({ initialData, selectedTemplate, onComplete,
                                         <Input value={edu.field} onChange={e => updateEdu(edu.id, 'field', e.target.value)} placeholder="Software Engineering" className="h-10 rounded-xl" />
                                     </div>
                                 </div>
+                                <div className="grid grid-cols-3 gap-4">
                                     <div className="space-y-1.5">
-                                        <Label className="text-xs font-semibold text-slate-500">Location</Label>
-                                        <Input value={edu.location} onChange={e => updateEdu(edu.id, 'location', e.target.value)} placeholder="City, Country" className="h-10 rounded-xl" />
+                                        <Label className="text-xs font-semibold text-slate-500">Start Date *</Label>
+                                        <Input type="date" value={edu.startDate} onChange={e => updateEdu(edu.id, 'startDate', e.target.value)} className="h-10 rounded-xl" />
                                     </div>
                                     <div className="space-y-1.5">
                                         <Label className="text-xs font-semibold text-slate-500">End Date</Label>
-                                        <Input type="date" value={edu.endDate === 'Present' ? '' : edu.endDate} onChange={e => updateEdu(edu.id, 'endDate', e.target.value)} className="h-10 rounded-xl" />
+                                        <Input type="date" value={edu.endDate === 'Present' ? '' : edu.endDate} onChange={e => updateEdu(edu.id, 'endDate', e.target.value)} disabled={edu.endDate === 'Present'} className="h-10 rounded-xl disabled:opacity-60" />
                                         <div className="flex items-center gap-2 pt-1">
                                             <input
                                                 type="checkbox"
@@ -508,6 +531,10 @@ export function ManualBuilderWizard({ initialData, selectedTemplate, onComplete,
                                         <Label className="text-xs font-semibold text-slate-500">GPA (optional)</Label>
                                         <Input value={edu.gpa} onChange={e => updateEdu(edu.id, 'gpa', e.target.value)} placeholder="3.8/4.0" className="h-10 rounded-xl" />
                                     </div>
+                                </div>
+                                <div className="space-y-1.5">
+                                    <Label className="text-xs font-semibold text-slate-500">Location</Label>
+                                    <Input value={edu.location} onChange={e => updateEdu(edu.id, 'location', e.target.value)} placeholder="City, Country" className="h-10 rounded-xl" />
                                 </div>
                                 <div className="space-y-1.5">
                                     <Label className="text-xs font-semibold text-slate-500">Description / Key Achievements</Label>

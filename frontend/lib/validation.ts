@@ -68,12 +68,12 @@ export const educationSchema = z.object({
     id: z.string(),
     degree: z.string().min(1, 'Degree is required'),
     school: z.string().min(1, 'School is required'),
-    field: z.string().optional().default(''),
-    location: z.string().optional().default(''),
-    startDate: z.string().optional().default(''),
-    endDate: z.string().optional().default(''),
-    gpa: z.string().optional().default(''),
-    description: z.string().optional().default(''),
+    field: z.string(),
+    location: z.string(),
+    startDate: z.string(),
+    endDate: z.string(),
+    gpa: z.string(),
+    description: z.string(),
 });
 
 export const createResumeSchema = z.object({

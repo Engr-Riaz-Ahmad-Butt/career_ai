@@ -67,6 +67,15 @@ interface CreateResumeOptions {
     readonly template: string;
     readonly targetRole?: string;
     readonly industry?: string;
+    readonly personalInfo?: Record<string, unknown>;
+    readonly summary?: string;
+    readonly experience?: unknown[];
+    readonly education?: unknown[];
+    readonly skills?: unknown[];
+    readonly certifications?: unknown[];
+    readonly projects?: unknown[];
+    readonly languages?: unknown[];
+    readonly styling?: unknown;
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────
@@ -141,6 +150,15 @@ export class ResumeService {
                 template: options.template,
                 targetRole: options.targetRole,
                 industry: options.industry,
+                personalInfo: options.personalInfo ? toNullableInputJson(options.personalInfo as Prisma.JsonValue) : undefined,
+                summary: options.summary,
+                experience: options.experience ? toInputJsonArray(options.experience as Prisma.JsonValue[]) : undefined,
+                education: options.education ? toInputJsonArray(options.education as Prisma.JsonValue[]) : undefined,
+                skills: options.skills ? toNullableInputJson(options.skills as Prisma.JsonValue) : undefined,
+                certifications: options.certifications ? toInputJsonArray(options.certifications as Prisma.JsonValue[]) : undefined,
+                projects: options.projects ? toInputJsonArray(options.projects as Prisma.JsonValue[]) : undefined,
+                languages: options.languages ? toInputJsonArray(options.languages as Prisma.JsonValue[]) : undefined,
+                styling: options.styling ? toNullableInputJson(options.styling as Prisma.JsonValue) : undefined,
                 version: 1,
             },
             select: RESUME_SELECT,
