@@ -16,7 +16,7 @@ import {
     ChevronLeft,
     Loader2
 } from 'lucide-react';
-import { useSearchParams } from 'next/navigation';
+import { useSearchParams, useRouter } from 'next/navigation';
 import { useState, useEffect, useMemo } from 'react';
 
 import { ComponentErrorBoundary } from '@/components/errors/ComponentErrorBoundary';
@@ -149,6 +149,7 @@ export function ResumeBuilder({
     initialTab?: string;
 }) {
     const search = useSearchParams();
+    const router = useRouter();
     const resumeId = search.get('id');
 
     const [previewZoom, setPreviewZoom] = useState(100);
@@ -209,13 +210,15 @@ export function ResumeBuilder({
     // Auto-save logic
     const debouncedResume = useDebounce(currentResume, 2000);
 
+    // Auto-save: use currentResume.id so it works even if the URL param isn't set yet
+    const saveId = resumeId || currentResume?.id;
     useEffect(() => {
-        if (isDirty && debouncedResume && resumeId) {
-            updateMutation.mutate({ id: resumeId, data: toApiResumePayload(debouncedResume) }, {
+        if (isDirty && debouncedResume && saveId) {
+            updateMutation.mutate({ id: saveId, data: toApiResumePayload(debouncedResume) }, {
                 onSuccess: () => markSaved()
             });
         }
-    }, [debouncedResume, isDirty, resumeId, updateMutation, markSaved]);
+    }, [debouncedResume, isDirty, saveId, updateMutation, markSaved]);
 
     const { sidebarOpen } = useUIStore();
 
@@ -240,7 +243,9 @@ export function ResumeBuilder({
         createMutation.mutate(toApiResumePayload({ ...resumeData, title }), {
             onSuccess: (resume) => {
                 setResume(resume);
-                setFlow('editor');
+                // Navigate to the editor URL with the resume ID so auto-save and
+                // page-refresh both work correctly going forward.
+                router.replace(`/resume-builder?id=${resume.id}`);
                 message.success('Your CV is ready — customise it now!');
             }
         });
@@ -272,7 +277,7 @@ export function ResumeBuilder({
         createMutation.mutate(toApiResumePayload({ ...resumeData, title }), {
             onSuccess: (resume) => {
                 setResume(resume);
-                setFlow('editor');
+                router.replace(`/resume-builder?id=${resume.id}`);
                 message.success('Your CV is ready to edit!');
             }
         });
@@ -614,7 +619,7 @@ export function ResumeBuilder({
                         <div className="grid grid-cols-1 xl:grid-cols-12 gap-6">
                             <div className="xl:col-span-5 space-y-4 xl:h-[calc(100vh-200px)] xl:overflow-y-auto xl:pr-2">
                                 {sections.map(section => (
-                                    <Accordion key={section} type="single" collapsible>
+                                    <Accordion key={section} type="single" collapsible defaultValue={section === 'Contact' ? section : undefined}>
                                         <AccordionItem value={section} className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 overflow-hidden">
                                             <AccordionTrigger className="px-5 py-4 hover:no-underline font-bold text-sm">
                                                 {section}
