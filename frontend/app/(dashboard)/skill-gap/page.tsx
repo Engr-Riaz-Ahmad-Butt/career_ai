@@ -94,18 +94,18 @@ export default function SkillGapPage() {
               </CardContent>
             </Card>
 
-            <Card className="bg-gradient-to-br from-purple-50 to-purple-100/50 dark:from-purple-950/30 dark:to-purple-900/20 border-purple-200 dark:border-purple-800">
+            <Card className="bg-gradient-to-br from-teal-50 to-teal-100/50 dark:from-teal-950/30 dark:to-teal-900/20 border-teal-200 dark:border-teal-800">
               <CardContent className="pt-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-purple-700 dark:text-purple-400 font-medium">
+                    <p className="text-sm text-teal-700 dark:text-teal-400 font-medium">
                       Match Rate
                     </p>
-                    <p className="text-3xl font-bold text-purple-900 dark:text-purple-100 mt-1">
+                    <p className="text-3xl font-bold text-teal-900 dark:text-teal-100 mt-1">
                       {Math.round((skillGaps.present.length / (skillGaps.present.length + skillGaps.missing.length)) * 100)}%
                     </p>
                   </div>
-                  <Zap className="h-8 w-8 text-purple-600 dark:text-purple-400 opacity-30" />
+                  <Zap className="h-8 w-8 text-teal-600 dark:text-teal-400 opacity-30" />
                 </div>
               </CardContent>
             </Card>

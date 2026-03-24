@@ -84,11 +84,11 @@ export function AnalyticsSection({ metrics }: AnalyticsSectionProps) {
           </CardContent>
         </Card>
 
-        <Card className="bg-gradient-to-br from-purple-50 to-purple-100/50 dark:from-purple-950/30 dark:to-purple-900/20 border-purple-200 dark:border-purple-800">
+        <Card className="bg-gradient-to-br from-teal-50 to-teal-100/50 dark:from-teal-950/30 dark:to-teal-900/20 border-teal-200 dark:border-teal-800">
           <CardHeader className="pb-3">
             <div className="flex items-center justify-between">
               <CardTitle className="text-sm font-medium">Resume Score</CardTitle>
-              <BarChart3 className="h-4 w-4 text-purple-600 dark:text-purple-400" />
+              <BarChart3 className="h-4 w-4 text-teal-600 dark:text-teal-400" />
             </div>
           </CardHeader>
           <CardContent>

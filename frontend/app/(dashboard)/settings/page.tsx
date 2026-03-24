@@ -114,7 +114,7 @@ function ProfileTab({ user, onUpdate }: { user: AuthUser | null; onUpdate: (data
         <Button
           type="submit"
           disabled={isSaving}
-          className="bg-gradient-to-r from-indigo-600 to-purple-600"
+          className="bg-gradient-to-r from-indigo-600 to-teal-600"
         >
           {isSaving ? 'Saving...' : 'Save Changes'}
         </Button>
@@ -193,7 +193,7 @@ function SecurityTab() {
           </div>
         </div>
 
-        <Button type="submit" disabled={isLoading} className="bg-gradient-to-r from-indigo-600 to-purple-600">
+        <Button type="submit" disabled={isLoading} className="bg-gradient-to-r from-indigo-600 to-teal-600">
           {isLoading ? 'Updating...' : 'Update Password'}
         </Button>
       </form>

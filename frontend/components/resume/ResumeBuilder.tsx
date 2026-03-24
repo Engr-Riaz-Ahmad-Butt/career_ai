@@ -845,7 +845,7 @@ export function ResumeBuilder({
                                             </div>
                                         ))}
                                     </div>
-                                    <div className="mt-8 p-8 rounded-2xl bg-gradient-to-br from-indigo-600 to-purple-600 text-white relative overflow-hidden">
+                                    <div className="mt-8 p-8 rounded-2xl bg-gradient-to-br from-indigo-600 to-teal-600 text-white relative overflow-hidden">
                                         <h3 className="text-xl font-bold">Ready to apply?</h3>
                                         <p className="text-indigo-100 mt-1 text-sm">Export your resume and start sending applications.</p>
                                         <Button onClick={() => setShowATSScore(true)} className="bg-white text-indigo-600 hover:bg-indigo-50 mt-4 font-bold rounded-xl px-6 h-10 text-sm">

@@ -36,9 +36,9 @@ const MODES: ModeCard[] = [
         title: 'AI Generate',
         subtitle: 'From job description',
         description: 'Paste a job description and optionally upload your existing CV. AI tailors a complete, targeted resume for the role.',
-        color: 'text-purple-600',
-        bgColor: 'bg-purple-50 dark:bg-purple-950/40',
-        borderColor: 'border-purple-200 dark:border-purple-800',
+        color: 'text-teal-600',
+        bgColor: 'bg-teal-50 dark:bg-teal-950/40',
+        borderColor: 'border-teal-200 dark:border-teal-800',
         usesCredits: true,
         badge: 'Most Popular',
     },
@@ -87,7 +87,7 @@ export function CVModeSelector({ onSelect }: CVModeSelectorProps) {
                     </div>
                     <h1 className="text-5xl font-black text-slate-900 dark:text-white tracking-tight mb-4">
                         How would you like to{' '}
-                        <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 via-purple-600 to-cyan-600">
+                        <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 via-teal-600 to-cyan-600">
                             build your CV?
                         </span>
                     </h1>
@@ -111,7 +111,7 @@ export function CVModeSelector({ onSelect }: CVModeSelectorProps) {
                             >
                                 {/* Badge */}
                                 {mode.badge && (
-                                    <div className="absolute top-4 right-4 bg-gradient-to-r from-indigo-600 to-purple-600 text-white text-xs font-bold px-3 py-1 rounded-full">
+                                    <div className="absolute top-4 right-4 bg-gradient-to-r from-indigo-600 to-teal-600 text-white text-xs font-bold px-3 py-1 rounded-full">
                                         {mode.badge}
                                     </div>
                                 )}

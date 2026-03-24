@@ -737,7 +737,7 @@ export function ManualBuilderWizard({ initialData, selectedTemplate, onComplete,
                         size="sm"
                         onClick={handleEnhanceSection}
                         disabled={enhancing}
-                        className="text-purple-600 hover:bg-purple-50 dark:hover:bg-purple-950/30 font-bold flex items-center gap-1.5 text-xs"
+                        className="text-teal-600 hover:bg-teal-50 dark:hover:bg-teal-950/30 font-bold flex items-center gap-1.5 text-xs"
                     >
                         <Sparkles className={`w-3.5 h-3.5 ${enhancing ? 'animate-spin' : ''}`} />
                         {enhancing ? 'Enhancing…' : '✨ AI Enhance'}

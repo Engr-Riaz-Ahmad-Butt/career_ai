@@ -89,7 +89,7 @@ export default function ForgotPasswordPage() {
         >
             <div className="rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 p-8 shadow-lg backdrop-blur-xl">
                 <div className="flex items-center justify-center gap-2 mb-8">
-                    <div className="rounded-lg bg-gradient-to-br from-indigo-600 to-purple-600 p-2">
+                    <div className="rounded-lg bg-gradient-to-br from-indigo-600 to-teal-600 p-2">
                         <Zap className="h-5 w-5 text-white" />
                     </div>
                     <span className="text-xl font-bold text-slate-900 dark:text-white">CareerAI</span>
@@ -136,7 +136,7 @@ export default function ForgotPasswordPage() {
                     <Button
                         type="submit"
                         disabled={isLoading}
-                        className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white h-11 rounded-xl shadow-lg shadow-indigo-500/20"
+                        className="w-full bg-gradient-to-r from-indigo-600 to-teal-600 hover:from-indigo-700 hover:to-teal-700 text-white h-11 rounded-xl shadow-lg shadow-indigo-500/20"
                     >
                         {isLoading ? 'Sending Link...' : 'Send Reset Link'}
                     </Button>

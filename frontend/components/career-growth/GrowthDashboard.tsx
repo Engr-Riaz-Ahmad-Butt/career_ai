@@ -68,7 +68,7 @@ export function GrowthDashboard() {
                 </div>
                 <div className="w-full bg-slate-200 dark:bg-slate-800 rounded-full h-2 overflow-hidden">
                   <motion.div
-                    className="bg-gradient-to-r from-indigo-600 to-purple-600 h-full"
+                    className="bg-gradient-to-r from-indigo-600 to-teal-600 h-full"
                     initial={{ width: 0 }}
                     animate={{ width: `${(metric.currentValue / metric.target) * 100}%` }}
                     transition={{ duration: 1, ease: 'easeOut' }}

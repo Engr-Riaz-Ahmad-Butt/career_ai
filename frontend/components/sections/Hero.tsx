@@ -43,7 +43,7 @@ export default function Hero() {
             y: [0, 40, 0],
           }}
           transition={{ duration: 15, repeat: Infinity, ease: "linear" }}
-          className="absolute bottom-[-10%] right-[-5%] w-[50%] h-[50%] bg-purple-600/10 dark:bg-purple-600/15 rounded-full blur-[120px] opacity-50"
+          className="absolute bottom-[-10%] right-[-5%] w-[50%] h-[50%] bg-teal-600/10 dark:bg-teal-600/15 rounded-full blur-[120px] opacity-50"
         />
         <div className="absolute top-[20%] left-[30%] w-[30%] h-[30%] bg-emerald-500/5 dark:bg-emerald-500/10 rounded-full blur-[100px] opacity-40" />
 
@@ -159,7 +159,7 @@ export default function Hero() {
 
             <div className="flex flex-col items-center md:items-start gap-1">
               <div className="flex items-center gap-2 text-[var(--white)] font-bold text-xl uppercase tracking-tighter">
-                <ShieldCheck className="h-5 w-5 text-purple-500" />
+                <ShieldCheck className="h-5 w-5 text-teal-500" />
                 AES-256
               </div>
               <span className="text-[10px] text-[var(--g4)] font-bold uppercase tracking-widest">Encrypted Data</span>

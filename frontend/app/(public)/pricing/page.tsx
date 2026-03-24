@@ -106,7 +106,7 @@ export default function PricingPage() {
                   } overflow-hidden flex flex-col`}
               >
                 {/* Header */}
-                <div className={`p-6 ${tier.highlighted ? 'bg-gradient-to-br from-indigo-600 to-purple-600 text-white' : 'bg-slate-50 dark:bg-slate-900'}`}>
+                <div className={`p-6 ${tier.highlighted ? 'bg-gradient-to-br from-indigo-600 to-teal-600 text-white' : 'bg-slate-50 dark:bg-slate-900'}`}>
                   {tier.highlighted && (
                     <div className="mb-2 inline-block bg-white/20 px-3 py-1 rounded-full text-xs font-semibold">
                       Most Popular
@@ -154,7 +154,7 @@ export default function PricingPage() {
                   <Link href={tier.name === 'Team' ? '#contact-sales' : '/register'}>
                     <Button
                       className={`w-full ${tier.highlighted
-                        ? 'bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white'
+                        ? 'bg-gradient-to-r from-indigo-600 to-teal-600 hover:from-indigo-700 hover:to-teal-700 text-white'
                         : 'bg-slate-900 dark:bg-white text-white dark:text-slate-900 hover:bg-slate-800 dark:hover:bg-slate-100'
                         }`}
                     >

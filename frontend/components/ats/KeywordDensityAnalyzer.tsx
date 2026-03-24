@@ -53,7 +53,7 @@ export function KeywordDensityAnalyzer({
               </p>
             </div>
             <div className="text-center">
-              <p className="text-2xl font-bold text-purple-600 dark:text-purple-400">
+              <p className="text-2xl font-bold text-teal-600 dark:text-teal-400">
                 {missingKeywords.length}
               </p>
               <p className="text-xs text-slate-600 dark:text-slate-400 mt-1">

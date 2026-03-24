@@ -10,7 +10,7 @@ import type { Feature } from '@/types/site.types';
 const colorClasses: Record<string, string> = {
   blue: "bg-[rgba(59,130,246,0.15)] shadow-[0_4px_12px_rgba(59,130,246,0.2)]",
   green: "bg-[rgba(16,185,129,0.15)] shadow-[0_4px_12px_rgba(16,185,129,0.2)]",
-  purple: "bg-[rgba(167,139,250,0.15)] shadow-[0_4px_12px_rgba(167,139,250,0.2)]",
+  teal: "bg-[rgba(20,184,166,0.15)] shadow-[0_4px_12px_rgba(20,184,166,0.2)]",
   orange: "bg-[rgba(245,158,11,0.15)] shadow-[0_4px_12px_rgba(245,158,11,0.2)]",
   cyan: "bg-[rgba(34,211,238,0.12)] shadow-[0_4px_12px_rgba(34,211,238,0.2)]",
   red: "bg-[rgba(248,113,113,0.12)] shadow-[0_4px_12px_rgba(248,113,113,0.2)]",

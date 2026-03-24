@@ -35,8 +35,8 @@ const FEATURES = [
     icon: Sparkles,
     title: "Instant Tailoring",
     description: "Upload a job description and watch our AI rewrite your experience in seconds to highlight exactly what that employer is looking for.",
-    color: "from-purple-500 to-pink-500",
-    bg: "bg-purple-500/10",
+    color: "from-teal-500 to-pink-500",
+    bg: "bg-teal-500/10",
   },
   {
     icon: Shield,
@@ -98,7 +98,7 @@ export default function FeaturesPage() {
         />
         <motion.div
           style={{ y: y2 }}
-          className="absolute top-[20%] -right-[5%] w-[30%] h-[50%] bg-purple-600/10 rounded-full blur-[100px]"
+          className="absolute top-[20%] -right-[5%] w-[30%] h-[50%] bg-teal-600/10 rounded-full blur-[100px]"
         />
         <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 brightness-150 contrast-150" />
       </div>
@@ -121,7 +121,7 @@ export default function FeaturesPage() {
 
             <h1 className="text-5xl md:text-8xl font-bold tracking-tight mb-8 leading-[1.1]">
               The unfair advantage <br />
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-indigo-400 to-purple-500 px-2">
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-indigo-400 to-teal-500 px-2">
                 for your career.
               </span>
             </h1>
@@ -183,10 +183,10 @@ export default function FeaturesPage() {
               className="group relative overflow-hidden rounded-[2.5rem] bg-white/5 border border-white/10 p-8 flex flex-col justify-between hover:bg-white/[0.07] transition-colors"
             >
               <div className="flex justify-between items-start">
-                <div className="w-12 h-12 rounded-xl bg-purple-500/20 flex items-center justify-center text-purple-400 border border-purple-500/20">
+                <div className="w-12 h-12 rounded-xl bg-teal-500/20 flex items-center justify-center text-teal-400 border border-teal-500/20">
                   <MousePointer2 className="w-6 h-6" />
                 </div>
-                <div className="text-sm font-bold text-purple-400">92% PASS RATE</div>
+                <div className="text-sm font-bold text-teal-400">92% PASS RATE</div>
               </div>
               <div>
                 <h3 className="text-2xl font-bold mb-2">Instant Analysis</h3>

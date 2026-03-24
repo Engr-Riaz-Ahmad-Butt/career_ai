@@ -71,7 +71,7 @@ export default function InterviewPrepPage() {
           <Button
             onClick={generateSession}
             disabled={isGeneratingSession}
-            className="bg-gradient-to-r from-indigo-600 to-purple-600"
+            className="bg-gradient-to-r from-indigo-600 to-teal-600"
           >
             {isGeneratingSession ? (
               <LoadingSpinner size="sm" variant="current" className="mr-2" />
@@ -119,7 +119,7 @@ export default function InterviewPrepPage() {
                   key={category as string}
                   className="rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 overflow-hidden"
                 >
-                  <div className="bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-indigo-900/10 dark:to-purple-900/10 px-6 py-4 border-b border-slate-200 dark:border-slate-800">
+                  <div className="bg-gradient-to-r from-indigo-50 to-teal-50 dark:from-indigo-900/10 dark:to-teal-900/10 px-6 py-4 border-b border-slate-200 dark:border-slate-800">
                     <h2 className="text-lg font-semibold text-slate-900 dark:text-white">
                       {category as string}
                     </h2>
@@ -206,7 +206,7 @@ export default function InterviewPrepPage() {
                         <div className="bg-indigo-50 dark:bg-indigo-900/20 px-3 py-1 rounded text-xs text-indigo-600 dark:text-indigo-400">
                           {session.questionCount || 0} Questions
                         </div>
-                        <div className="bg-purple-50 dark:bg-purple-900/20 px-3 py-1 rounded text-xs text-purple-600 dark:text-purple-400 uppercase">
+                        <div className="bg-teal-50 dark:bg-teal-900/20 px-3 py-1 rounded text-xs text-teal-600 dark:text-teal-400 uppercase">
                           {session.difficulty || 'Mid'}
                         </div>
                         <Link href={`/interview-prep/${session.id}`} className="ml-auto">

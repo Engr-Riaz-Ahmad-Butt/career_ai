@@ -109,7 +109,7 @@ export function TestResults({ results, onDelete }: TestResultsProps) {
                       </div>
                       <div className="w-full bg-slate-200 dark:bg-slate-800 rounded-full h-3 overflow-hidden">
                         <motion.div
-                          className="bg-gradient-to-r from-purple-500 to-purple-600 h-full"
+                          className="bg-gradient-to-r from-teal-500 to-teal-600 h-full"
                           initial={{ width: 0 }}
                           animate={{ width: `${result.variantBScore}%` }}
                           transition={{ duration: 1, ease: 'easeOut' }}

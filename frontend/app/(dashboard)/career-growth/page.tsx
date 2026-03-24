@@ -53,7 +53,7 @@ export default function CareerGrowthPage() {
           </div>
           <Button
             onClick={handleGenerateReport}
-            className="gap-2 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700"
+            className="gap-2 bg-gradient-to-r from-indigo-600 to-teal-600 hover:from-indigo-700 hover:to-teal-700"
           >
             <BarChart3 className="h-4 w-4" />
             Generate Report

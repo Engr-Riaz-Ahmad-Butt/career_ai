@@ -46,7 +46,7 @@ export default function ABTestingPage() {
         {/* Header */}
         <motion.div variants={item}>
           <div className="flex items-center gap-3 mb-2">
-            <Sparkles className="h-8 w-8 text-purple-600" />
+            <Sparkles className="h-8 w-8 text-teal-600" />
             <h1 className="text-4xl font-bold text-slate-900 dark:text-white">
               Resume A/B Testing
             </h1>

@@ -180,7 +180,7 @@ export function ATSScorePanel({
                     {score < 75 && onFixWithAI && (
                         <Button
                             onClick={onFixWithAI}
-                            className="w-full h-12 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white rounded-2xl font-bold text-base shadow-lg"
+                            className="w-full h-12 bg-gradient-to-r from-indigo-600 to-teal-600 hover:from-indigo-700 hover:to-teal-700 text-white rounded-2xl font-bold text-base shadow-lg"
                         >
                             <Sparkles className="w-4 h-4 mr-2" />
                             Fix with AI

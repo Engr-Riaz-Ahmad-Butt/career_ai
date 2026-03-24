@@ -159,7 +159,7 @@ export const getStatusColor = (status: string) => {
     case 'applied':
       return 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400';
     case 'interview':
-      return 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400';
+      return 'bg-teal-100 text-teal-800 dark:bg-teal-900/30 dark:text-teal-400';
     case 'rejected':
       return 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400';
     case 'offer':

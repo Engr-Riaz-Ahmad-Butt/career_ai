@@ -198,7 +198,7 @@ export function ResumeUploadFlow({ onComplete, onCancel }: ResumeUploadFlowProps
                                             </span>
                                         ))}
                                         {extractedData?.skills?.soft?.map((skill) => (
-                                            <span key={`soft-${skill}`} className="px-2 py-1 bg-purple-50 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 rounded text-xs border border-purple-100 dark:border-purple-800">
+                                            <span key={`soft-${skill}`} className="px-2 py-1 bg-teal-50 dark:bg-teal-900/30 text-teal-700 dark:text-teal-300 rounded text-xs border border-teal-100 dark:border-teal-800">
                                                 {skill}
                                             </span>
                                         ))}

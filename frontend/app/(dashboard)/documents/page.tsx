@@ -59,7 +59,7 @@ export default function DocumentsPage() {
               </p>
             </div>
             <Link href="/resume-builder">
-              <Button className="bg-gradient-to-r from-indigo-600 to-purple-600">
+              <Button className="bg-gradient-to-r from-indigo-600 to-teal-600">
                 <Plus className="h-4 w-4 mr-2" />
                 New Document
               </Button>
@@ -81,7 +81,7 @@ export default function DocumentsPage() {
                 className="rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 overflow-hidden hover:shadow-lg transition-shadow"
               >
                 {/* Document Thumbnail */}
-                <div className="h-40 bg-gradient-to-br from-indigo-100 to-purple-100 dark:from-indigo-900/20 dark:to-purple-900/20 flex items-center justify-center">
+                <div className="h-40 bg-gradient-to-br from-indigo-100 to-teal-100 dark:from-indigo-900/20 dark:to-teal-900/20 flex items-center justify-center">
                   <FileText className="h-16 w-16 text-indigo-600 dark:text-indigo-400 opacity-50" />
                 </div>
 

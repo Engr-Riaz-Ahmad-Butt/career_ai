@@ -112,10 +112,10 @@ export function AIGenerateMode({ onComplete, onCancel }: AIGenerateModeProps) {
     // Step 1: Choose path
     if (!path) {
         return (
-            <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-indigo-50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 flex items-start justify-center pt-12 px-4 pb-12">
+            <div className="min-h-screen bg-gradient-to-br from-teal-50 via-white to-indigo-50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 flex items-start justify-center pt-12 px-4 pb-12">
                 <div className="w-full max-w-2xl">
                     <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} className="text-center mb-10">
-                        <div className="w-16 h-16 bg-purple-100 dark:bg-purple-950/50 rounded-2xl flex items-center justify-center text-purple-600 mx-auto mb-5">
+                        <div className="w-16 h-16 bg-teal-100 dark:bg-teal-950/50 rounded-2xl flex items-center justify-center text-teal-600 mx-auto mb-5">
                             <Sparkles className="w-8 h-8" />
                         </div>
                         <h1 className="text-3xl font-black text-slate-900 dark:text-white mb-2">AI Generate from JD</h1>
@@ -126,14 +126,14 @@ export function AIGenerateMode({ onComplete, onCancel }: AIGenerateModeProps) {
                         <motion.button
                             initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}
                             onClick={() => setPath('has-cv')}
-                            className="group p-8 bg-white dark:bg-slate-900 rounded-3xl border-2 border-slate-200 dark:border-slate-800 hover:border-purple-400 hover:shadow-xl transition-all text-left"
+                            className="group p-8 bg-white dark:bg-slate-900 rounded-3xl border-2 border-slate-200 dark:border-slate-800 hover:border-teal-400 hover:shadow-xl transition-all text-left"
                         >
-                            <div className="w-14 h-14 bg-purple-100 dark:bg-purple-950/50 rounded-2xl flex items-center justify-center text-purple-600 mb-5 group-hover:scale-110 transition-transform">
+                            <div className="w-14 h-14 bg-teal-100 dark:bg-teal-950/50 rounded-2xl flex items-center justify-center text-teal-600 mb-5 group-hover:scale-110 transition-transform">
                                 <FileText className="w-7 h-7" />
                             </div>
                             <h3 className="text-xl font-black text-slate-900 dark:text-white mb-2">Yes, I have a CV</h3>
                             <p className="text-slate-500 text-sm leading-relaxed">Upload your PDF or Word file. AI extracts your info and tailors it to the job description.</p>
-                            <div className="mt-5 flex items-center gap-2 text-purple-600 font-bold text-sm">
+                            <div className="mt-5 flex items-center gap-2 text-teal-600 font-bold text-sm">
                                 Upload & Tailor <ArrowRight className="w-4 h-4" />
                             </div>
                         </motion.button>
@@ -166,7 +166,7 @@ export function AIGenerateMode({ onComplete, onCancel }: AIGenerateModeProps) {
 
     // Step 2: The form
     return (
-        <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-indigo-50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 flex items-start justify-center pt-10 px-4 pb-12">
+        <div className="min-h-screen bg-gradient-to-br from-teal-50 via-white to-indigo-50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 flex items-start justify-center pt-10 px-4 pb-12">
             <div className="w-full max-w-2xl">
                 <div className="flex items-center gap-3 mb-8">
                     <Button variant="ghost" onClick={() => setPath(null)} className="text-slate-600">
@@ -188,7 +188,7 @@ export function AIGenerateMode({ onComplete, onCancel }: AIGenerateModeProps) {
                                 </Label>
                                 <div
                                     onClick={() => fileRef.current?.click()}
-                                    className={`border-2 border-dashed rounded-2xl p-10 text-center cursor-pointer transition-all ${file ? 'border-emerald-400 bg-emerald-50 dark:bg-emerald-950/20' : 'border-slate-200 dark:border-slate-700 hover:border-purple-400'}`}
+                                    className={`border-2 border-dashed rounded-2xl p-10 text-center cursor-pointer transition-all ${file ? 'border-emerald-400 bg-emerald-50 dark:bg-emerald-950/20' : 'border-slate-200 dark:border-slate-700 hover:border-teal-400'}`}
                                 >
                                     {file ? (
                                         <div className="flex flex-col items-center gap-2">
@@ -240,7 +240,7 @@ export function AIGenerateMode({ onComplete, onCancel }: AIGenerateModeProps) {
                         {/* Job Description */}
                         <div className="space-y-3 pt-2 border-t border-slate-100 dark:border-slate-800">
                             <Label className="text-sm font-bold text-slate-700 dark:text-slate-300 flex items-center gap-2">
-                                <FileText className="w-4 h-4 text-purple-500" />
+                                <FileText className="w-4 h-4 text-teal-500" />
                                 Paste the Job Description *
                             </Label>
                             <Textarea
@@ -258,7 +258,7 @@ export function AIGenerateMode({ onComplete, onCancel }: AIGenerateModeProps) {
                         <Button
                             onClick={handleGenerate}
                             disabled={loading}
-                            className="w-full h-13 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white font-bold rounded-2xl text-base shadow-lg py-3"
+                            className="w-full h-13 bg-gradient-to-r from-teal-600 to-indigo-600 hover:from-teal-700 hover:to-indigo-700 text-white font-bold rounded-2xl text-base shadow-lg py-3"
                         >
                             {loading ? (
                                 <InlineLoading text="AI is generating your tailored CV…" size="sm" />

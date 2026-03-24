@@ -29,7 +29,7 @@ export function PublicHeader() {
       <nav className="mx-auto flex max-w-7xl items-center justify-between px-4 py-4 sm:px-6 lg:px-8">
         {/* Logo */}
         <Link href="/" className="flex items-center gap-2">
-          <div className="rounded-lg bg-gradient-to-br from-indigo-600 to-purple-600 p-2">
+          <div className="rounded-lg bg-gradient-to-br from-indigo-600 to-teal-600 p-2">
             <Zap className="h-5 w-5 text-white" />
           </div>
           <span className="text-xl font-bold text-slate-900 dark:text-white">CareerAI</span>
@@ -62,7 +62,7 @@ export function PublicHeader() {
           </Link>
 
           <Link href="/auth/register">
-            <Button className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700">
+            <Button className="!bg-gradient-to-r from-indigo-600 to-teal-600 hover:from-indigo-700 hover:to-teal-700 text-white shadow-lg shadow-indigo-500/20">
               Start Free
             </Button>
           </Link>

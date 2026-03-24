@@ -84,7 +84,7 @@ export default function TailorPage() {
             <Button
               onClick={handleAnalyze}
               disabled={isAnalyzing || !jobDescription}
-              className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700"
+              className="w-full bg-gradient-to-r from-indigo-600 to-teal-600 hover:from-indigo-700 hover:to-teal-700"
             >
               {isAnalyzing ? (
                 <>
@@ -163,7 +163,7 @@ export default function TailorPage() {
                       />
                     ))}
                   </div>
-                  <Button className="w-full bg-gradient-to-r from-indigo-600 to-purple-600">
+                  <Button className="w-full bg-gradient-to-r from-indigo-600 to-teal-600">
                     <Zap className="h-4 w-4 mr-2" />
                     Generate AI Suggestions
                   </Button>

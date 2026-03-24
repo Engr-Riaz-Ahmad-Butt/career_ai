@@ -91,9 +91,9 @@ const quickCreateItems = [
     label: 'AI Tailor',
     description: 'Match resume to any job',
     href: '/tailor',
-    gradient: 'from-purple-500 to-fuchsia-600',
-    bg: 'bg-purple-50 dark:bg-purple-950/40',
-    iconColor: 'text-purple-600 dark:text-purple-400',
+    gradient: 'from-teal-500 to-fuchsia-600',
+    bg: 'bg-teal-50 dark:bg-teal-950/40',
+    iconColor: 'text-teal-600 dark:text-teal-400',
     badge: null,
   },
 ];

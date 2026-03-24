@@ -75,7 +75,7 @@ export function ABTestCreator() {
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
-          <Sparkles className="h-5 w-5 text-purple-600" />
+          <Sparkles className="h-5 w-5 text-teal-600" />
           Create A/B Test
         </CardTitle>
         <CardDescription>
@@ -120,7 +120,7 @@ export function ABTestCreator() {
           </div>
 
           {/* Variant B */}
-          <div className="border-l-4 border-purple-600 pl-4">
+          <div className="border-l-4 border-teal-600 pl-4">
             <Label>Variant B - Version 2</Label>
             <Textarea
               placeholder="Enter your resume headline/summary for this variant"
@@ -140,7 +140,7 @@ export function ABTestCreator() {
 
           <Button
             onClick={handleCreateTest}
-            className="w-full gap-2 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700"
+            className="w-full gap-2 bg-gradient-to-r from-teal-600 to-indigo-600 hover:from-teal-700 hover:to-indigo-700"
           >
             <Sparkles className="h-4 w-4" />
             Run A/B Test & Get Prediction

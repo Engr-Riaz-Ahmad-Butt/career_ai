@@ -5,7 +5,7 @@ export interface NavLink {
 }
 
 // Landing feature sections
-export type FeatureColor = 'blue' | 'green' | 'purple' | 'orange' | 'cyan' | 'red';
+export type FeatureColor = 'blue' | 'green' | 'teal' | 'orange' | 'cyan' | 'red';
 
 export interface Feature {
   icon: string;

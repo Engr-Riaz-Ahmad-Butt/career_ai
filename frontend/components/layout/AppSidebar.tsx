@@ -195,7 +195,7 @@ export function AppSidebar() {
               !sidebarOpen && 'justify-center'
             }`}
           >
-            <div className="w-7 h-7 rounded-md bg-gradient-to-br from-indigo-500 to-purple-500 flex-shrink-0 flex items-center justify-center text-white text-[9px] font-bold">
+            <div className="w-7 h-7 rounded-md bg-gradient-to-br from-indigo-500 to-teal-500 flex-shrink-0 flex items-center justify-center text-white text-[9px] font-bold">
               {user.name?.charAt(0) || user.email?.charAt(0) || 'U'}
             </div>
             {sidebarOpen && (

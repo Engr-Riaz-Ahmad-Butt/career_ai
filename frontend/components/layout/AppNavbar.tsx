@@ -85,7 +85,7 @@ export function AppNavbar() {
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <button className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors">
-                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-indigo-400 to-purple-400" />
+                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-indigo-400 to-teal-400" />
               </button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-48">

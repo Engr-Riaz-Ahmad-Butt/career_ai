@@ -14,7 +14,7 @@ interface ScoringBreakdownProps {
 export function ScoringBreakdown({ breakdown }: ScoringBreakdownProps) {
   const scores = [
     { label: 'Format Score', value: breakdown.formatScore, color: 'bg-blue-600' },
-    { label: 'Content Score', value: breakdown.contentScore, color: 'bg-purple-600' },
+    { label: 'Content Score', value: breakdown.contentScore, color: 'bg-teal-600' },
     { label: 'Keyword Score', value: breakdown.keywordScore, color: 'bg-indigo-600' },
     { label: 'Experience Score', value: breakdown.experienceScore, color: 'bg-green-600' },
   ];

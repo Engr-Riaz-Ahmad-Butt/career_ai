@@ -139,7 +139,7 @@ export function Roadmap({ roadmaps }: RoadmapProps) {
                         key={cert.id}
                         initial={{ opacity: 0, y: 10 }}
                         animate={{ opacity: 1, y: 0 }}
-                        className="p-3 bg-gradient-to-r from-purple-50 to-blue-50 dark:from-purple-950/20 dark:to-blue-950/20 rounded-lg border border-purple-200 dark:border-purple-800"
+                        className="p-3 bg-gradient-to-r from-teal-50 to-blue-50 dark:from-teal-950/20 dark:to-blue-950/20 rounded-lg border border-teal-200 dark:border-teal-800"
                       >
                         <div className="flex items-start justify-between">
                           <div>

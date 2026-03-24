@@ -205,7 +205,7 @@ export function TemplateSelector({
                 Cancel
               </Button>
               <Button
-                className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700"
+                className="bg-gradient-to-r from-indigo-600 to-teal-600 hover:from-indigo-700 hover:to-teal-700"
                 onClick={onClose}
               >
                 Continue with Selected

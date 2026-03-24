@@ -60,7 +60,7 @@ export const FEATURES: Feature[] = [
         title: "Resume Upload & Improve",
         description:
             "Upload your existing PDF or DOCX. AI analyzes grammar, weak verbs, missing metrics, and suggests targeted improvements.",
-        color: "purple",
+        color: "teal",
     },
     {
         icon: "✉️",
@@ -102,7 +102,7 @@ export const FEATURES: Feature[] = [
         title: "Portfolio Website",
         description:
             "Generate a stunning portfolio website in minutes. React-based, fully deployable, and personalized to your career story.",
-        color: "purple",
+        color: "teal",
     },
 ];
 
@@ -137,9 +137,9 @@ export const HOW_IT_WORKS_STEPS: HowItWorksStep[] = [
         num: "4",
         title: "Download & Apply",
         desc: "Download a pixel-perfect PDF. Generate a matching cover letter. Apply with confidence — fully optimized.",
-        gradient: "from-[rgba(167,139,250,0.1)] to-[rgba(167,139,250,0.1)]",
-        border: "border-[rgba(167,139,250,0.25)]",
-        color: "text-[var(--purple)]",
+        gradient: "from-[rgba(20,184,166,0.1)] to-[rgba(20,184,166,0.1)]",
+        border: "border-[rgba(20,184,166,0.25)]",
+        color: "text-[var(--teal)]",
     },
 ];
 
@@ -174,7 +174,7 @@ export const TESTIMONIALS: Testimonial[] = [
         name: "Jae-won Shin",
         role: "Data Scientist at Amazon",
         badge: "3 Offers in 6 weeks",
-        gradient: "linear-gradient(135deg,#a78bfa,#7c3aed)",
+        gradient: "linear-gradient(135deg,#2dd4bf,#0d9488)",
     },
 ];
 
@@ -183,7 +183,7 @@ export const TESTIMONIALS: Testimonial[] = [
 export const HERO_AVATARS = [
     { initial: "AK", gradient: "linear-gradient(135deg,#3b82f6,#1d4ed8)" },
     { initial: "MR", gradient: "linear-gradient(135deg,#10b981,#059669)" },
-    { initial: "JS", gradient: "linear-gradient(135deg,#a78bfa,#7c3aed)" },
+    { initial: "JS", gradient: "linear-gradient(135deg,#2dd4bf,#0d9488)" },
     { initial: "LT", gradient: "linear-gradient(135deg,#f59e0b,#d97706)" },
     { initial: "DP", gradient: "linear-gradient(135deg,#22d3ee,#0891b2)" },
 ];

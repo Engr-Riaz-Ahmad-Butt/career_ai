@@ -227,7 +227,7 @@ export const DesignPanels = ({ styling, onUpdate }: DesignPanelsProps) => {
                 <AccordionItem value="headings" className="border-0">
                     <AccordionTrigger className="hover:no-underline bg-white dark:bg-slate-900 px-6 py-4 rounded-2xl border border-slate-100 dark:border-slate-800">
                         <div className="flex items-center gap-3">
-                            <div className="p-2 rounded-lg bg-purple-50 dark:bg-purple-900/30 text-purple-600">
+                            <div className="p-2 rounded-lg bg-teal-50 dark:bg-teal-900/30 text-teal-600">
                                 <Layout className="w-5 h-5" />
                             </div>
                             <span className="font-bold text-lg">Section Headings</span>
