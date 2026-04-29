@@ -17,6 +17,7 @@ export class ProfileService {
                 credits: true,
                 phone: true,
                 timezone: true,
+                bio: true,
                 emailVerified: true,
                 createdAt: true,
                 lastLoginAt: true,
@@ -33,6 +34,7 @@ export class ProfileService {
         phone?: string;
         timezone?: string;
         avatar?: string;
+        bio?: string;
     }) {
         return prisma.user.update({
             where: { id: userId },
@@ -47,6 +49,7 @@ export class ProfileService {
                 credits: true,
                 phone: true,
                 timezone: true,
+                bio: true,
                 emailVerified: true,
                 createdAt: true,
                 lastLoginAt: true,

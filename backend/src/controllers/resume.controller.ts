@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import { ResumeService } from '@/services/resume.service';
 import { asyncHandler } from '@/middleware/error';
 import { cacheInvalidations } from '@/services/cacheInvalidation.service';
+import { UnauthorizedError } from '@/utils/errorHandler';
 
 const resumeService = new ResumeService();
 
@@ -22,7 +23,7 @@ function extractListOptions(query: Record<string, unknown>): {
 
 // GET /resumes
 export const listResumes = asyncHandler(async (req: Request, res: Response) => {
-  if (!req.user?.userId) throw new Error('Unauthorized');
+  if (!req.user?.userId) throw new UnauthorizedError();
 
   const options = extractListOptions(req.query);
   const result = await resumeService.listResumes(req.user.userId, options);
@@ -32,7 +33,7 @@ export const listResumes = asyncHandler(async (req: Request, res: Response) => {
 
 // POST /resumes
 export const createResume = asyncHandler(async (req: Request, res: Response) => {
-  if (!req.user?.userId) throw new Error('Unauthorized');
+  if (!req.user?.userId) throw new UnauthorizedError();
 
   const resume = await resumeService.createResume(req.user.userId, req.body);
 
@@ -41,7 +42,7 @@ export const createResume = asyncHandler(async (req: Request, res: Response) => 
 
 // GET /resumes/:id
 export const getResume = asyncHandler(async (req: Request, res: Response) => {
-  if (!req.user?.userId) throw new Error('Unauthorized');
+  if (!req.user?.userId) throw new UnauthorizedError();
 
   const resume = await resumeService.getResumeById(req.user.userId, req.params.id);
 
@@ -50,7 +51,7 @@ export const getResume = asyncHandler(async (req: Request, res: Response) => {
 
 // PUT /resumes/:id
 export const updateResume = asyncHandler(async (req: Request, res: Response) => {
-  if (!req.user?.userId) throw new Error('Unauthorized');
+  if (!req.user?.userId) throw new UnauthorizedError();
 
   const resume = await resumeService.updateResume(req.user.userId, req.params.id, req.body);
   await cacheInvalidations.afterResumeUpdate(req.params.id);
@@ -60,7 +61,7 @@ export const updateResume = asyncHandler(async (req: Request, res: Response) => 
 
 // DELETE /resumes/:id
 export const deleteResume = asyncHandler(async (req: Request, res: Response) => {
-  if (!req.user?.userId) throw new Error('Unauthorized');
+  if (!req.user?.userId) throw new UnauthorizedError();
 
   await resumeService.deleteResume(req.user.userId, req.params.id);
   await cacheInvalidations.afterResumeDelete(req.params.id);
@@ -70,7 +71,7 @@ export const deleteResume = asyncHandler(async (req: Request, res: Response) => 
 
 // POST /resumes/:id/duplicate
 export const duplicateResume = asyncHandler(async (req: Request, res: Response) => {
-  if (!req.user?.userId) throw new Error('Unauthorized');
+  if (!req.user?.userId) throw new UnauthorizedError();
 
   const resume = await resumeService.duplicateResume(req.user.userId, req.params.id);
 
@@ -79,7 +80,7 @@ export const duplicateResume = asyncHandler(async (req: Request, res: Response) 
 
 // GET /resumes/:id/pdf
 export const generatePdf = asyncHandler(async (req: Request, res: Response) => {
-  if (!req.user?.userId) throw new Error('Unauthorized');
+  if (!req.user?.userId) throw new UnauthorizedError();
 
   const result = await resumeService.generatePdf(req.user.userId, req.params.id);
 
@@ -88,7 +89,7 @@ export const generatePdf = asyncHandler(async (req: Request, res: Response) => {
 
 // GET /resumes/:id/versions
 export const listVersions = asyncHandler(async (req: Request, res: Response) => {
-  if (!req.user?.userId) throw new Error('Unauthorized');
+  if (!req.user?.userId) throw new UnauthorizedError();
 
   const versions = await resumeService.listVersions(req.user.userId, req.params.id);
 
@@ -97,7 +98,7 @@ export const listVersions = asyncHandler(async (req: Request, res: Response) => 
 
 // POST /resumes/:id/restore/:versionId
 export const restoreVersion = asyncHandler(async (req: Request, res: Response) => {
-  if (!req.user?.userId) throw new Error('Unauthorized');
+  if (!req.user?.userId) throw new UnauthorizedError();
 
   const resume = await resumeService.restoreVersion(
     req.user.userId,
@@ -111,7 +112,7 @@ export const restoreVersion = asyncHandler(async (req: Request, res: Response) =
 
 // POST /resumes/upload
 export const uploadResume = asyncHandler(async (req: Request, res: Response) => {
-  if (!req.user?.userId) throw new Error('Unauthorized');
+  if (!req.user?.userId) throw new UnauthorizedError();
   if (!req.file) throw new Error('No file uploaded');
 
   const resume = await resumeService.uploadResume(req.user.userId, req.file, req.body.title);
@@ -121,7 +122,7 @@ export const uploadResume = asyncHandler(async (req: Request, res: Response) => 
 
 // POST /resumes/extract
 export const extractResume = asyncHandler(async (req: Request, res: Response) => {
-  if (!req.user?.userId) throw new Error('Unauthorized');
+  if (!req.user?.userId) throw new UnauthorizedError();
   if (!req.file) throw new Error('No file uploaded');
 
   const data = await resumeService.extractAndParse(req.user.userId, req.file);
@@ -131,7 +132,7 @@ export const extractResume = asyncHandler(async (req: Request, res: Response) =>
 
 // POST /resumes/:id/optimize
 export const optimizeResume = asyncHandler(async (req: Request, res: Response) => {
-  if (!req.user?.userId) throw new Error('Unauthorized');
+  if (!req.user?.userId) throw new UnauthorizedError();
 
   const { jobDescription } = req.body;
   if (!jobDescription) throw new Error('Job description is required');

@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import { InterviewService } from '@/services/interview.service';
 import { asyncHandler } from '@/middleware/error';
+import { UnauthorizedError, ValidationError } from '@/utils/errorHandler';
 
 
 const interviewService = new InterviewService();
@@ -9,16 +10,16 @@ const interviewService = new InterviewService();
 
 /** Ensure user is authenticated */
 function requireAuth(userId?: string): void {
-    if (!userId) throw new Error('Unauthorized');
+    if (!userId) throw new UnauthorizedError();
 }
 
 /** Ensure resource ID is provided */
 function requireId(id?: string): void {
-    if (!id) throw new Error('Session ID is required');
+    if (!id) throw new ValidationError('Session ID is required');
 }
 export const generateSession = asyncHandler(async (req: Request, res: Response) => {
     requireAuth(req.user?.userId);
-    if (!req.body || typeof req.body !== 'object') throw new Error('Invalid request body');
+    if (!req.body || typeof req.body !== 'object') throw new ValidationError('Invalid request body');
 
     const session = await interviewService.generateSession(req.user!.userId, req.body);
     res.status(201).json({ success: true, message: 'Interview session generated', data: { session } });
@@ -42,7 +43,7 @@ export const getSession = asyncHandler(async (req: Request, res: Response) => {
 export const submitFeedback = asyncHandler(async (req: Request, res: Response) => {
     requireAuth(req.user?.userId);
     requireId(req.params.id);
-    if (!req.body || typeof req.body !== 'object') throw new Error('Invalid request body');
+    if (!req.body || typeof req.body !== 'object') throw new ValidationError('Invalid request body');
 
     const feedback = await interviewService.submitFeedback(req.user!.userId, req.params.id, req.body);
     res.json({ success: true, message: 'Feedback generated', data: { feedback } });

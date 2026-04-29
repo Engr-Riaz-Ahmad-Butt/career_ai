@@ -4,6 +4,7 @@ import { DocumentService } from '@/services/document.service';
 import { AIService } from '@/services/ai/aiService';
 import { asyncHandler } from '@/middleware/error';
 import prisma from '@/config/database';
+import { UnauthorizedError, ValidationError } from '@/utils/errorHandler';
 
 const docService = new DocumentService();
 const aiService = new AIService();
@@ -44,7 +45,7 @@ function extractDocumentListOptions(query: Record<string, unknown>): {
 
 async function deductDocumentCredits(userId: string, action: string, amount: number): Promise<void> {
   if (!userId || !action || amount <= 0) {
-    throw new Error('Invalid credit deduction parameters');
+    throw new ValidationError('Invalid credit deduction parameters');
   }
 
   const user = await prisma.user.update({
@@ -70,7 +71,7 @@ async function deductDocumentCredits(userId: string, action: string, amount: num
 // ── Universal Document CRUD ────────────────────────────────────────────────
 
 export const listDocuments = asyncHandler(async (req: Request, res: Response) => {
-  if (!req.user?.userId) throw new Error('Unauthorized');
+  if (!req.user?.userId) throw new UnauthorizedError();
 
   const options = extractDocumentListOptions(req.query);
   const result = await docService.listDocuments(req.user.userId, options);
@@ -79,7 +80,7 @@ export const listDocuments = asyncHandler(async (req: Request, res: Response) =>
 });
 
 export const getDocument = asyncHandler(async (req: Request, res: Response) => {
-  if (!req.user?.userId) throw new Error('Unauthorized');
+  if (!req.user?.userId) throw new UnauthorizedError();
 
   const doc = await docService.getDocumentById(req.user.userId, req.params.id);
 
@@ -87,7 +88,7 @@ export const getDocument = asyncHandler(async (req: Request, res: Response) => {
 });
 
 export const updateDocument = asyncHandler(async (req: Request, res: Response) => {
-  if (!req.user?.userId) throw new Error('Unauthorized');
+  if (!req.user?.userId) throw new UnauthorizedError();
 
   const doc = await docService.updateDocument(req.user.userId, req.params.id, req.body);
 
@@ -95,7 +96,7 @@ export const updateDocument = asyncHandler(async (req: Request, res: Response) =
 });
 
 export const deleteDocument = asyncHandler(async (req: Request, res: Response) => {
-  if (!req.user?.userId) throw new Error('Unauthorized');
+  if (!req.user?.userId) throw new UnauthorizedError();
 
   await docService.deleteDocument(req.user.userId, req.params.id);
 
@@ -103,7 +104,7 @@ export const deleteDocument = asyncHandler(async (req: Request, res: Response) =
 });
 
 export const generateDocPdf = asyncHandler(async (req: Request, res: Response) => {
-  if (!req.user?.userId) throw new Error('Unauthorized');
+  if (!req.user?.userId) throw new UnauthorizedError();
 
   const result = await docService.generatePdf(req.user.userId, req.params.id);
 
@@ -111,7 +112,7 @@ export const generateDocPdf = asyncHandler(async (req: Request, res: Response) =
 });
 
 export const duplicateDocument = asyncHandler(async (req: Request, res: Response) => {
-  if (!req.user?.userId) throw new Error('Unauthorized');
+  if (!req.user?.userId) throw new UnauthorizedError();
 
   const doc = await docService.duplicateDocument(req.user.userId, req.params.id);
 
@@ -145,10 +146,10 @@ async function generateAndSaveDocument(options: GenerateDocumentOptions): Promis
 // ── Cover Letter ─────────────────────────────────────────────────────────
 
 export const generateCoverLetter = asyncHandler(async (req: Request, res: Response) => {
-  if (!req.user?.userId) throw new Error('Unauthorized');
+  if (!req.user?.userId) throw new UnauthorizedError();
 
   const data = req.body;
-  if (!data || typeof data !== 'object') throw new Error('Invalid request body');
+  if (!data || typeof data !== 'object') throw new ValidationError('Invalid request body');
 
   const title = data.type === 'job_application'
     ? `Cover Letter — ${data.companyName || 'Application'}`
@@ -168,8 +169,8 @@ export const generateCoverLetter = asyncHandler(async (req: Request, res: Respon
 });
 
 export const regenerateCoverLetter = asyncHandler(async (req: Request, res: Response) => {
-  if (!req.user?.userId) throw new Error('Unauthorized');
-  if (!req.params.id) throw new Error('Document ID required');
+  if (!req.user?.userId) throw new UnauthorizedError();
+  if (!req.params.id) throw new ValidationError('Document ID required');
 
   const original = await docService.getDocumentById(req.user.userId, req.params.id);
   const metadata = (original.metadata as Record<string, unknown>) ?? {};
@@ -185,7 +186,7 @@ export const regenerateCoverLetter = asyncHandler(async (req: Request, res: Resp
 // ── SOP ─────────────────────────────────────────────────────────────────
 
 export const generateSOP = asyncHandler(async (req: Request, res: Response) => {
-  if (!req.user?.userId) throw new Error('Unauthorized');
+  if (!req.user?.userId) throw new UnauthorizedError();
 
   const data = req.body;
   const title = `SOP — ${data.program} at ${data.university}`;
@@ -206,7 +207,7 @@ export const generateSOP = asyncHandler(async (req: Request, res: Response) => {
 // ── Motivation Letter ─────────────────────────────────────────────────
 
 export const generateMotivationLetter = asyncHandler(async (req: Request, res: Response) => {
-  if (!req.user?.userId) throw new Error('Unauthorized');
+  if (!req.user?.userId) throw new UnauthorizedError();
 
   const data = req.body;
   const title = `Motivation Letter — ${data.program}`;
@@ -227,7 +228,7 @@ export const generateMotivationLetter = asyncHandler(async (req: Request, res: R
 // ── Study Plan ────────────────────────────────────────────────────────
 
 export const generateStudyPlan = asyncHandler(async (req: Request, res: Response) => {
-  if (!req.user?.userId) throw new Error('Unauthorized');
+  if (!req.user?.userId) throw new UnauthorizedError();
 
   const data = req.body;
   const title = `Study Plan — ${data.program} at ${data.university}`;
@@ -248,7 +249,7 @@ export const generateStudyPlan = asyncHandler(async (req: Request, res: Response
 // ── Financial Letter ──────────────────────────────────────────────────
 
 export const generateFinancialLetter = asyncHandler(async (req: Request, res: Response) => {
-  if (!req.user?.userId) throw new Error('Unauthorized');
+  if (!req.user?.userId) throw new UnauthorizedError();
 
   const data = req.body;
   const title = `Financial Letter — ${data.scholarshipName}`;
@@ -269,7 +270,7 @@ export const generateFinancialLetter = asyncHandler(async (req: Request, res: Re
 // ── Bio ────────────────────────────────────────────────────────────────
 
 export const generateBio = asyncHandler(async (req: Request, res: Response) => {
-  if (!req.user?.userId) throw new Error('Unauthorized');
+  if (!req.user?.userId) throw new UnauthorizedError();
 
   const data = req.body;
   const title = `${data.bioType} Bio`;

@@ -108,6 +108,8 @@ model User {
   currentRole   String?
   targetRole    String?
   industry      String?
+  bio           String?  @db.Text
+
 
   // Preferences stored as JSON
   preferences   Json?    // { defaultTemplate, language, notifications }

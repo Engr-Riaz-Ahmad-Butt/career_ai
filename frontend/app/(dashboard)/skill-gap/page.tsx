@@ -9,45 +9,28 @@ import { Roadmap } from '@/components/skill-gap/roadmap';
 import { Card, CardContent } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { generateRoadmap, getSkillGaps } from '@/lib/skillGapData';
+import { fadeInContainer, fadeInItem } from '@/lib/animations';
+import { FeatureErrorBoundary } from '@/components/errors/FeatureErrorBoundary';
 
 
 export default function SkillGapPage() {
   const [analyzed, setAnalyzed] = useState(false);
   const skillGaps = getSkillGaps();
 
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.1,
-        delayChildren: 0.2,
-      },
-    },
-  };
-
-  const itemVariants = {
-    hidden: { opacity: 0, y: 20 },
-    visible: {
-      opacity: 1,
-      y: 0,
-      transition: { duration: 0.5 },
-    },
-  };
-
   // Generate roadmaps for missing skills
   const roadmaps = skillGaps.missing.slice(0, 3).map((skill) => generateRoadmap(skill));
 
   return (
-    <div className="p-6 sm:p-8 bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-950 dark:to-slate-900 min-h-screen">
+    <FeatureErrorBoundary featureName="Skill Gap Analysis">
+      <div className="p-6 sm:p-8 bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-950 dark:to-slate-900 min-h-screen">
       <motion.div
         className="max-w-6xl mx-auto"
-        variants={containerVariants}
+        variants={fadeInContainer}
         initial="hidden"
         animate="visible"
       >
         {/* Header */}
-        <motion.div variants={itemVariants} className="mb-8">
+        <motion.div variants={fadeInItem} className="mb-8">
           <h1 className="text-4xl font-bold text-slate-900 dark:text-white mb-2">
             Skill Gap Analyzer
           </h1>
@@ -59,7 +42,7 @@ export default function SkillGapPage() {
         {/* Stats */}
         {analyzed && (
           <motion.div
-            variants={itemVariants}
+            variants={fadeInItem}
             className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8"
           >
             <Card className="bg-gradient-to-br from-green-50 to-green-100/50 dark:from-green-950/30 dark:to-green-900/20 border-green-200 dark:border-green-800">
@@ -113,7 +96,7 @@ export default function SkillGapPage() {
         )}
 
         {/* Main Content */}
-        <motion.div variants={itemVariants}>
+        <motion.div variants={fadeInItem}>
           <Tabs defaultValue="analyzer" className="w-full">
             <TabsList className="grid w-full grid-cols-2 mb-6">
               <TabsTrigger value="analyzer">Analyze Skills</TabsTrigger>
@@ -143,5 +126,6 @@ export default function SkillGapPage() {
         </motion.div>
       </motion.div>
     </div>
+    </FeatureErrorBoundary>
   );
 }

@@ -21,6 +21,7 @@ import { useAI } from '@/hooks/use-ai';
 import { resumeApi } from '@/lib/api/endpoints/resume.api';
 import { LoadingSpinner } from '@/components/shared/LoadingSpinner';
 import { toast } from 'sonner';
+import { FeatureErrorBoundary } from '@/components/errors/FeatureErrorBoundary';
 
 export default function BioGeneratorPage() {
   const [bioType, setBioType] = useState('LinkedIn');
@@ -68,7 +69,8 @@ export default function BioGeneratorPage() {
   };
 
   return (
-    <div className="p-6 sm:p-8 bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-950 dark:to-slate-900 min-h-screen">
+    <FeatureErrorBoundary featureName="Bio Generator">
+      <div className="p-6 sm:p-8 bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-950 dark:to-slate-900 min-h-screen">
       <div className="max-w-4xl mx-auto space-y-8">
         <div className="text-center space-y-3">
           <div className="w-16 h-16 bg-orange-100 dark:bg-orange-900/30 rounded-2xl flex items-center justify-center text-orange-600 mx-auto">
@@ -216,5 +218,6 @@ export default function BioGeneratorPage() {
         </div>
       </div>
     </div>
+    </FeatureErrorBoundary>
   );
 }

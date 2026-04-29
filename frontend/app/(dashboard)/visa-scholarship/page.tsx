@@ -7,31 +7,21 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { FinancialProofGenerator } from '@/components/visa/FinancialProofGenerator';
 import { VisaGuide } from '@/components/visa/VisaGuide';
-
-const container = {
-  hidden: { opacity: 0 },
-  show: {
-    opacity: 1,
-    transition: { staggerChildren: 0.1 },
-  },
-};
-
-const item = {
-  hidden: { opacity: 0, y: 20 },
-  show: { opacity: 1, y: 0 },
-};
+import { fadeInContainer, fadeInItem } from '@/lib/animations';
+import { FeatureErrorBoundary } from '@/components/errors/FeatureErrorBoundary';
 
 export default function VisaScholarshipPage() {
   return (
-    <div className="p-6 sm:p-8 bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-950 dark:to-slate-900 min-h-screen">
+    <FeatureErrorBoundary featureName="Visa & Scholarship Hub">
+      <div className="p-6 sm:p-8 bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-950 dark:to-slate-900 min-h-screen">
       <motion.div
         className="max-w-7xl mx-auto"
-        variants={container}
+        variants={fadeInContainer}
         initial="hidden"
-        animate="show"
+        animate="visible"
       >
         {/* Header */}
-        <motion.div variants={item} className="mb-8">
+        <motion.div variants={fadeInItem} className="mb-8">
           <h1 className="text-4xl font-bold text-slate-900 dark:text-white mb-2">
             Visa & Scholarship Hub
           </h1>
@@ -42,10 +32,10 @@ export default function VisaScholarshipPage() {
 
         {/* Quick Stats */}
         <motion.div
-          variants={container}
+          variants={fadeInContainer}
           className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8"
         >
-          <motion.div variants={item}>
+          <motion.div variants={fadeInItem}>
             <Card>
               <CardContent className="pt-6">
                 <div className="flex items-center gap-4">
@@ -61,7 +51,7 @@ export default function VisaScholarshipPage() {
             </Card>
           </motion.div>
 
-          <motion.div variants={item}>
+          <motion.div variants={fadeInItem}>
             <Card>
               <CardContent className="pt-6">
                 <div className="flex items-center gap-4">
@@ -77,7 +67,7 @@ export default function VisaScholarshipPage() {
             </Card>
           </motion.div>
 
-          <motion.div variants={item}>
+          <motion.div variants={fadeInItem}>
             <Card>
               <CardContent className="pt-6">
                 <div className="flex items-center gap-4">
@@ -95,7 +85,7 @@ export default function VisaScholarshipPage() {
         </motion.div>
 
         {/* Content Tabs */}
-        <motion.div variants={item}>
+        <motion.div variants={fadeInItem}>
           <Card>
             <CardHeader>
               <CardTitle>Resources & Tools</CardTitle>
@@ -139,5 +129,6 @@ export default function VisaScholarshipPage() {
         </motion.div>
       </motion.div>
     </div>
+    </FeatureErrorBoundary>
   );
 }

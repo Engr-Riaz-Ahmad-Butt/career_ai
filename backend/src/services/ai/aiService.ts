@@ -5,6 +5,21 @@ import PROMPTS from '@/services/ai/prompts';
 import ENHANCED_PROMPTS from '@/services/ai/enhancedPrompts';
 import prisma from '@/config/database';
 import { NotFoundError, ValidationError } from '@/utils/errorHandler';
+import type { 
+  ResumeData, 
+  ATSScoreResult, 
+  TailorResumeResult, 
+  EnhanceResumeResult, 
+  SuggestionsResult, 
+  InterviewQuestionsResult, 
+  InterviewFeedbackResult, 
+  CommunicationAnalysisResult, 
+  ExtractResumeResult, 
+  OptimizeResumeResult, 
+  KeywordsResult, 
+  GrammarFixResult, 
+  ImproveTextResult 
+} from './aiService.types';
 
 // Use enhanced prompts for better results
 const USE_ENHANCED_PROMPTS = env.USE_ENHANCED_PROMPTS;
@@ -18,7 +33,7 @@ interface EnhanceResumeOptions {
 }
 
 interface TailorResumeOptions {
-  readonly resume: any;
+  readonly resume: ResumeData;
   readonly jobDescription: string;
   readonly companyName?: string;
   readonly jobTitle?: string;
@@ -113,10 +128,10 @@ interface CommunicationAnalysisOptions {
 
 // ── Helper Functions ──────────────────────────────────────────────────────
 
-async function getResumeOrThrow(resumeId: string, userId: string): Promise<any> {
+async function getResumeOrThrow(resumeId: string, userId: string): Promise<ResumeData> {
   const resume = await prisma.resume.findFirst({ where: { id: resumeId, userId } });
   if (!resume) throw new NotFoundError('Resume not found');
-  return resume;
+  return resume as unknown as ResumeData;
 }
 
 function validateUserId(userId: string): void {
@@ -135,7 +150,7 @@ export class AIService {
 
   // ── Resume Enhancement ────────────────────────────────────────────────
 
-  async enhanceResumeSection(userId: string, resumeId: string, options: EnhanceResumeOptions) {
+  async enhanceResumeSection(userId: string, resumeId: string, options: EnhanceResumeOptions): Promise<EnhanceResumeResult> {
     validateUserId(userId);
     validateResumeId(resumeId);
     if (!options.section) throw new ValidationError('section is required');
@@ -151,10 +166,10 @@ ${JSON.stringify(resume, null, 2)}
 
 Return JSON: { "enhanced": { ... section data }, "suggestions": ["improvement 1", ...] }`;
 
-    return generateStructuredContent<any>(prompt, MODELS.PRO);
+    return generateStructuredContent<EnhanceResumeResult>(prompt, MODELS.PRO);
   }
 
-  async scoreATS(userId: string, resumeId: string, jobDescription: string) {
+  async scoreATS(userId: string, resumeId: string, jobDescription: string): Promise<ATSScoreResult> {
     validateUserId(userId);
     validateResumeId(resumeId);
     if (!jobDescription) throw new ValidationError('jobDescription is required');
@@ -162,10 +177,10 @@ Return JSON: { "enhanced": { ... section data }, "suggestions": ["improvement 1"
     const resume = await getResumeOrThrow(resumeId, userId);
     const P = USE_ENHANCED_PROMPTS ? ENHANCED_PROMPTS : PROMPTS;
     
-    return generateStructuredContent<any>(P.ATS_ANALYZE(resume, jobDescription), MODELS.FLASH);
+    return generateStructuredContent<ATSScoreResult>(P.ATS_ANALYZE(resume, jobDescription), MODELS.FLASH);
   }
 
-  async generateSuggestions(userId: string, resumeId: string, section: string, targetRole?: string) {
+  async generateSuggestions(userId: string, resumeId: string, section: string, targetRole?: string): Promise<SuggestionsResult> {
     validateUserId(userId);
     validateResumeId(resumeId);
     if (!section) throw new ValidationError('section is required');
@@ -177,19 +192,19 @@ Target Role: ${targetRole || 'Not specified'}
 Resume: ${JSON.stringify(resume)}
 Return JSON: { "suggestions": [{ "type": string, "original": string, "suggested": string, "reason": string }] }`;
 
-    return generateStructuredContent<any>(prompt, MODELS.FLASH);
+    return generateStructuredContent<SuggestionsResult>(prompt, MODELS.FLASH);
   }
 
-  async tailorResume(options: TailorResumeOptions) {
+  async tailorResume(options: TailorResumeOptions): Promise<TailorResumeResult> {
     if (!options.resume) throw new ValidationError('resume is required');
     if (!options.jobDescription) throw new ValidationError('jobDescription is required');
 
     const P = USE_ENHANCED_PROMPTS ? ENHANCED_PROMPTS : PROMPTS;
     const prompt = P.RESUME_TAILOR(options.resume, options.jobDescription);
-    const result = await generateStructuredContent<any>(prompt, MODELS.PRO);
+    const result = await generateStructuredContent<TailorResumeResult>(prompt, MODELS.PRO);
 
     return {
-      tailoredContent: result.tailoredResume || result,
+      tailoredContent: result.tailoredContent || result,
       extractedKeywords: result.extractedKeywords || [],
       matchedKeywords: result.matchedKeywords || [],
       missingKeywords: result.missingKeywords || [],
@@ -200,7 +215,7 @@ Return JSON: { "suggestions": [{ "type": string, "original": string, "suggested"
 
   // ── Resume Extraction & Optimization ──────────────────────────────────
 
-  async extractResumeData(text: string) {
+  async extractResumeData(text: string): Promise<ExtractResumeResult> {
     const prompt = `Extract all professional information from this raw resume text and convert it into a structured JSON format.
 Make sure to clean up any parsing errors and present the data clearly.
 
@@ -249,18 +264,18 @@ Return JSON in this EXACT structure:
   ]
 }`;
 
-    return generateStructuredContent<any>(prompt, MODELS.PRO);
+    return generateStructuredContent<ExtractResumeResult>(prompt, MODELS.PRO);
   }
 
-  async optimizeResumeForJD(resume: any, jobDescription: string) {
+  async optimizeResumeForJD(resume: ResumeData, jobDescription: string): Promise<OptimizeResumeResult> {
     if (!resume) throw new ValidationError('resume is required');
     if (!jobDescription) throw new ValidationError('jobDescription is required');
 
     const prompt = this.buildOptimizationPrompt(resume, jobDescription);
-    return generateStructuredContent<any>(prompt, MODELS.PRO);
+    return generateStructuredContent<OptimizeResumeResult>(prompt, MODELS.PRO);
   }
 
-  private buildOptimizationPrompt(resume: any, jobDescription: string): string {
+  private buildOptimizationPrompt(resume: ResumeData, jobDescription: string): string {
     return `Optimize the following resume based on the job description.
 Follow these rules:
 1. Extract important keywords from JD.
@@ -301,14 +316,14 @@ Return JSON:
     return result.content;
   }
 
-  private async getResumeIfProvided(userId: string, resumeId?: string): Promise<any | null> {
+  private async getResumeIfProvided(userId: string, resumeId?: string): Promise<ResumeData | null> {
     if (!resumeId) return null;
     return getResumeOrThrow(resumeId, userId);
   }
 
-  private buildCoverLetterPrompt(options: CoverLetterOptions, resumeData: any): string {
+  private buildCoverLetterPrompt(options: CoverLetterOptions, resumeData: ResumeData | null): string {
     return `You are an expert cover letter writer. Write a ${options.wordLimit || 350}-word ${options.type} cover letter.
-${resumeData ? `Candidate Info: ${JSON.stringify({ name: (resumeData.personalInfo as any)?.name, summary: resumeData.summary })}` : ''}
+${resumeData ? `Candidate Info: ${JSON.stringify({ name: resumeData.personalInfo?.name, summary: resumeData.summary })}` : ''}
 Company: ${options.companyName || 'N/A'} | Role: ${options.jobTitle || 'N/A'}
 Tone: ${options.tone || 'professional'} | Language: ${options.language || 'en'}
 ${options.hiringManagerName ? `Hiring Manager: ${options.hiringManagerName}` : ''}
@@ -421,9 +436,9 @@ Return JSON: { "content": "full financial letter text" }`;
     return result.content;
   }
 
-  private buildBioPrompt(options: BioOptions, resumeData: any): string {
+  private buildBioPrompt(options: BioOptions, resumeData: ResumeData | null): string {
     return `Write a compelling ${options.bioType} bio${options.wordLimit ? ` (max ${options.wordLimit} words)` : ''}.
-Name: ${options.name || (resumeData?.personalInfo as any)?.name || 'Professional'}
+Name: ${options.name || resumeData?.personalInfo?.name || 'Professional'}
 Role: ${options.currentRole} ${options.company ? `at ${options.company}` : ''}
 Experience: ${options.yearsOfExperience} years
 Skills: ${options.keySkills?.join(', ') || ''}
@@ -435,17 +450,17 @@ Return JSON: { "content": "bio text" }`;
 
   // ── Interview ─────────────────────────────────────────────────────────
 
-  async generateInterviewQuestions(userId: string, options: InterviewQuestionsOptions) {
+  async generateInterviewQuestions(userId: string, options: InterviewQuestionsOptions): Promise<InterviewQuestionsResult> {
     validateUserId(userId);
     validateResumeId(options.resumeId);
 
     const resume = await getResumeOrThrow(options.resumeId, userId);
     const prompt = this.buildInterviewQuestionsPrompt(options, resume);
 
-    return generateStructuredContent<any>(prompt, MODELS.PRO);
+    return generateStructuredContent<InterviewQuestionsResult>(prompt, MODELS.PRO);
   }
 
-  private buildInterviewQuestionsPrompt(options: InterviewQuestionsOptions, resume: any): string {
+  private buildInterviewQuestionsPrompt(options: InterviewQuestionsOptions, resume: ResumeData): string {
     const categories = options.categories || ['behavioral', 'technical', 'situational'];
     return `Generate ${options.questionCount || INTERVIEW.DEFAULT_QUESTION_COUNT} interview questions.
 Categories: ${categories.join(', ')}
@@ -456,7 +471,7 @@ Candidate Background: ${JSON.stringify({ summary: resume.summary, experience: re
 Return JSON: { "questions": [{ "id": "q1", "category": string, "question": string, "difficulty": string, "answerTip": string }] }`;
   }
 
-  async generateInterviewFeedback(questionId: string, question: string, userAnswer: string) {
+  async generateInterviewFeedback(questionId: string, question: string, userAnswer: string): Promise<InterviewFeedbackResult> {
     if (!questionId) throw new ValidationError('questionId is required');
     if (!question) throw new ValidationError('question is required');
     if (!userAnswer) throw new ValidationError('userAnswer is required');
@@ -467,12 +482,12 @@ Answer: ${userAnswer}
 
 Return JSON: { "score": 0-10, "feedback": string, "strengths": [string], "improvements": [string], "suggestedAnswer": string }`;
 
-    return generateStructuredContent<any>(prompt, MODELS.PRO);
+    return generateStructuredContent<InterviewFeedbackResult>(prompt, MODELS.PRO);
   }
 
   // ── Communication Analyzer ────────────────────────────────────────────
 
-  async analyzeCommunication(userId: string, options: CommunicationAnalysisOptions) {
+  async analyzeCommunication(userId: string, options: CommunicationAnalysisOptions): Promise<CommunicationAnalysisResult> {
     validateUserId(userId);
     if (!options.text) throw new ValidationError('text is required');
 
@@ -491,12 +506,12 @@ Return JSON: {
   "highlights": [{ "text": string, "type": "strength"|"weakness", "comment": string }]
 }`;
 
-    return generateStructuredContent<any>(prompt, MODELS.FLASH);
+    return generateStructuredContent<CommunicationAnalysisResult>(prompt, MODELS.FLASH);
   }
 
   // ── Keywords ──────────────────────────────────────────────────────────
 
-  async extractKeywords(text: string, maxKeywords = 30, includeWeights = false) {
+  async extractKeywords(text: string, maxKeywords = 30, includeWeights = false): Promise<KeywordsResult> {
     if (!text) throw new ValidationError('text is required');
 
     const prompt = `Extract the top ${maxKeywords} professional keywords from this text.
@@ -504,12 +519,12 @@ Text: ${text.substring(0, 3000)}
 
 Return JSON: { "keywords": [string], ${includeWeights ? '"weights": { "keyword": number }' : ''} }`;
 
-    return generateStructuredContent<any>(prompt, MODELS.FLASH);
+    return generateStructuredContent<KeywordsResult>(prompt, MODELS.FLASH);
   }
 
   // ── Grammar & Text ────────────────────────────────────────────────────
 
-  async fixGrammar(text: string, mode = 'grammar_only') {
+  async fixGrammar(text: string, mode = 'grammar_only'): Promise<GrammarFixResult> {
     if (!text) throw new ValidationError('text is required');
 
     const prompt = `Fix grammar and style in this text. Mode: ${mode}.
@@ -517,10 +532,10 @@ Text: ${text}
 
 Return JSON: { "original": string, "corrected": string, "changes": [{ "original": string, "corrected": string, "reason": string }] }`;
 
-    return generateStructuredContent<any>(prompt, MODELS.FLASH);
+    return generateStructuredContent<GrammarFixResult>(prompt, MODELS.FLASH);
   }
 
-  async improveText(text: string, tone?: string, context?: string) {
+  async improveText(text: string, tone?: string, context?: string): Promise<ImproveTextResult> {
     if (!text) throw new ValidationError('text is required');
 
     const prompt = `Improve this text.
@@ -529,7 +544,7 @@ Text: ${text}
 
 Return JSON: { "improved": string, "changes": [{ "description": string }] }`;
 
-    return generateStructuredContent<any>(prompt, MODELS.FLASH);
+    return generateStructuredContent<ImproveTextResult>(prompt, MODELS.FLASH);
   }
 }
 

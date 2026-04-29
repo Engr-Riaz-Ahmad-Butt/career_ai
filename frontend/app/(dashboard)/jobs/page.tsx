@@ -19,6 +19,7 @@ import {
 import { jobTrackerApi } from '@/lib/api/endpoints/jobTracker.api';
 import { queryKeys } from '@/lib/queryKeys';
 import { LoadingState } from '@/components/shared/LoadingSpinner';
+import { fadeInContainer, fadeInItem } from '@/lib/animations';
 
 export default function JobsPage() {
   const [selectedJob, setSelectedJob] = useState<any | null>(null);
@@ -52,25 +53,7 @@ export default function JobsPage() {
     return allJobs.filter((j) => (j.status || '').toLowerCase() === activeTab.toLowerCase());
   }, [allJobs, activeTab]);
 
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.1,
-        delayChildren: 0.2,
-      },
-    },
-  };
 
-  const itemVariants = {
-    hidden: { opacity: 0, y: 20 },
-    visible: {
-      opacity: 1,
-      y: 0,
-      transition: { duration: 0.5 },
-    },
-  };
 
   if (isLoading) {
     return (
@@ -85,12 +68,12 @@ export default function JobsPage() {
       <div className="p-6 sm:p-8 bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-950 dark:to-slate-900 min-h-screen">
         <motion.div
           className="max-w-7xl mx-auto"
-          variants={containerVariants}
+          variants={fadeInContainer}
           initial="hidden"
           animate="visible"
         >
         {/* Header */}
-        <motion.div variants={itemVariants} className="mb-8 flex items-center justify-between">
+        <motion.div variants={fadeInItem} className="mb-8 flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-bold text-slate-900 dark:text-white mb-2">
               Job Tracker
@@ -107,7 +90,7 @@ export default function JobsPage() {
 
         {/* Stats Cards */}
         <motion.div
-          variants={itemVariants}
+          variants={fadeInItem}
           className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8"
         >
           <Card className="bg-gradient-to-br from-blue-50 to-blue-100/50 dark:from-blue-950/30 dark:to-blue-900/20 border-blue-200 dark:border-blue-800">
@@ -175,7 +158,7 @@ export default function JobsPage() {
 
         {/* Main Content */}
         <motion.div
-          variants={itemVariants}
+          variants={fadeInItem}
           className="grid grid-cols-1 lg:grid-cols-3 gap-6"
         >
           {/* Job List */}

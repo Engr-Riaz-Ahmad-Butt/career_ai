@@ -29,6 +29,8 @@ const USER_SELECT = {
     onboardingComplete: true,
     currentRole: true,
     targetRole: true,
+    industry: true,
+    bio: true,
     createdAt: true,
 };
 

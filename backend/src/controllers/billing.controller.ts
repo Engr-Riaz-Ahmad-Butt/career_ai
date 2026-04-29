@@ -2,32 +2,33 @@ import { Request, Response } from 'express';
 import { SUBSCRIPTION_PLANS } from '@/constants/billing';
 import { BillingService } from '@/services/billing.service';
 import { asyncHandler } from '@/middleware/error';
+import { UnauthorizedError, ValidationError } from '@/utils/errorHandler';
 
 const billingService = new BillingService();
 
 // ── Helper Functions ────────────────────────────────────────────────────
 
 function requireUserId(req: Request): string {
-  if (!req.user?.userId) throw new Error('Unauthorized');
+  if (!req.user?.userId) throw new UnauthorizedError();
   return req.user.userId;
 }
 
 function validateCheckoutData(body: any): { plan: string; successUrl: string; cancelUrl: string } {
-  if (!body.plan) throw new Error('plan is required');
-  if (!body.successUrl) throw new Error('successUrl is required');
-  if (!body.cancelUrl) throw new Error('cancelUrl is required');
+  if (!body.plan) throw new ValidationError('plan is required');
+  if (!body.successUrl) throw new ValidationError('successUrl is required');
+  if (!body.cancelUrl) throw new ValidationError('cancelUrl is required');
   return { plan: body.plan, successUrl: body.successUrl, cancelUrl: body.cancelUrl };
 }
 
 function validateCreditsPurchase(body: any): { credits: number; successUrl: string } {
-  if (!body.credits || typeof body.credits !== 'number') throw new Error('credits (number) is required');
-  if (!body.successUrl) throw new Error('successUrl is required');
+  if (!body.credits || typeof body.credits !== 'number') throw new ValidationError('credits (number) is required');
+  if (!body.successUrl) throw new ValidationError('successUrl is required');
   return { credits: body.credits, successUrl: body.successUrl };
 }
 
 function validateWebhookSignature(headers: any): string {
   const signature = headers['stripe-signature'];
-  if (!signature) throw new Error('Missing stripe-signature header');
+  if (!signature) throw new ValidationError('Missing stripe-signature header');
   return signature as string;
 }
 

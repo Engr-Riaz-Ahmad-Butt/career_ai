@@ -3,6 +3,7 @@ import crypto from 'crypto';
 import { CACHE_TTL } from '@/constants/cacheTtl';
 import { AIService } from '@/services/ai/aiService';
 import { asyncHandler } from '@/middleware/error';
+import { UnauthorizedError, ValidationError } from '@/utils/errorHandler';
 import { getCacheService } from '@/services/cache.service';
 
 const cache = getCacheService();
@@ -16,12 +17,12 @@ function createHash(text: string): string {
 }
 
 function requireUserId(req: Request): string {
-  if (!req.user?.userId) throw new Error('Unauthorized');
+  if (!req.user?.userId) throw new UnauthorizedError();
   return req.user.userId;
 }
 
 function requireResumeId(req: Request): string {
-  if (!req.params.id) throw new Error('Resume ID is required');
+  if (!req.params.id) throw new ValidationError('Resume ID is required');
   return req.params.id;
 }
 
@@ -33,7 +34,7 @@ export const enhanceResume = asyncHandler(async (req: Request, res: Response) =>
   const resumeId = requireResumeId(req);
   const { section, targetRole, industry } = req.body;
   
-  if (!section) throw new Error('section is required');
+  if (!section) throw new ValidationError('section is required');
 
   const cacheKey = `resume:${resumeId}:enhance:${section}:${targetRole}:${industry}`;
   
@@ -52,7 +53,7 @@ export const scoreAts = asyncHandler(async (req: Request, res: Response) => {
   const resumeId = requireResumeId(req);
   const { jobDescription } = req.body;
   
-  if (!jobDescription) throw new Error('jobDescription is required');
+  if (!jobDescription) throw new ValidationError('jobDescription is required');
 
   const jobDescriptionHash = createHash(jobDescription);
   const cacheKey = `resume:${resumeId}:ats:${jobDescriptionHash}`;
@@ -70,7 +71,7 @@ export const getSuggestions = asyncHandler(async (req: Request, res: Response) =
   const userId = requireUserId(req);
   const { section, targetRole } = req.body;
   
-  if (!section) throw new Error('section is required');
+  if (!section) throw new ValidationError('section is required');
 
   const result = await ai.generateSuggestions(userId, req.params.resumeId, section, targetRole);
   res.json({ success: true, data: result });
@@ -82,7 +83,7 @@ export const getSuggestions = asyncHandler(async (req: Request, res: Response) =
 export const extractKeywords = asyncHandler(async (req: Request, res: Response) => {
   const { text, maxKeywords, includeWeights } = req.body;
   
-  if (!text) throw new Error('text is required');
+  if (!text) throw new ValidationError('text is required');
 
   const textHash = createHash(text);
   const cacheKey = `keyword:${textHash}:${maxKeywords}:${includeWeights}`;
@@ -99,7 +100,7 @@ export const extractKeywords = asyncHandler(async (req: Request, res: Response) 
 export const fixGrammar = asyncHandler(async (req: Request, res: Response) => {
   const { text, mode } = req.body;
   
-  if (!text) throw new Error('text is required');
+  if (!text) throw new ValidationError('text is required');
 
   const result = await ai.fixGrammar(text, mode);
   res.json({ success: true, data: result });
@@ -108,7 +109,7 @@ export const fixGrammar = asyncHandler(async (req: Request, res: Response) => {
 export const improveText = asyncHandler(async (req: Request, res: Response) => {
   const { text, tone, context } = req.body;
   
-  if (!text) throw new Error('text is required');
+  if (!text) throw new ValidationError('text is required');
 
   const result = await ai.improveText(text, tone, context);
   res.json({ success: true, data: result });

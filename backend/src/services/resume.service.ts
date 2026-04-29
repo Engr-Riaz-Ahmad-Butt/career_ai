@@ -282,12 +282,12 @@ export class ResumeService {
                 userId,
                 title: title || file.originalname || 'Uploaded Resume',
                 template: 'modern',
-                personalInfo: parsed.personalInfo ?? {},
+                personalInfo: (parsed.personalInfo ?? {}) as any,
                 summary: parsed.summary ?? '',
-                experience: parsed.experience ?? [],
-                education: parsed.education ?? [],
-                skills: parsed.skills ?? {},
-                projects: parsed.projects ?? [],
+                experience: (parsed.experience ?? []) as any,
+                education: (parsed.education ?? []) as any,
+                skills: (parsed.skills ?? {}) as any,
+                projects: (parsed.projects ?? []) as any,
                 version: 1,
             },
             select: RESUME_SELECT,
@@ -310,7 +310,7 @@ export class ResumeService {
         if (!userId || !id || !jobDescription) throw createHttpError(400, 'userId, id, and jobDescription are required');
 
         const resume = await this.getResumeById(userId, id);
-        return aiService.optimizeResumeForJD(resume, jobDescription);
+        return aiService.optimizeResumeForJD(resume as unknown as any, jobDescription);
     }
 
 

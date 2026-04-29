@@ -1,28 +1,15 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { BarChart3, Download } from 'lucide-react';
+import { BarChart3 } from 'lucide-react';
 
 import { GrowthDashboard } from '@/components/career-growth/GrowthDashboard';
 import { CareerReportList } from '@/components/career-growth/MonthlyReport';
 import { Button } from '@/components/ui/button';
 import { useCareerGrowthStore } from '@/store/careerGrowthStore';
+import { fadeInContainer, fadeInItem } from '@/lib/animations';
+import { FeatureErrorBoundary } from '@/components/errors/FeatureErrorBoundary';
 
-
-const container = {
-  hidden: { opacity: 0 },
-  show: {
-    opacity: 1,
-    transition: {
-      staggerChildren: 0.1,
-    },
-  },
-};
-
-const item = {
-  hidden: { opacity: 0, y: 20 },
-  show: { opacity: 1, y: 0 },
-};
 
 export default function CareerGrowthPage() {
   const generateMonthlyReport = useCareerGrowthStore(
@@ -34,15 +21,16 @@ export default function CareerGrowthPage() {
   };
 
   return (
-    <div className="p-6 sm:p-8 bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-950 dark:to-slate-900 min-h-screen">
+    <FeatureErrorBoundary featureName="Career Growth">
+      <div className="p-6 sm:p-8 bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-950 dark:to-slate-900 min-h-screen">
       <motion.div
         className="max-w-7xl mx-auto space-y-8"
-        variants={container}
+        variants={fadeInContainer}
         initial="hidden"
-        animate="show"
+        animate="visible"
       >
         {/* Header */}
-        <motion.div variants={item} className="flex items-center justify-between">
+        <motion.div variants={fadeInItem} className="flex items-center justify-between">
           <div>
             <h1 className="text-4xl font-bold text-slate-900 dark:text-white mb-2">
               Career Growth Analytics
@@ -61,15 +49,16 @@ export default function CareerGrowthPage() {
         </motion.div>
 
         {/* Growth Dashboard */}
-        <motion.div variants={item}>
+        <motion.div variants={fadeInItem}>
           <GrowthDashboard />
         </motion.div>
 
         {/* Reports Section */}
-        <motion.div variants={item}>
+        <motion.div variants={fadeInItem}>
           <CareerReportList />
         </motion.div>
       </motion.div>
     </div>
+    </FeatureErrorBoundary>
   );
 }

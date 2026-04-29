@@ -46,7 +46,7 @@ function ProfileTab({ user, onUpdate }: { user: AuthUser | null; onUpdate: (data
     defaultValues: {
       fullName: user?.name || '',
       phone: user?.phone || '',
-      bio: '', // Bio doesn't exist in User type yet, but we'll include it
+      bio: user?.bio || '',
     },
   });
 

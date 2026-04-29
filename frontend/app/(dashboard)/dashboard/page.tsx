@@ -21,19 +21,9 @@ import { StatsCard } from '@/components/common/StatsCard';
 import { Button } from '@/components/ui/button';
 import { useAuthStore } from '@/store/authStore';
 import { useJobTrackerStore } from '@/store/jobTrackerStore';
+import { fadeInContainer, fadeInItem } from '@/lib/animations';
 
-const containerVariants = {
-  hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: { staggerChildren: 0.08, delayChildren: 0.1 },
-  },
-};
 
-const itemVariants = {
-  hidden: { opacity: 0, y: 20 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.4 } },
-};
 
 const quickCreateItems = [
   {
@@ -131,12 +121,12 @@ export default function DashboardPage() {
   return (
       <motion.div
         className="max-w-6xl mx-auto space-y-10 mt-8"
-      variants={containerVariants}
+      variants={fadeInContainer}
       initial="hidden"
       animate="visible"
     >
       {/* Header */}
-      <motion.div variants={itemVariants}>
+      <motion.div variants={fadeInItem}>
         <h1 className="text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">
           {greeting()}, {user?.name?.split(' ')[0] || 'there'} 👋
         </h1>
@@ -146,7 +136,7 @@ export default function DashboardPage() {
       </motion.div>
 
       {/* ── ZONE 1: Quick Create ── */}
-      <motion.section variants={itemVariants}>
+      <motion.section variants={fadeInItem}>
         <h2 className="text-xs font-bold uppercase tracking-widest text-slate-400 mb-4">
           Quick Create
         </h2>
@@ -181,7 +171,7 @@ export default function DashboardPage() {
       </motion.section>
 
       {/* ── ZONE 2: Recent Documents ── */}
-      <motion.section variants={itemVariants}>
+      <motion.section variants={fadeInItem}>
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-xs font-bold uppercase tracking-widest text-slate-400">
             Continue Where You Left Off
@@ -233,7 +223,7 @@ export default function DashboardPage() {
       </motion.section>
 
       {/* ── ZONE 3: Stats ── */}
-      <motion.section variants={itemVariants}>
+      <motion.section variants={fadeInItem}>
         <h2 className="text-xs font-bold uppercase tracking-widest text-slate-400 mb-4">
           Your Progress
         </h2>

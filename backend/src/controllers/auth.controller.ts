@@ -10,6 +10,7 @@ import {
 } from '@/utils/validation';
 import { successResponse, errorResponse } from '@/utils/apiResponse';
 import { asyncHandler } from '@/middleware/error';
+import { ValidationError } from '@/utils/errorHandler';
 
 const authService = new AuthService();
 
@@ -58,7 +59,7 @@ function sendAuthResponse(
 
 /** POST /auth/register */
 export const register = asyncHandler(async (req: Request, res: Response) => {
-  if (!req.body || typeof req.body !== 'object') throw new Error('Invalid request body');
+  if (!req.body || typeof req.body !== 'object') throw new ValidationError('Invalid request body');
 
   const result = await authService.register(req.body);
   sendAuthResponse(res, 201, result.refreshToken, result.accessToken, result.user, 'Account created. Please verify your email.');
@@ -66,7 +67,7 @@ export const register = asyncHandler(async (req: Request, res: Response) => {
 
 /** POST /auth/login */
 export const login = asyncHandler(async (req: Request, res: Response) => {
-  if (!req.body || typeof req.body !== 'object') throw new Error('Invalid request body');
+  if (!req.body || typeof req.body !== 'object') throw new ValidationError('Invalid request body');
 
   const result = await authService.login(req.body);
   sendAuthResponse(res, 200, result.refreshToken, result.accessToken, result.user, 'Login successful');
@@ -74,7 +75,7 @@ export const login = asyncHandler(async (req: Request, res: Response) => {
 
 /** POST /auth/google */
 export const googleAuth = asyncHandler(async (req: Request, res: Response) => {
-  if (!req.body?.googleToken) throw new Error('Google token is required');
+  if (!req.body?.googleToken) throw new ValidationError('Google token is required');
 
   const result = await authService.googleAuth(req.body.googleToken);
   sendAuthResponse(res, 200, result.refreshToken, result.accessToken, result.user, 'Google authentication successful');
@@ -139,7 +140,7 @@ export const logout = asyncHandler(async (req: Request, res: Response) => {
 
 /** POST /auth/forgot-password */
 export const forgotPassword = asyncHandler(async (req: Request, res: Response) => {
-  if (!req.body?.email) throw new Error('Email is required');
+  if (!req.body?.email) throw new ValidationError('Email is required');
 
   await authService.forgotPassword(req.body.email);
   res.json(successResponse({}, 'If that email exists, a reset link has been sent.'));
@@ -147,7 +148,7 @@ export const forgotPassword = asyncHandler(async (req: Request, res: Response) =
 
 /** POST /auth/reset-password */
 export const resetPassword = asyncHandler(async (req: Request, res: Response) => {
-  if (!req.body?.token || !req.body?.newPassword) throw new Error('Token and password are required');
+  if (!req.body?.token || !req.body?.newPassword) throw new ValidationError('Token and password are required');
 
   await authService.resetPassword(req.body.token, req.body.newPassword);
   res.json(successResponse({}, 'Password reset successfully'));
@@ -155,7 +156,7 @@ export const resetPassword = asyncHandler(async (req: Request, res: Response) =>
 
 /** POST /auth/verify-email */
 export const verifyEmail = asyncHandler(async (req: Request, res: Response) => {
-  if (!req.body?.token) throw new Error('Verification token is required');
+  if (!req.body?.token) throw new ValidationError('Verification token is required');
 
   const result = await authService.verifyEmail(req.body.token);
   res.json(successResponse({}, result.message));
@@ -163,7 +164,7 @@ export const verifyEmail = asyncHandler(async (req: Request, res: Response) => {
 
 /** POST /auth/resend-verification */
 export const resendVerification = asyncHandler(async (req: Request, res: Response) => {
-  if (!req.body?.email) throw new Error('Email is required');
+  if (!req.body?.email) throw new ValidationError('Email is required');
 
   await authService.resendVerification(req.body.email);
   res.json(successResponse({}, 'Verification email sent if account exists.'));

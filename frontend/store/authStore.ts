@@ -18,6 +18,7 @@ export interface User {
   onboardingComplete?: boolean;
   currentRole?: string;
   targetRole?: string;
+  bio?: string;
 }
 
 interface AuthState {
