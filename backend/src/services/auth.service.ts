@@ -196,6 +196,7 @@ export class AuthService {
 
         await prisma.user.update({ where: { id: user.id }, data: { lastLoginAt: new Date() } });
         const profile = await prisma.user.findUnique({ where: { id: user.id }, select: USER_SELECT });
+        const tokens = await this.generateTokens(user);
         return { user: profile, ...tokens };
     }
 
