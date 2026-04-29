@@ -114,7 +114,10 @@ model User {
 
   // OAuth
   googleId      String?  @unique
-  provider      String?  // 'email' | 'google'
+  githubId      String?  @unique
+  githubToken   String?  // GitHub OAuth access token
+  githubUsername String? // GitHub username
+  provider      String?  // 'email' | 'google' | 'github'
 
   // Email verification
   emailVerified            Boolean   @default(false)

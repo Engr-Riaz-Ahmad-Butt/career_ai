@@ -42,6 +42,10 @@ yarn-error.log*
 # Testing
 coverage/
 .nyc_output/
+playwright-report/
+test-results/
+frontend/playwright-report/
+frontend/test-results/
 
 # Prisma
 backend/prisma/migrations/

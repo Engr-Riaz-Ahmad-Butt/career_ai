@@ -1,6 +1,7 @@
 import prisma from '@/config/database';
 import { OAuth2Client } from 'google-auth-library';
 import crypto from 'crypto';
+import axios from 'axios';
 import { hashPassword, comparePassword } from '@/utils/password';
 import {
     generateAccessToken,
@@ -190,6 +191,91 @@ export class AuthService {
             user = await prisma.user.update({
                 where: { id: user.id },
                 data: { googleId: payload.sub, provider: 'google', emailVerified: true, avatar: payload.picture },
+            });
+        }
+
+        await prisma.user.update({ where: { id: user.id }, data: { lastLoginAt: new Date() } });
+        const profile = await prisma.user.findUnique({ where: { id: user.id }, select: USER_SELECT });
+        return { user: profile, ...tokens };
+    }
+
+    // ── GitHub OAuth ──────────────────────────────────────────────────────
+
+    async loginWithGitHub(code: string) {
+        // Step 1: Exchange code for access token
+        const tokenRes = await axios.post(
+            'https://github.com/login/oauth/access_token',
+            {
+                client_id: env.GITHUB_CLIENT_ID,
+                client_secret: env.GITHUB_CLIENT_SECRET,
+                code,
+                redirect_uri: env.GITHUB_CALLBACK_URL,
+            },
+            { headers: { Accept: 'application/json' } }
+        );
+
+        const accessToken: string = tokenRes.data.access_token;
+        if (!accessToken) {
+            throw createHttpError(401, 'GitHub authentication failed — no token returned');
+        }
+
+        // Step 2: Get GitHub user profile
+        const userRes = await axios.get('https://api.github.com/user', {
+            headers: { Authorization: `Bearer ${accessToken}` },
+        });
+        const ghUser = userRes.data;
+
+        // Step 3: Get primary email (may not be public on profile)
+        const emailRes = await axios.get('https://api.github.com/user/emails', {
+            headers: { Authorization: `Bearer ${accessToken}` },
+        });
+        const primaryEmail: string =
+            emailRes.data.find((e: any) => e.primary && e.verified)?.email
+            ?? ghUser.email
+            ?? `${ghUser.login}@github.noemail`;
+
+        // Step 4: Upsert user in DB — link GitHub ID if user already exists
+        let user = await prisma.user.findFirst({
+            where: {
+                OR: [
+                    { githubId: String(ghUser.id) },
+                    { email: primaryEmail },
+                ],
+            },
+        });
+
+        if (!user) {
+            // New user — create account
+            const nameParts = (ghUser.name ?? ghUser.login ?? '').split(' ');
+            user = await prisma.user.create({
+                data: {
+                    email: primaryEmail,
+                    firstName: nameParts[0] || ghUser.login,
+                    lastName: nameParts.slice(1).join(' ') || '',
+                    avatar: ghUser.avatar_url,
+                    githubId: String(ghUser.id),
+                    githubToken: accessToken,
+                    githubUsername: ghUser.login,
+                    provider: 'github',
+                    emailVerified: true, // GitHub emails are verified
+                    plan: 'FREE',
+                    credits: 10,
+                    referralCode: generateReferralCode(),
+                },
+            });
+            await recordSignupTransaction(user.id);
+        } else {
+            // Existing user — update GitHub token (tokens can rotate)
+            user = await prisma.user.update({
+                where: { id: user.id },
+                data: {
+                    githubId: String(ghUser.id),
+                    githubToken: accessToken,
+                    githubUsername: ghUser.login,
+                    provider: user.provider === 'email' ? 'github' : user.provider, // Prefer OAuth provider if linked
+                    avatar: user.avatar ?? ghUser.avatar_url,
+                    emailVerified: true
+                },
             });
         }
 

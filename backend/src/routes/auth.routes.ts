@@ -3,6 +3,8 @@ import {
   register,
   login,
   googleAuth,
+  githubLogin,
+  githubCallback,
   refreshAccessToken,
   logout,
   forgotPassword,
@@ -108,6 +110,32 @@ router.post('/login', validate(loginSchema), login);
  *               $ref: '#/components/schemas/AuthResponse'
  */
 router.post('/google', googleAuth);
+
+/**
+ * @swagger
+ * /auth/github:
+ *   get:
+ *     summary: Initiate GitHub OAuth flow
+ *     tags: [Auth]
+ *     security: []
+ *     responses:
+ *       302:
+ *         description: Redirect to GitHub login
+ */
+router.get('/github', githubLogin);
+
+/**
+ * @swagger
+ * /auth/github/callback:
+ *   get:
+ *     summary: GitHub OAuth callback
+ *     tags: [Auth]
+ *     security: []
+ *     responses:
+ *       302:
+ *         description: Redirect to frontend success or failure page
+ */
+router.get('/github/callback', githubCallback);
 
 /**
  * @swagger

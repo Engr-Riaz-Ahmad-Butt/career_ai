@@ -80,6 +80,36 @@ export const googleAuth = asyncHandler(async (req: Request, res: Response) => {
   sendAuthResponse(res, 200, result.refreshToken, result.accessToken, result.user, 'Google authentication successful');
 });
 
+/** GET /auth/github — initiates GitHub OAuth flow */
+export const githubLogin = asyncHandler(async (req: Request, res: Response) => {
+  const crypto = await import('crypto');
+  const params = new URLSearchParams({
+    client_id: env.GITHUB_CLIENT_ID || '',
+    redirect_uri: env.GITHUB_CALLBACK_URL,
+    scope: 'repo user:email',
+    state: crypto.randomBytes(16).toString('hex'), // CSRF protection
+  });
+  res.redirect(`https://github.com/login/oauth/authorize?${params}`);
+});
+
+/** GET /auth/github/callback — handle GitHub redirect */
+export const githubCallback = asyncHandler(async (req: Request, res: Response) => {
+  const { code, error } = req.query;
+
+  if (error || !code) {
+    res.redirect(`${env.FRONTEND_URL}/auth/login?error=github_denied`);
+    return;
+  }
+
+  try {
+    const result = await authService.loginWithGitHub(code as string);
+    setRefreshCookie(res, result.refreshToken);
+    res.redirect(`${env.FRONTEND_URL}/auth/github/success?token=${result.accessToken}`);
+  } catch (err) {
+    res.redirect(`${env.FRONTEND_URL}/auth/login?error=github_failed`);
+  }
+});
+
 /** POST /auth/refresh — reads refreshToken from HttpOnly cookie */
 export const refreshAccessToken = asyncHandler(async (req: Request, res: Response) => {
   const refreshToken = req.cookies?.refreshToken;
