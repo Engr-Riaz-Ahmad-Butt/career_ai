@@ -19,6 +19,7 @@ export interface User {
   currentRole?: string;
   targetRole?: string;
   bio?: string;
+  referralCode?: string;
 }
 
 interface AuthState {

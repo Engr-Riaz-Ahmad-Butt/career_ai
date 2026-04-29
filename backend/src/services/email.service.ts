@@ -1,6 +1,15 @@
 import nodemailer from 'nodemailer';
+import { render } from '@react-email/render';
 import { env } from '@/config/env';
 import { logger } from '@/utils/logger';
+
+// Email templates
+import VerificationEmail from '@/emails/VerificationEmail';
+import PasswordResetEmail from '@/emails/PasswordResetEmail';
+import PaymentSuccessEmail from '@/emails/PaymentSuccessEmail';
+import LowCreditsEmail from '@/emails/LowCreditsEmail';
+import PortfolioDeployedEmail from '@/emails/PortfolioDeployedEmail';
+import WelcomeEmail from '@/emails/WelcomeEmail';
 
 export class EmailService {
     private transporter: nodemailer.Transporter | null = null;
@@ -36,46 +45,58 @@ export class EmailService {
         }
     }
 
-    async sendVerificationEmail(email: string, token: string) {
+    async sendVerificationEmail(email: string, name: string, token: string) {
         const url = `${env.FRONTEND_URL}/verify-email?token=${token}`;
-        await this.sendEmail(
-            email,
-            'Verify your CareerForge AI account',
-            `<p>Click <a href="${url}">here</a> to verify your email.</p>`
-        );
+        const html = await render(VerificationEmail({ name: name || 'User', verificationLink: url }));
+        await this.sendEmail(email, 'Verify your CareerForge AI account', html);
     }
 
-    async sendPasswordResetEmail(email: string, token: string) {
+    async sendPasswordResetEmail(email: string, name: string, token: string) {
         const url = `${env.FRONTEND_URL}/reset-password?token=${token}`;
-        await this.sendEmail(
-            email,
-            'Reset your CareerForge AI password',
-            `<p>Click <a href="${url}">here</a> to reset your password.</p>`
-        );
+        const html = await render(PasswordResetEmail({ name: name || 'User', resetLink: url }));
+        await this.sendEmail(email, 'Reset your CareerForge AI password', html);
     }
 
     async sendWelcomeEmail(email: string, name: string) {
-        await this.sendEmail(
-            email,
-            'Welcome to CareerForge AI',
-            `<p>Hi ${name}, welcome to CareerForge AI! We're excited to help you land your dream job.</p>`
-        );
+        const html = await render(WelcomeEmail({
+            name: name || 'User',
+            dashboardLink: `${env.FRONTEND_URL}/dashboard`,
+        }));
+        await this.sendEmail(email, `Welcome to CareerForge AI, ${name || 'there'}!`, html);
+    }
+
+    async sendPaymentSuccessEmail(email: string, name: string, amount: number, creditsAdded: number, newBalance: number, receiptUrl: string) {
+        const html = await render(PaymentSuccessEmail({ 
+            name: name || 'User', 
+            amount, 
+            creditsAdded, 
+            newBalance, 
+            receiptUrl 
+        }));
+        await this.sendEmail(email, 'Payment Successful', html);
+    }
+
+    async sendLowCreditsEmail(email: string, name: string, creditsRemaining: number) {
+        const html = await render(LowCreditsEmail({
+            name: name || 'User',
+            creditsRemaining,
+            topUpLink: `${env.FRONTEND_URL}/settings?tab=billing`
+        }));
+        await this.sendEmail(email, 'Low Credits Alert', html);
+    }
+
+    async sendPortfolioDeployedEmail(email: string, name: string, portfolioUrl: string) {
+        const html = await render(PortfolioDeployedEmail({
+            name: name || 'User',
+            portfolioUrl
+        }));
+        await this.sendEmail(email, 'Portfolio Deployed!', html);
     }
 
     async sendBroadcastEmail(recipients: string[], subject: string, body: string) {
-        // In a real app, use a proper bulk email service (SendGrid, Mailchimp, etc.)
-        // For now, we'll send them individually (inefficient but works for small scale)
         for (const email of recipients) {
             await this.sendEmail(email, subject, body);
         }
-    }
-
-    async sendPaymentSuccessEmail(email: string, amount: number) {
-        await this.sendEmail(
-            email,
-            'Payment Successful',
-            `<p>Thank you! Your payment of $${amount} was successful. Your credits have been updated.</p>`
-        );
     }
 }
 

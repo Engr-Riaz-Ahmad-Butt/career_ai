@@ -11,6 +11,8 @@ import {
   resetPassword,
   verifyEmail,
   resendVerification,
+  connectVercel,
+  vercelCallback,
 } from '@/controllers/auth.controller';
 import { authenticate } from '@/middleware/auth';
 import { validate } from '@/middleware/validate';
@@ -275,5 +277,9 @@ router.post('/verify-email', verifyEmail);
  *         description: Verification email sent if account exists
  */
 router.post('/resend-verification', validate(forgotPasswordSchema), resendVerification);
+
+// Vercel OAuth
+router.get('/vercel/connect', authenticate, connectVercel);
+router.get('/vercel/callback', authenticate, vercelCallback);
 
 export default router;

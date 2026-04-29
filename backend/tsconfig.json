@@ -5,6 +5,7 @@
     "lib": [
       "ES2022"
     ],
+    "jsx": "react",
     "outDir": "./dist",
     "rootDir": ".",
     "strict": true,

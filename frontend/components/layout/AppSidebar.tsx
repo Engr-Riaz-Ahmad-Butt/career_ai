@@ -17,6 +17,8 @@ import {
   ChevronDown,
   Mic,
   TrendingUp,
+  Globe,
+  Linkedin,
 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -64,6 +66,8 @@ const navItems: NavItem[] = [
     ],
   },
   { href: '/bio-generator', label: 'Bio Generator', icon: User },
+  { href: '/portfolio', label: 'Portfolio', icon: Globe },
+  { href: '/linkedin-optimizer', label: 'LinkedIn Optimizer', icon: Linkedin },
   { href: '/interview-prep', label: 'Interview Prep', icon: Mic },
   {
     href: '/career-growth',

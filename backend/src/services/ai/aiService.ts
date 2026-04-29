@@ -18,7 +18,9 @@ import type {
   OptimizeResumeResult, 
   KeywordsResult, 
   GrammarFixResult, 
-  ImproveTextResult 
+  ImproveTextResult,
+  LinkedInOptimizeOptions,
+  LinkedInOptimizeResult
 } from './aiService.types';
 
 // Use enhanced prompts for better results
@@ -545,6 +547,29 @@ Text: ${text}
 Return JSON: { "improved": string, "changes": [{ "description": string }] }`;
 
     return generateStructuredContent<ImproveTextResult>(prompt, MODELS.FLASH);
+  }
+  async optimizeLinkedInProfile(options: LinkedInOptimizeOptions): Promise<LinkedInOptimizeResult> {
+    if (!options.profileText) throw new ValidationError('profileText is required');
+
+    const prompt = `You are a LinkedIn optimization expert. Analyze this LinkedIn profile and provide improvements.
+Target Role: ${options.targetRole || 'Not specified'}
+Industry: ${options.industry || 'Not specified'}
+
+Profile Text:
+${options.profileText.substring(0, 5000)}
+
+Return JSON:
+{
+  "headline": "optimized headline (120 chars max)",
+  "summary": "rewritten About section (300 words max)",
+  "experienceBullets": [
+    { "original": "old bullet", "improved": "new bullet with metrics", "reason": "why this is better" }
+  ],
+  "keywords": ["keyword1", "keyword2"],
+  "overallTips": ["tip1", "tip2", "tip3"]
+}`;
+
+    return generateStructuredContent<LinkedInOptimizeResult>(prompt, MODELS.PRO);
   }
 }
 

@@ -3,13 +3,14 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { message } from 'antd';
 import { motion } from 'framer-motion';
-import { User as UserIcon, Lock, Bell, Zap, CheckCircle2 } from 'lucide-react';
+import { User as UserIcon, Lock, Bell, Zap, CheckCircle2, Share2, Copy, Users } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 
 import { FeatureErrorBoundary } from '@/components/errors/FeatureErrorBoundary';
+import apiClient from '@/lib/api/client';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -213,6 +214,91 @@ function SecurityTab() {
   );
 }
 
+function ReferralTab({ user }: { user: AuthUser | null }) {
+  const [stats, setStats] = useState<any>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [copied, setCopied] = useState(false);
+
+  useEffect(() => {
+    const fetchReferrals = async () => {
+      try {
+        const { data } = await apiClient.get('/user/me/referrals');
+        setStats(data.data);
+      } catch (error) {
+        console.error('Failed to fetch referrals:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchReferrals();
+  }, []);
+
+  const referralLink = user?.referralCode 
+    ? `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/auth/register?ref=${user.referralCode}`
+    : '';
+
+  const handleCopy = () => {
+    if (referralLink) {
+      navigator.clipboard.writeText(referralLink);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+      message.success('Referral link copied!');
+    }
+  };
+
+  return (
+    <div className="p-6 space-y-8">
+      <div>
+        <h3 className="font-semibold text-slate-900 dark:text-white mb-2 flex items-center gap-2">
+          <Share2 className="h-5 w-5 text-indigo-600" />
+          Invite Friends, Earn Credits
+        </h3>
+        <p className="text-sm text-slate-600 dark:text-slate-400 mb-6">
+          Share your referral link with friends. When they sign up, you both get 5 free credits!
+        </p>
+
+        <div className="flex items-center gap-3 p-3 bg-slate-50 dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800">
+          <span className="flex-1 text-sm font-mono text-slate-600 dark:text-slate-400 truncate pl-2">
+            {referralLink || 'Generating link...'}
+          </span>
+          <Button 
+            size="sm" 
+            onClick={handleCopy}
+            className="bg-indigo-600 hover:bg-indigo-700 text-white min-w-[80px]"
+          >
+            {copied ? <CheckCircle2 className="h-4 w-4" /> : <><Copy className="h-4 w-4 mr-2" /> Copy</>}
+          </Button>
+        </div>
+      </div>
+
+      <div className="border-t border-slate-200 dark:border-slate-800 pt-8">
+        <h3 className="font-semibold text-slate-900 dark:text-white mb-6">Your Referral Stats</h3>
+        
+        {isLoading ? (
+          <div className="animate-pulse flex gap-4">
+            <div className="h-24 flex-1 bg-slate-100 dark:bg-slate-800 rounded-2xl" />
+            <div className="h-24 flex-1 bg-slate-100 dark:bg-slate-800 rounded-2xl" />
+          </div>
+        ) : (
+          <div className="grid grid-cols-2 gap-4">
+            <div className="p-6 rounded-2xl bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-100 dark:border-indigo-800 flex flex-col items-center justify-center text-center">
+              <Users className="h-8 w-8 text-indigo-600 mb-2" />
+              <span className="text-3xl font-bold text-slate-900 dark:text-white">{stats?.totalReferrals || 0}</span>
+              <span className="text-xs font-bold text-indigo-700 dark:text-indigo-400 uppercase tracking-widest mt-1">Friends Joined</span>
+            </div>
+            
+            <div className="p-6 rounded-2xl bg-teal-50 dark:bg-teal-900/20 border border-teal-100 dark:border-teal-800 flex flex-col items-center justify-center text-center">
+              <Zap className="h-8 w-8 text-teal-600 mb-2" />
+              <span className="text-3xl font-bold text-slate-900 dark:text-white">{stats?.creditsEarned || 0}</span>
+              <span className="text-xs font-bold text-teal-700 dark:text-teal-400 uppercase tracking-widest mt-1">Credits Earned</span>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 export default function SettingsPage() {
   const user = useAuthStore((state) => state.user);
   const setUser = useAuthStore((state) => state.setUser);
@@ -253,22 +339,26 @@ export default function SettingsPage() {
           className="rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950"
         >
           <Tabs defaultValue="profile" className="w-full">
-            <TabsList className="grid w-full grid-cols-4 rounded-none border-b border-slate-200 dark:border-slate-800 bg-transparent p-0 h-auto">
+            <TabsList className="grid w-full grid-cols-5 rounded-none border-b border-slate-200 dark:border-slate-800 bg-transparent p-0 h-auto">
               <TabsTrigger value="profile" className="rounded-none border-b-2 border-transparent data-[state=active]:border-indigo-600">
-                <UserIcon className="h-4 w-4 mr-2" />
-                Profile
+                <UserIcon className="h-4 w-4 sm:mr-2" />
+                <span className="hidden sm:inline">Profile</span>
               </TabsTrigger>
               <TabsTrigger value="security" className="rounded-none border-b-2 border-transparent data-[state=active]:border-indigo-600">
-                <Lock className="h-4 w-4 mr-2" />
-                Security
+                <Lock className="h-4 w-4 sm:mr-2" />
+                <span className="hidden sm:inline">Security</span>
+              </TabsTrigger>
+              <TabsTrigger value="referrals" className="rounded-none border-b-2 border-transparent data-[state=active]:border-indigo-600">
+                <Share2 className="h-4 w-4 sm:mr-2" />
+                <span className="hidden sm:inline">Referrals</span>
               </TabsTrigger>
               <TabsTrigger value="notifications" className="rounded-none border-b-2 border-transparent data-[state=active]:border-indigo-600">
-                <Bell className="h-4 w-4 mr-2" />
-                Notifications
+                <Bell className="h-4 w-4 sm:mr-2" />
+                <span className="hidden sm:inline">Alerts</span>
               </TabsTrigger>
               <TabsTrigger value="billing" className="rounded-none border-b-2 border-transparent data-[state=active]:border-indigo-600">
-                <Zap className="h-4 w-4 mr-2" />
-                Billing
+                <Zap className="h-4 w-4 sm:mr-2" />
+                <span className="hidden sm:inline">Billing</span>
               </TabsTrigger>
             </TabsList>
 
@@ -278,6 +368,10 @@ export default function SettingsPage() {
 
             <TabsContent value="security">
               <SecurityTab />
+            </TabsContent>
+
+            <TabsContent value="referrals">
+              <ReferralTab user={user} />
             </TabsContent>
 
             {/* Notifications Tab */}

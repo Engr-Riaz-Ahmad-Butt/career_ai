@@ -119,6 +119,7 @@ model User {
   githubId      String?  @unique
   githubToken   String?  // GitHub OAuth access token
   githubUsername String? // GitHub username
+  vercelToken   String?  // Vercel OAuth access token
   provider      String?  // 'email' | 'google' | 'github'
 
   // Email verification

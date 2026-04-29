@@ -4,8 +4,8 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { motion } from 'framer-motion';
 import { Zap, Check, X, AlertCircle } from 'lucide-react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { useState, Suspense } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 
@@ -24,8 +24,11 @@ const passwordStrengthChecks = {
   number: (pwd: string) => /[0-9]/.test(pwd),
 };
 
-export default function RegisterPage() {
+function RegisterForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const referralCode = searchParams.get('ref') || undefined;
+  
   const [isLoading, setIsLoading] = useState(false);
   const [serverError, setServerError] = useState('');
   const { signup } = useAuth();
@@ -58,6 +61,7 @@ export default function RegisterPage() {
         lastName: data.lastName,
         email: data.email,
         password: data.password,
+        referralCode,
       });
       if (payload.user.onboardingComplete) {
         router.push('/dashboard');
@@ -292,5 +296,13 @@ export default function RegisterPage() {
         </p>
       </div>
     </motion.div>
+  );
+}
+
+export default function RegisterPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <RegisterForm />
+    </Suspense>
   );
 }

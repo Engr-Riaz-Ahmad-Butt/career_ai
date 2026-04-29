@@ -29,6 +29,12 @@ type LinkedInBioInput = {
     includeCallToAction?: boolean;
 };
 
+type LinkedInOptimizeInput = {
+    profileText: string;
+    targetRole?: string;
+    industry?: string;
+};
+
 export const aiApi = {
     generateResume: (data: GenerateResumeInput) => api.post('/ai/generate-resume', data).then((res) => res.data),
     tailorResume: (data: TailorResumeInput) => api.post('/ai/tailor-resume', data).then((res) => res.data),
@@ -38,6 +44,7 @@ export const aiApi = {
     generateSOP: (data: CoverLetterInput) => api.post('/ai/sop/generate', data).then((res) => res.data),
     generateLinkedInBio: (data: LinkedInBioInput) => api.post('/ai/bio/generate', data).then((res) => res.data),
     generateInterviewPrep: (data: GenerateInterviewPrepInput) => api.post('/ai/interview/generate', data).then((res) => res.data),
+    optimizeLinkedIn: (data: LinkedInOptimizeInput) => api.post('/ai/optimize-linkedin', data).then((res) => res.data),
     getCredits: () => api.get('/ai/credits').then((res) => res.data),
 };
 
@@ -51,5 +58,6 @@ export const useAI = () => {
         generateSOP: useMutation({ mutationFn: aiApi.generateSOP }),
         generateLinkedInBio: useMutation({ mutationFn: aiApi.generateLinkedInBio }),
         generateInterviewPrep: useMutation({ mutationFn: aiApi.generateInterviewPrep }),
+        optimizeLinkedIn: useMutation({ mutationFn: aiApi.optimizeLinkedIn }),
     };
 };

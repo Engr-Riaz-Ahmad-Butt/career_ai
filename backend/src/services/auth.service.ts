@@ -143,7 +143,8 @@ export class AuthService {
         });
 
         await recordSignupTransaction(user.id, referredById);
-        await emailService.sendVerificationEmail(user.email!, emailVerificationToken);
+        await emailService.sendVerificationEmail(user.email!, user.firstName || 'User', emailVerificationToken);
+        void emailService.sendWelcomeEmail(user.email!, user.firstName || 'User');
         const tokens = await this.generateTokens(user);
         return { user, ...tokens };
     }
@@ -327,7 +328,7 @@ export class AuthService {
         const resetToken = crypto.randomBytes(32).toString('hex');
         const resetExpires = new Date(Date.now() + 10 * 60 * 1000);
         await prisma.user.update({ where: { id: user.id }, data: { passwordResetToken: resetToken, passwordResetExpires: resetExpires } });
-        await emailService.sendPasswordResetEmail(user.email!, resetToken);
+        await emailService.sendPasswordResetEmail(user.email!, user.firstName || 'User', resetToken);
     }
 
     // ── Reset Password ────────────────────────────────────────────────────
@@ -368,7 +369,7 @@ export class AuthService {
         const token = crypto.randomBytes(32).toString('hex');
         const expires = new Date(Date.now() + 24 * 60 * 60 * 1000);
         await prisma.user.update({ where: { id: user.id }, data: { emailVerificationToken: token, emailVerificationExpires: expires } });
-        await emailService.sendVerificationEmail(user.email!, token);
+        await emailService.sendVerificationEmail(user.email!, user.firstName || 'User', token);
     }
 
     // ── Internal Helpers ──────────────────────────────────────────────────

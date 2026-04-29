@@ -150,3 +150,17 @@ export interface ImproveTextResult {
   improved: string;
   changes: Array<{ description: string }>;
 }
+
+export interface LinkedInOptimizeOptions {
+  readonly profileText: string;
+  readonly targetRole?: string;
+  readonly industry?: string;
+}
+
+export interface LinkedInOptimizeResult {
+  headline: string;
+  summary: string;
+  experienceBullets: Array<{ original: string; improved: string; reason: string }>;
+  keywords: string[];
+  overallTips: string[];
+}

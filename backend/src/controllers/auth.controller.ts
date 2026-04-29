@@ -1,4 +1,5 @@
 import { Request, Response } from 'express';
+import prisma from '@/config/database';
 import { env } from '@/config/env';
 import { JWT } from '@/constants/jwt';
 import { AuthService } from '@/services/auth.service';
@@ -169,3 +170,55 @@ export const resendVerification = asyncHandler(async (req: Request, res: Respons
   await authService.resendVerification(req.body.email);
   res.json(successResponse({}, 'Verification email sent if account exists.'));
 });
+
+// ── Vercel OAuth ────────────────────────────────────────────────────────────
+
+/** GET /auth/vercel/connect — redirects user to Vercel OAuth */
+export const connectVercel = asyncHandler(async (req: Request, res: Response) => {
+  if (!env.VERCEL_CLIENT_ID || !env.VERCEL_CALLBACK_URL) {
+    throw new ValidationError('Vercel OAuth is not configured on this server');
+  }
+  const params = new URLSearchParams({
+    client_id: env.VERCEL_CLIENT_ID,
+    redirect_uri: env.VERCEL_CALLBACK_URL,
+    response_type: 'code',
+  });
+  res.redirect(`https://vercel.com/oauth/authorize?${params}`);
+});
+
+/** GET /auth/vercel/callback — exchanges code for Vercel access token */
+export const vercelCallback = asyncHandler(async (req: Request, res: Response) => {
+  const { code } = req.query;
+  if (!code || typeof code !== 'string') throw new ValidationError('Missing OAuth code');
+  if (!env.VERCEL_CLIENT_ID || !env.VERCEL_CLIENT_SECRET || !env.VERCEL_CALLBACK_URL) {
+    throw new ValidationError('Vercel OAuth is not configured');
+  }
+
+  // Exchange code for access token
+  const tokenRes = await fetch('https://api.vercel.com/v2/oauth/access_token', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: new URLSearchParams({
+      client_id: env.VERCEL_CLIENT_ID,
+      client_secret: env.VERCEL_CLIENT_SECRET,
+      code,
+      redirect_uri: env.VERCEL_CALLBACK_URL,
+    }),
+  });
+
+  if (!tokenRes.ok) throw new ValidationError('Failed to exchange Vercel OAuth code');
+  const tokenData = await tokenRes.json() as { access_token: string; team_id?: string };
+
+  // Save the token against the authenticated user
+  const userId = (req as any).user?.userId;
+  if (!userId) throw new ValidationError('You must be logged in to connect Vercel');
+
+  await prisma.user.update({
+    where: { id: userId },
+    data: { vercelToken: tokenData.access_token },
+  });
+
+  // Redirect back to the portfolio page with a success flag
+  res.redirect(`${env.FRONTEND_URL}/portfolio?vercel=connected`);
+});
+

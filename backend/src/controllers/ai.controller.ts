@@ -115,3 +115,20 @@ export const improveText = asyncHandler(async (req: Request, res: Response) => {
   res.json({ success: true, data: result });
 });
 
+export const optimizeLinkedIn = asyncHandler(async (req: Request, res: Response) => {
+  const userId = requireUserId(req);
+  const { profileText, targetRole, industry } = req.body;
+
+  if (!profileText) throw new ValidationError('profileText is required');
+
+  const result = await ai.optimizeLinkedInProfile({
+    profileText,
+    targetRole,
+    industry,
+  });
+
+  // Credit deduction is handled by the requireCredits middleware (3 credits)
+
+  res.json({ success: true, data: result });
+});
+

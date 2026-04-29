@@ -2,7 +2,7 @@ import { Router } from 'express';
 import { authenticate, requireCredits } from '@/middleware/auth';
 import { aiRateLimit, heavyAiRateLimit } from '@/middleware/userRateLimit';
 import {
-  enhanceResume, scoreAts, getSuggestions, extractKeywords, fixGrammar, improveText
+  enhanceResume, scoreAts, getSuggestions, extractKeywords, fixGrammar, improveText, optimizeLinkedIn
 } from '@/controllers/ai.controller';
 import {
   generateCoverLetter, generateSOP, generateMotivationLetter,
@@ -50,6 +50,9 @@ router.post('/communication/analyze', requireCredits(1), analyzeCommunicationAI)
 router.post('/keywords/extract', validate(extractKeywordsSchema), extractKeywords);
 router.post('/grammar/fix', validate(fixGrammarSchema), fixGrammar);
 router.post('/text/improve', validate(improveTextSchema), improveText);
+
+// ── Social ───────────────────────────────────────────────────────────────
+router.post('/optimize-linkedin', heavyAiRateLimit, requireCredits(3), optimizeLinkedIn);
 
 export default router;
 

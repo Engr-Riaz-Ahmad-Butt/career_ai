@@ -156,6 +156,11 @@ const envSchema = z.object({
 
     // Background workers
     ENABLE_EMBEDDED_WORKER: z.enum(['true', 'false']).default('true'),
+
+    // Vercel OAuth (for portfolio deployment)
+    VERCEL_CLIENT_ID: z.string().optional(),
+    VERCEL_CLIENT_SECRET: z.string().optional(),
+    VERCEL_CALLBACK_URL: z.string().url().optional().default('http://localhost:5000/api/v1/auth/vercel/callback'),
 });
 
 // ── Parse & Export ────────────────────────────────────────────────────────

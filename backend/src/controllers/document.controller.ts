@@ -5,6 +5,9 @@ import { AIService } from '@/services/ai/aiService';
 import { asyncHandler } from '@/middleware/error';
 import prisma from '@/config/database';
 import { UnauthorizedError, ValidationError } from '@/utils/errorHandler';
+import { emailService } from '@/services/email.service';
+
+const LOW_CREDITS_THRESHOLD = 3;
 
 const docService = new DocumentService();
 const aiService = new AIService();
@@ -54,7 +57,7 @@ async function deductDocumentCredits(userId: string, action: string, amount: num
       credits: { decrement: amount },
       lifetimeCreditsUsed: { increment: amount },
     },
-    select: { credits: true },
+    select: { credits: true, email: true, firstName: true },
   });
 
   await prisma.creditTransaction.create({
@@ -66,6 +69,10 @@ async function deductDocumentCredits(userId: string, action: string, amount: num
       balanceAfter: user.credits,
     },
   });
+
+  if (user.credits <= LOW_CREDITS_THRESHOLD && user.email) {
+    void emailService.sendLowCreditsEmail(user.email, user.firstName || 'User', user.credits);
+  }
 }
 
 // ── Universal Document CRUD ────────────────────────────────────────────────
