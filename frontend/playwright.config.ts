@@ -5,6 +5,9 @@ import { defineConfig, devices } from '@playwright/test';
  */
 export default defineConfig({
   testDir: './e2e',
+  // Use the e2e-specific tsconfig so Node types (process.env) are resolved
+  // without polluting the Next.js app tsconfig.
+  tsconfig: './e2e/tsconfig.json',
   /* Run tests in files in parallel */
   fullyParallel: true,
   /* Fail the build on CI if you accidentally left test.only in the source code. */
