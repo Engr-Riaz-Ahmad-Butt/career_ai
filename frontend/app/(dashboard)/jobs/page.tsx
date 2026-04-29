@@ -2,7 +2,8 @@
 
 import { motion } from 'framer-motion';
 import { Plus, BarChart3, TrendingUp } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
+import { useQuery } from '@tanstack/react-query';
 
 import { FeatureErrorBoundary } from '@/components/errors/FeatureErrorBoundary';
 import { JobDetail } from '@/components/job-tracker/JobDetail';
@@ -15,20 +16,41 @@ import {
   TabsList,
   TabsTrigger,
 } from '@/components/ui/tabs';
-import { JobApplication } from '@/lib/jobTrackerData';
-import { useJobTrackerStore } from '@/store/jobTrackerStore';
+import { jobTrackerApi } from '@/lib/api/endpoints/jobTracker.api';
+import { queryKeys } from '@/lib/queryKeys';
+import { LoadingState } from '@/components/shared/LoadingSpinner';
 
 export default function JobsPage() {
-  const [selectedJob, setSelectedJob] = useState<JobApplication | null>(null);
+  const [selectedJob, setSelectedJob] = useState<any | null>(null);
   const [activeTab, setActiveTab] = useState('all');
 
-  const jobs = useJobTrackerStore((state) => state.jobs);
-  const stats = useJobTrackerStore((state) => state.stats);
+  const { data, isLoading } = useQuery({
+    queryKey: queryKeys.jobTracker.all(),
+    queryFn: () => jobTrackerApi.list(),
+  });
 
-  const getJobsByStatus = (status?: string) => {
-    if (!status || status === 'all') return jobs;
-    return jobs.filter((j) => j.status === status);
-  };
+  const allJobs = data?.data ?? [];
+
+  const stats = useMemo(() => {
+    const total = allJobs.length;
+    const byStatus = {
+      applied: allJobs.filter((j) => (j.status as string)?.toUpperCase() === 'APPLIED').length,
+      interview: allJobs.filter((j) => (j.status as string)?.toUpperCase() === 'INTERVIEW').length,
+      rejected: allJobs.filter((j) => (j.status as string)?.toUpperCase() === 'REJECTED').length,
+      offer: allJobs.filter((j) => (j.status as string)?.toUpperCase() === 'OFFER').length,
+    };
+
+    const interviews = byStatus.interview + byStatus.rejected + byStatus.offer;
+    const conversionRate = total > 0 ? (interviews / total) * 100 : 0;
+
+    return { total, byStatus, conversionRate };
+  }, [allJobs]);
+
+  const filteredJobs = useMemo(() => {
+    if (activeTab === 'all') return allJobs;
+    // Normalize status for filtering
+    return allJobs.filter((j) => (j.status || '').toLowerCase() === activeTab.toLowerCase());
+  }, [allJobs, activeTab]);
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -49,6 +71,14 @@ export default function JobsPage() {
       transition: { duration: 0.5 },
     },
   };
+
+  if (isLoading) {
+    return (
+      <div className="flex h-screen items-center justify-center">
+        <LoadingState size="lg" />
+      </div>
+    );
+  }
 
   return (
     <FeatureErrorBoundary featureName="Job Tracker">
@@ -103,7 +133,7 @@ export default function JobsPage() {
                   <p className="text-sm text-teal-700 dark:text-teal-400 font-medium">
                     Interviews
                   </p>
-                  <p className="text-2xl font-bold text-teal-900 dark:text-teal-100 mt-1">
+                  <p className="text-2xl font-bold text-teal-900 dark:text-blue-100 mt-1">
                     {stats.byStatus.interview}
                   </p>
                 </div>
@@ -160,7 +190,7 @@ export default function JobsPage() {
                   <TabsList className="grid w-full grid-cols-5 mb-4">
                     <TabsTrigger value="all">
                       All
-                      <span className="ml-1 text-xs">{jobs.length}</span>
+                      <span className="ml-1 text-xs">{allJobs.length}</span>
                     </TabsTrigger>
                     <TabsTrigger value="applied">
                       Applied
@@ -182,6 +212,7 @@ export default function JobsPage() {
 
                   <TabsContent value={activeTab} className="space-y-4">
                     <JobTable
+                      jobs={filteredJobs}
                       onSelectJob={(job) => setSelectedJob(job)}
                       onEditJob={(job) => setSelectedJob(job)}
                     />
@@ -198,42 +229,8 @@ export default function JobsPage() {
                 <CardHeader>
                   <CardTitle className="text-lg">Job Details</CardTitle>
                 </CardHeader>
-                <CardContent className="max-h-96 overflow-y-auto">
-                  <div className="space-y-4">
-                    <div>
-                      <p className="text-sm text-slate-600 dark:text-slate-400">Position</p>
-                      <p className="font-semibold text-slate-900 dark:text-white">
-                        {selectedJob.jobTitle}
-                      </p>
-                    </div>
-                    <div>
-                      <p className="text-sm text-slate-600 dark:text-slate-400">Company</p>
-                      <p className="font-semibold text-slate-900 dark:text-white">
-                        {selectedJob.company}
-                      </p>
-                    </div>
-                    <div>
-                      <p className="text-sm text-slate-600 dark:text-slate-400">ATS Score</p>
-                      <div className="mt-1 w-full bg-slate-200 dark:bg-slate-800 rounded-full h-2">
-                        <div
-                          className="bg-indigo-600 h-2 rounded-full"
-                          style={{ width: `${selectedJob.atsScore}%` }}
-                        />
-                      </div>
-                      <p className="text-sm font-semibold mt-1 text-indigo-600 dark:text-indigo-400">
-                        {selectedJob.atsScore}%
-                      </p>
-                    </div>
-                    <div>
-                      <p className="text-sm text-slate-600 dark:text-slate-400">Keyword Match</p>
-                      <p className="font-semibold text-slate-900 dark:text-white">
-                        {selectedJob.keywordMatch}%
-                      </p>
-                    </div>
-                    <Button className="w-full mt-4" onClick={() => window.open(selectedJob.jobLink, '_blank')}>
-                      View Full Details
-                    </Button>
-                  </div>
+                <CardContent className="max-h-[600px] overflow-y-auto">
+                   <JobDetail job={selectedJob} />
                 </CardContent>
               </Card>
             ) : (

@@ -6,6 +6,7 @@ import { RootErrorBoundary } from "@/components/errors/RootErrorBoundary";
 import QueryProvider from "@/components/providers/QueryProvider";
 import { ThemeProvider } from "@/components/providers/ThemeProvider";
 import WebVitalsProvider from "@/components/providers/WebVitalsProvider";
+import { Toaster } from "sonner";
 
 import type { Metadata } from "next";
 import "@/styles/globals.css";
@@ -55,6 +56,7 @@ export default function RootLayout({
               <AuthProvider>{children}</AuthProvider>
             </RootErrorBoundary>
           </QueryProvider>
+          <Toaster position="top-center" richColors />
         </ThemeProvider>
       </body>
     </html>

@@ -3,7 +3,7 @@
 import { motion } from 'framer-motion';
 import { Mic, Volume2, BookOpen, CheckCircle2, Plus, History, Wand2, Trash2 } from 'lucide-react';
 import Link from 'next/link';
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 
 import { FeatureErrorBoundary } from '@/components/errors/FeatureErrorBoundary';
 import { LoadingState, LoadingSpinner } from '@/components/shared/LoadingSpinner';
@@ -18,7 +18,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Checkbox } from '@/components/ui/checkbox';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useInterviewPrep } from '@/hooks/useInterviewPrep';
-import { interviewQuestions } from '@/lib/mockData';
 
 export default function InterviewPrepPage() {
   const [practicedQuestions, setPracticedQuestions] = useState<string[]>([]);
@@ -38,9 +37,19 @@ export default function InterviewPrepPage() {
     );
   };
 
-  const categories = Object.keys(interviewQuestions) as Array<
-    keyof typeof interviewQuestions
-  >;
+  const groupedQuestions = useMemo(() => {
+    const questions = sessions.flatMap(s => (s as any).questions ?? []);
+    if (questions.length === 0) return {};
+    
+    return questions.reduce((acc, q) => {
+      const cat = q.category || 'General';
+      if (!acc[cat]) acc[cat] = [];
+      acc[cat].push(q);
+      return acc;
+    }, {} as Record<string, any[]>);
+  }, [sessions]);
+
+  const categories = Object.keys(groupedQuestions);
 
   if (isSessionsLoading) {
     return (
@@ -105,7 +114,7 @@ export default function InterviewPrepPage() {
                       {practicedQuestions.length} questions practiced
                     </CardTitle>
                     <CardDescription>
-                      Keep going! Practice makes perfect.
+                      {categories.length > 0 ? 'Keep going! Practice makes perfect.' : 'Generate a session to get practice questions.'}
                     </CardDescription>
                   </div>
                 </div>
@@ -114,69 +123,83 @@ export default function InterviewPrepPage() {
 
             {/* Categories */}
             <div className="space-y-6">
-              {categories.map((category) => (
-                <div
-                  key={category as string}
-                  className="rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 overflow-hidden"
-                >
-                  <div className="bg-gradient-to-r from-indigo-50 to-teal-50 dark:from-indigo-900/10 dark:to-teal-900/10 px-6 py-4 border-b border-slate-200 dark:border-slate-800">
-                    <h2 className="text-lg font-semibold text-slate-900 dark:text-white">
-                      {category as string}
-                    </h2>
-                    <p className="text-sm text-slate-600 dark:text-slate-400">
-                      {interviewQuestions[category].length} questions
-                    </p>
-                  </div>
+              {categories.length > 0 ? (
+                categories.map((category) => (
+                  <div
+                    key={category}
+                    className="rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 overflow-hidden"
+                  >
+                    <div className="bg-gradient-to-r from-indigo-50 to-teal-50 dark:from-indigo-900/10 dark:to-teal-900/10 px-6 py-4 border-b border-slate-200 dark:border-slate-800">
+                      <h2 className="text-lg font-semibold text-slate-900 dark:text-white">
+                        {category}
+                      </h2>
+                      <p className="text-sm text-slate-600 dark:text-slate-400">
+                        {groupedQuestions[category].length} questions
+                      </p>
+                    </div>
 
-                  <Accordion type="single" collapsible className="p-0">
-                    {interviewQuestions[category].map((item: { question: string; answer: string }, idx: number) => (
-                      <AccordionItem
-                        key={`${category as string}-${item.question}`}
-                        value={`${category as string}-${idx}`}
-                        className="border-b border-slate-200 dark:border-slate-800 last:border-b-0"
-                      >
-                        <div className="flex items-center gap-3 px-6 py-3 hover:bg-slate-50 dark:hover:bg-slate-900/50">
-                          <Checkbox
-                            checked={practicedQuestions.includes(item.question)}
-                            onCheckedChange={() => togglePracticed(item.question)}
-                            onClick={(e) => e.stopPropagation()}
-                          />
-                          <AccordionTrigger className="flex-1 hover:no-underline py-0">
-                            <span className="text-sm font-medium text-left text-slate-900 dark:text-white hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">
-                              {item.question}
-                            </span>
-                          </AccordionTrigger>
-                        </div>
-
-                        <AccordionContent className="px-6 py-4 bg-slate-50 dark:bg-slate-900/30">
-                          <div className="space-y-4">
-                            <div>
-                              <h4 className="font-semibold text-slate-900 dark:text-white mb-2">
-                                AI-Suggested Answer:
-                              </h4>
-                              <p className="text-slate-700 dark:text-slate-300 text-sm leading-relaxed">
-                                {item.answer}
-                              </p>
-                            </div>
-
-                            <div className="flex gap-2 pt-4 border-t border-slate-200 dark:border-slate-800">
-                              <Button size="sm" variant="outline" className="gap-2 text-xs">
-                                <Volume2 className="h-3 w-3" /> Listen
-                              </Button>
-                              <Button size="sm" variant="outline" className="gap-2 text-xs">
-                                <Mic className="h-3 w-3" /> Record Answer
-                              </Button>
-                              <Button size="sm" variant="outline" className="gap-2 text-xs">
-                                <BookOpen className="h-3 w-3" /> Add Note
-                              </Button>
-                            </div>
+                    <Accordion type="single" collapsible className="p-0">
+                      {groupedQuestions[category].map((item: any, idx: number) => (
+                        <AccordionItem
+                          key={`${category}-${item.id || idx}`}
+                          value={`${category}-${idx}`}
+                          className="border-b border-slate-200 dark:border-slate-800 last:border-b-0"
+                        >
+                          <div className="flex items-center gap-3 px-6 py-3 hover:bg-slate-50 dark:hover:bg-slate-900/50">
+                            <Checkbox
+                              checked={practicedQuestions.includes(item.question)}
+                              onCheckedChange={() => togglePracticed(item.question)}
+                              onClick={(e) => e.stopPropagation()}
+                            />
+                            <AccordionTrigger className="flex-1 hover:no-underline py-0">
+                              <span className="text-sm font-medium text-left text-slate-900 dark:text-white hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">
+                                {item.question}
+                              </span>
+                            </AccordionTrigger>
                           </div>
-                        </AccordionContent>
-                      </AccordionItem>
-                    ))}
-                  </Accordion>
-                </div>
-              ))}
+
+                          <AccordionContent className="px-6 py-4 bg-slate-50 dark:bg-slate-900/30">
+                            <div className="space-y-4">
+                              <div>
+                                <h4 className="font-semibold text-slate-900 dark:text-white mb-2">
+                                  AI-Suggested Answer / Tip:
+                                </h4>
+                                <p className="text-slate-700 dark:text-slate-300 text-sm leading-relaxed">
+                                  {item.answerTip || item.answer || 'Practice this question to improve your response.'}
+                                </p>
+                              </div>
+
+                              <div className="flex gap-2 pt-4 border-t border-slate-200 dark:border-slate-800">
+                                <Button size="sm" variant="outline" className="gap-2 text-xs">
+                                  <Volume2 className="h-3 w-3" /> Listen
+                                </Button>
+                                <Button size="sm" variant="outline" className="gap-2 text-xs">
+                                  <Mic className="h-3 w-3" /> Record Answer
+                                </Button>
+                                <Button size="sm" variant="outline" className="gap-2 text-xs">
+                                  <BookOpen className="h-3 w-3" /> Add Note
+                                </Button>
+                              </div>
+                            </div>
+                          </AccordionContent>
+                        </AccordionItem>
+                      ))}
+                    </Accordion>
+                  </div>
+                ))
+              ) : (
+                <Card className="border-dashed">
+                  <CardContent className="p-12 text-center">
+                    <BookOpen className="h-12 w-12 text-slate-300 mx-auto mb-4 opacity-50" />
+                    <h3 className="text-lg font-medium text-slate-900 dark:text-white mb-1">Practice Bank Empty</h3>
+                    <p className="text-slate-500 mb-6">Generate an AI session to populate your practice bank with questions tailored to your resume.</p>
+                    <Button onClick={generateSession} disabled={isGeneratingSession}>
+                      {isGeneratingSession ? <LoadingSpinner size="sm" variant="current" className="mr-2" /> : <Wand2 className="h-4 w-4 mr-2" />}
+                      Generate AI Session
+                    </Button>
+                  </CardContent>
+                </Card>
+              )}
             </div>
           </TabsContent>
 

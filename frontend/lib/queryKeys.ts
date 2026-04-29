@@ -63,6 +63,10 @@ export const queryKeys = {
     jobs: {
         byId: (jobId: string) => ['jobs', jobId] as const,
     },
+    jobTracker: {
+        all: () => ['jobTracker'] as const,
+        byStatus: (status: string) => ['jobTracker', { status }] as const,
+    },
 } as const;
 
 /**

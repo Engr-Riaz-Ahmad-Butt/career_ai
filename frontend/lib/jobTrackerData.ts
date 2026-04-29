@@ -155,7 +155,8 @@ export const mockJobApplications: JobApplication[] = [
 ];
 
 export const getStatusColor = (status: string) => {
-  switch (status) {
+  const s = status.toLowerCase();
+  switch (s) {
     case 'applied':
       return 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400';
     case 'interview':
@@ -164,13 +165,18 @@ export const getStatusColor = (status: string) => {
       return 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400';
     case 'offer':
       return 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400';
+    case 'wishlist':
+      return 'bg-slate-100 text-slate-800 dark:bg-slate-900/30 dark:text-slate-400';
+    case 'accepted':
+      return 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-400';
     default:
       return 'bg-slate-100 text-slate-800';
   }
 };
 
 export const getStatusIcon = (status: string) => {
-  switch (status) {
+  const s = status.toLowerCase();
+  switch (s) {
     case 'applied':
       return '📤';
     case 'interview':
@@ -179,6 +185,10 @@ export const getStatusIcon = (status: string) => {
       return '❌';
     case 'offer':
       return '✅';
+    case 'wishlist':
+      return '⭐';
+    case 'accepted':
+      return '🏆';
     default:
       return '📋';
   }

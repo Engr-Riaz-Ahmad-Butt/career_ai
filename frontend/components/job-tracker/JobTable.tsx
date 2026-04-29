@@ -20,28 +20,30 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { JobApplication, getStatusColor, getStatusIcon } from '@/lib/jobTrackerData';
+import { getStatusColor, getStatusIcon } from '@/lib/jobTrackerData';
 import { useJobTrackerStore } from '@/store/jobTrackerStore';
 
 interface JobTableProps {
-  onSelectJob?: (job: JobApplication) => void;
-  onEditJob?: (job: JobApplication) => void;
+  jobs: any[];
+  onSelectJob?: (job: any) => void;
+  onEditJob?: (job: any) => void;
 }
 
-export function JobTable({ onSelectJob, onEditJob }: JobTableProps) {
-  const jobs = useJobTrackerStore((state) => state.jobs);
+export function JobTable({ jobs, onSelectJob, onEditJob }: JobTableProps) {
   const deleteJob = useJobTrackerStore((state) => state.deleteJob);
   const [sortBy, setSortBy] = useState<'date' | 'company' | 'status'>('date');
 
   const sortedJobs = [...jobs].sort((a, b) => {
     if (sortBy === 'date') {
-      return new Date(b.appliedDate).getTime() - new Date(a.appliedDate).getTime();
+      const dateA = new Date(a.appliedAt || a.appliedDate || a.createdAt).getTime();
+      const dateB = new Date(b.appliedAt || b.appliedDate || b.createdAt).getTime();
+      return dateB - dateA;
     }
     if (sortBy === 'company') {
-      return a.company.localeCompare(b.company);
+      return (a.company || '').localeCompare(b.company || '');
     }
     if (sortBy === 'status') {
-      return a.status.localeCompare(b.status);
+      return (a.status || '').localeCompare(b.status || '');
     }
     return 0;
   });
@@ -74,14 +76,14 @@ export function JobTable({ onSelectJob, onEditJob }: JobTableProps) {
                 onClick={() => onSelectJob?.(job)}
               >
                 <TableCell>
-                  <div className="font-medium text-slate-900 dark:text-white">{job.jobTitle}</div>
+                  <div className="font-medium text-slate-900 dark:text-white">{job.title || job.jobTitle}</div>
                 </TableCell>
                 <TableCell>
                   <div className="text-slate-700 dark:text-slate-300">{job.company}</div>
                 </TableCell>
                 <TableCell>
                   <div className="text-sm text-slate-600 dark:text-slate-400">
-                    {job.appliedDate.toLocaleDateString()}
+                    {new Date(job.appliedAt || job.appliedDate || job.createdAt).toLocaleDateString()}
                   </div>
                 </TableCell>
                 <TableCell>
@@ -94,7 +96,7 @@ export function JobTable({ onSelectJob, onEditJob }: JobTableProps) {
                 <TableCell>
                   <div className="flex justify-center">
                     <div className="text-sm font-semibold text-indigo-600 dark:text-indigo-400">
-                      {job.atsScore}%
+                      {job.atsScore || 0}%
                     </div>
                   </div>
                 </TableCell>
@@ -105,7 +107,7 @@ export function JobTable({ onSelectJob, onEditJob }: JobTableProps) {
                       variant="ghost"
                       onClick={(e) => {
                         e.stopPropagation();
-                        window.open(job.jobLink, '_blank');
+                        if (job.url || job.jobLink) window.open(job.url || job.jobLink, '_blank');
                       }}
                       title="Open job link"
                     >

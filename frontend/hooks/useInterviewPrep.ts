@@ -8,6 +8,7 @@ interface InterviewSessionItem {
   readonly createdAt: string;
   readonly questionCount: number;
   readonly categories: readonly string[];
+  readonly questions?: any[];
 }
 
 const DEFAULT_SESSION_REQUEST = {

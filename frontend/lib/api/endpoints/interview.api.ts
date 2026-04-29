@@ -7,6 +7,7 @@ export interface InterviewSessionSummary {
   difficulty?: string | null;
   questionCount: number;
   categories: string[];
+  questions?: any[];
   createdAt: string;
 }
 

@@ -82,7 +82,7 @@ export class InterviewService {
                 where: { userId },
                 orderBy: { createdAt: 'desc' },
                 skip, take: limit,
-                select: { id: true, difficulty: true, questionCount: true, categories: true, createdAt: true },
+                select: { id: true, difficulty: true, questionCount: true, categories: true, createdAt: true, questions: true },
             }),
             prisma.interviewSession.count({ where: { userId } }),
         ]);

@@ -1,23 +1,23 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { ExternalLink, Calendar, DollarSign, TrendingUp, FileText, MessageSquare } from 'lucide-react';
-import { useState } from 'react';
+import { ExternalLink, DollarSign, TrendingUp, FileText } from 'lucide-react';
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { JobApplication, getStatusColor, getStatusIcon } from '@/lib/jobTrackerData';
-import { useJobTrackerStore } from '@/store/jobTrackerStore';
-
-import { InterviewNotes } from './interview-notes';
+import { getStatusColor, getStatusIcon } from '@/lib/jobTrackerData';
 
 interface JobDetailProps {
-  job: JobApplication;
+  job: any;
 }
 
 export function JobDetail({ job }: JobDetailProps) {
+  const appliedDate = new Date(job.appliedAt || job.appliedDate || job.createdAt);
+  const interviewNotes = job.interviewNotes || [];
+  const interviewDates = job.interviewDates || [];
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -27,7 +27,7 @@ export function JobDetail({ job }: JobDetailProps) {
       {/* Header */}
       <div className="flex items-start justify-between">
         <div>
-          <h2 className="text-3xl font-bold text-slate-900 dark:text-white">{job.jobTitle}</h2>
+          <h2 className="text-3xl font-bold text-slate-900 dark:text-white">{job.title || job.jobTitle}</h2>
           <p className="text-slate-600 dark:text-slate-400 mt-1">{job.company}</p>
         </div>
         <Badge className={`${getStatusColor(job.status)} text-base px-3 py-1`}>
@@ -40,7 +40,10 @@ export function JobDetail({ job }: JobDetailProps) {
         <Button
           variant="outline"
           className="justify-start h-auto p-3"
-          onClick={() => window.open(job.jobLink, '_blank')}
+          onClick={() => {
+              const url = job.url || job.jobLink;
+              if (url) window.open(url, '_blank');
+          }}
         >
           <ExternalLink className="h-4 w-4 mr-2" />
           <span className="text-left">
@@ -57,7 +60,7 @@ export function JobDetail({ job }: JobDetailProps) {
                 <span className="text-sm font-medium">ATS Score</span>
               </div>
               <span className="text-2xl font-bold text-indigo-600 dark:text-indigo-400">
-                {job.atsScore}%
+                {job.atsScore || 0}%
               </span>
             </div>
           </CardContent>
@@ -71,7 +74,7 @@ export function JobDetail({ job }: JobDetailProps) {
                 <span className="text-sm font-medium">Keyword Match</span>
               </div>
               <span className="text-2xl font-bold text-green-600 dark:text-green-400">
-                {job.keywordMatch}%
+                {job.keywordMatch || 0}%
               </span>
             </div>
           </CardContent>
@@ -83,7 +86,7 @@ export function JobDetail({ job }: JobDetailProps) {
         <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="interviews">
-            Interviews ({job.interviewDates.length})
+            Interviews ({interviewDates.length})
           </TabsTrigger>
           <TabsTrigger value="notes">Notes</TabsTrigger>
           <TabsTrigger value="salary">Salary</TabsTrigger>
@@ -99,14 +102,14 @@ export function JobDetail({ job }: JobDetailProps) {
                 <div>
                   <p className="text-sm text-slate-600 dark:text-slate-400">Applied Date</p>
                   <p className="text-lg font-semibold text-slate-900 dark:text-white">
-                    {job.appliedDate.toLocaleDateString()}
+                    {appliedDate.toLocaleDateString()}
                   </p>
                 </div>
                 <div>
                   <p className="text-sm text-slate-600 dark:text-slate-400">Days Since Applied</p>
                   <p className="text-lg font-semibold text-slate-900 dark:text-white">
                     {Math.floor(
-                      (new Date().getTime() - job.appliedDate.getTime()) / (1000 * 60 * 60 * 24)
+                      (new Date().getTime() - appliedDate.getTime()) / (1000 * 60 * 60 * 24)
                     )}
                     days
                   </p>
@@ -129,19 +132,19 @@ export function JobDetail({ job }: JobDetailProps) {
         </TabsContent>
 
         <TabsContent value="interviews" className="space-y-4">
-          <InterviewNotes jobId={job.id} interviewNotes={job.interviewNotes} />
+           <p className="text-slate-600 dark:text-slate-400 p-4">Interview management coming soon.</p>
         </TabsContent>
 
         <TabsContent value="notes" className="space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle className="text-lg">Interview Notes</CardTitle>
-              <CardDescription>Add or view personal notes about this opportunity</CardDescription>
+              <CardTitle className="text-lg">Notes</CardTitle>
+              <CardDescription>View personal notes about this opportunity</CardDescription>
             </CardHeader>
             <CardContent>
-              {job.interviewNotes.length > 0 ? (
+              {job.notes || (interviewNotes.length > 0 ? (
                 <div className="space-y-3">
-                  {job.interviewNotes.map((note) => (
+                  {interviewNotes.map((note: any) => (
                     <div
                       key={note.id}
                       className="p-3 bg-slate-50 dark:bg-slate-900/50 rounded-lg border border-slate-200 dark:border-slate-800"
@@ -151,28 +154,16 @@ export function JobDetail({ job }: JobDetailProps) {
                           Round {note.round}
                         </span>
                         <span className="text-xs text-slate-600 dark:text-slate-400">
-                          {note.date.toLocaleDateString()}
+                          {new Date(note.date).toLocaleDateString()}
                         </span>
                       </div>
-                      {note.interviewer && (
-                        <p className="text-sm text-slate-600 dark:text-slate-400 mb-2">
-                          Interviewer: {note.interviewer}
-                        </p>
-                      )}
                       <p className="text-sm text-slate-900 dark:text-white mb-2">{note.notes}</p>
-                      {note.feedback && (
-                        <div className="p-2 bg-indigo-50 dark:bg-indigo-950/30 rounded border-l-2 border-indigo-600">
-                          <p className="text-sm text-indigo-900 dark:text-indigo-200">
-                            {note.feedback}
-                          </p>
-                        </div>
-                      )}
                     </div>
                   ))}
                 </div>
               ) : (
                 <p className="text-slate-600 dark:text-slate-400">No notes yet</p>
-              )}
+              ))}
             </CardContent>
           </Card>
         </TabsContent>
@@ -186,27 +177,12 @@ export function JobDetail({ job }: JobDetailProps) {
               <div className="flex items-center gap-4">
                 <DollarSign className="h-5 w-5 text-green-600 dark:text-green-400" />
                 <div>
-                  <p className="text-sm text-slate-600 dark:text-slate-400">Expected Salary</p>
+                  <p className="text-sm text-slate-600 dark:text-slate-400">Salary</p>
                   <p className="text-2xl font-bold text-slate-900 dark:text-white">
-                    ${job.salary?.expected.toLocaleString()}
+                    {typeof job.salary === 'string' ? job.salary : `$${job.salary?.expected?.toLocaleString() || 'N/A'}`}
                   </p>
                 </div>
               </div>
-
-              {job.salary?.offered && (
-                <div className="pt-4 border-t border-slate-200 dark:border-slate-800 flex items-center gap-4">
-                  <DollarSign className="h-5 w-5 text-green-600 dark:text-green-400" />
-                  <div>
-                    <p className="text-sm text-slate-600 dark:text-slate-400">Offered Salary</p>
-                    <p className="text-2xl font-bold text-green-600 dark:text-green-400">
-                      ${job.salary.offered.toLocaleString()}
-                    </p>
-                    <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">
-                      +${(job.salary.offered - job.salary.expected).toLocaleString()} difference
-                    </p>
-                  </div>
-                </div>
-              )}
             </CardContent>
           </Card>
         </TabsContent>
