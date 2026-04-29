@@ -4,6 +4,9 @@ import { FeatureErrorBoundary } from "@/components/errors/FeatureErrorBoundary";
 import { AppNavbar } from "@/components/layout/AppNavbar";
 import { AppSidebar } from "@/components/layout/AppSidebar";
 import { useUIStore } from "@/store/uiStore";
+import { useAuthStore } from "@/store/authStore";
+import { useRouter } from "next/navigation";
+import { useEffect } from "react";
 
 export default function DashboardLayout({
     children,
@@ -11,6 +14,19 @@ export default function DashboardLayout({
     children: React.ReactNode;
 }) {
     const sidebarOpen = useUIStore((state) => state.sidebarOpen);
+    const { user, isAuthenticated, isLoading } = useAuthStore();
+    const router = useRouter();
+
+    useEffect(() => {
+        if (!isLoading && isAuthenticated && user && !user.onboardingComplete) {
+            router.replace('/onboarding');
+        }
+    }, [isLoading, isAuthenticated, user, router]);
+
+    // Show a blank screen while loading or if redirecting to onboarding
+    if (isLoading || (isAuthenticated && user && !user.onboardingComplete)) {
+        return <div className="min-h-screen bg-white dark:bg-slate-950" />;
+    }
 
     return (
         <div className="min-h-screen bg-white dark:bg-slate-950">

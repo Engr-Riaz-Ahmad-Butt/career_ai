@@ -53,13 +53,17 @@ export default function RegisterPage() {
     setIsLoading(true);
 
     try {
-      await signup.mutateAsync({
+      const payload = await signup.mutateAsync({
         firstName: data.firstName,
         lastName: data.lastName,
         email: data.email,
         password: data.password,
       });
-      router.push('/dashboard');
+      if (payload.user.onboardingComplete) {
+        router.push('/dashboard');
+      } else {
+        router.push('/onboarding');
+      }
     } catch (error) {
       setServerError(error instanceof Error ? error.message : 'Registration failed. Please try again.');
     } finally {

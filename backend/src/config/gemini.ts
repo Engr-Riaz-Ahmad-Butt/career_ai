@@ -5,7 +5,7 @@ import { logger } from '@/utils/logger';
 const GEMINI_API_KEY = env.GEMINI_API_KEY ?? '';
 
 if (!GEMINI_API_KEY) {
-  logger.warn('GEMINI_API_KEY not found in environment variables');
+  throw new Error('GEMINI_API_KEY is not set. All AI features will fail.');
 }
 
 // Initialize Gemini AI

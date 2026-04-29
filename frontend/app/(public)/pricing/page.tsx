@@ -8,11 +8,41 @@ import { useState } from 'react';
 import { LoadingState } from '@/components/shared/LoadingSpinner';
 import { Button } from '@/components/ui/button';
 import { usePricingPlans } from '@/hooks/usePricingPlans';
+import { useBilling } from '@/hooks/useBilling';
+import { useAuthStore } from '@/store/authStore';
+import { toast } from 'sonner';
 
 export default function PricingPage() {
   const [isAnnual, setIsAnnual] = useState(false);
+  const { plans, isLoading: isPlansLoading } = usePricingPlans();
+  const { createCheckoutSession, isLoading: isBillingLoading } = useBilling();
+  const user = useAuthStore((state) => state.user);
 
-  const { plans, isLoading } = usePricingPlans();
+  const handlePlanAction = async (plan: any) => {
+    if (plan.id === 'free') {
+      window.location.href = '/register';
+      return;
+    }
+
+    if (plan.id === 'team') {
+      window.location.href = 'mailto:sales@careerforge.ai';
+      return;
+    }
+
+    if (!user) {
+      toast.error('Please log in or register to upgrade your plan');
+      window.location.href = '/auth/login';
+      return;
+    }
+
+    createCheckoutSession.mutate({
+      plan: isAnnual ? 'PRO_ANNUAL' : 'PRO_MONTHLY',
+      successUrl: `${window.location.origin}/dashboard?upgraded=true`,
+      cancelUrl: `${window.location.origin}/pricing`,
+    });
+  };
+
+  const isLoading = isPlansLoading || isBillingLoading;
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -150,17 +180,17 @@ export default function PricingPage() {
                 </div>
 
                 {/* CTA */}
-                <div className="p-6 border-t">
-                  <Link href={tier.name === 'Team' ? '#contact-sales' : '/register'}>
-                    <Button
-                      className={`w-full ${tier.highlighted
-                        ? 'bg-gradient-to-r from-indigo-600 to-teal-600 hover:from-indigo-700 hover:to-teal-700 text-white'
-                        : 'bg-slate-900 dark:bg-white text-white dark:text-slate-900 hover:bg-slate-800 dark:hover:bg-slate-100'
-                        }`}
-                    >
-                      {tier.cta || 'Get Started'}
-                    </Button>
-                  </Link>
+                <div className="p-6 border-t mt-auto">
+                  <Button
+                    onClick={() => handlePlanAction(tier)}
+                    disabled={isLoading}
+                    className={`w-full ${tier.highlighted
+                      ? 'bg-gradient-to-r from-indigo-600 to-teal-600 hover:from-indigo-700 hover:to-teal-700 text-white'
+                      : 'bg-slate-900 dark:bg-white text-white dark:text-slate-900 hover:bg-slate-800 dark:hover:bg-slate-100'
+                      }`}
+                  >
+                    {tier.cta || 'Get Started'}
+                  </Button>
                 </div>
               </motion.div>
             ))}

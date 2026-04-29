@@ -40,8 +40,12 @@ export default function LoginPage() {
     setIsLoading(true);
 
     try {
-      await login.mutateAsync({ email: data.email, password: data.password });
-      router.push('/dashboard');
+      const payload = await login.mutateAsync({ email: data.email, password: data.password });
+      if (payload.user.onboardingComplete) {
+        router.push('/dashboard');
+      } else {
+        router.push('/onboarding');
+      }
     } catch (error) {
       setServerError(error instanceof Error ? error.message : 'Login failed. Please try again.');
     } finally {

@@ -5,7 +5,6 @@ import Hero from "@/components/sections/Hero";
 const TrustedBy = dynamic(() => import("@/components/sections/TrustedBy"));
 const Features = dynamic(() => import("@/components/sections/Features"));
 const HowItWorks = dynamic(() => import("@/components/sections/HowItWorks"));
-const Testimonials = dynamic(() => import("@/components/sections/Testimonials"));
 const CTA = dynamic(() => import("@/components/sections/CTA"));
 
 export default function HomePage() {
@@ -15,7 +14,6 @@ export default function HomePage() {
       <TrustedBy />
       <Features />
       <HowItWorks />
-      <Testimonials />
       <CTA />
     </>
   );

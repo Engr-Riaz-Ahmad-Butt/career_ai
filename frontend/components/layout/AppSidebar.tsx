@@ -16,6 +16,7 @@ import {
   User,
   ChevronDown,
   Mic,
+  TrendingUp,
 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -32,6 +33,7 @@ type NavItem = {
   label: string;
   icon: React.ElementType;
   subItems?: SubItem[];
+  comingSoon?: boolean;
 };
 
 const navItems: NavItem[] = [
@@ -63,6 +65,18 @@ const navItems: NavItem[] = [
   },
   { href: '/bio-generator', label: 'Bio Generator', icon: User },
   { href: '/interview-prep', label: 'Interview Prep', icon: Mic },
+  {
+    href: '/career-growth',
+    label: 'Career Growth',
+    icon: TrendingUp,
+    comingSoon: true,
+  },
+  {
+    href: '/ab-testing',
+    label: 'A/B Testing',
+    icon: Sparkles,
+    comingSoon: true,
+  },
   { href: '/settings', label: 'Settings', icon: Settings },
 ];
 
@@ -99,7 +113,14 @@ export function AppSidebar() {
           <div className="p-1.5 rounded-lg bg-indigo-600 flex-shrink-0">
             <Zap className="h-4 w-4 text-white" />
           </div>
-          {sidebarOpen && <span className="text-sm font-bold text-slate-900 dark:text-white">CareerAI</span>}
+          {sidebarOpen && (
+            <div className="flex items-center gap-2">
+              <span className="text-sm font-bold text-slate-900 dark:text-white">CareerAI</span>
+              <span className="text-[10px] font-bold bg-teal-100 dark:bg-teal-900/40 text-teal-600 dark:text-teal-400 px-2 py-0.5 rounded-full">
+                BETA
+              </span>
+            </div>
+          )}
         </div>
 
         <button
@@ -166,21 +187,40 @@ export function AppSidebar() {
                 </>
               ) : (
                 // Simple nav item (or collapsed with icon only)
-                <Link href={item.href}>
+                item.comingSoon ? (
                   <div
-                    className={`flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all cursor-pointer ${
+                    className={`flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all cursor-not-allowed ${
                       !sidebarOpen && 'justify-center'
-                    } ${
-                      isActive
-                        ? 'bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400'
-                        : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-900'
-                    }`}
-                    title={!sidebarOpen ? item.label : undefined}
+                    } text-slate-400 opacity-60`}
+                    title={!sidebarOpen ? `${item.label} (Coming Soon)` : undefined}
                   >
                     <Icon className="h-4.5 w-4.5 flex-shrink-0" />
-                    {sidebarOpen && <span className="text-sm font-medium">{item.label}</span>}
+                    {sidebarOpen && (
+                      <>
+                        <span className="text-sm font-medium flex-1">{item.label}</span>
+                        <span className="text-[10px] font-bold bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded-full uppercase tracking-tighter">
+                          Soon
+                        </span>
+                      </>
+                    )}
                   </div>
-                </Link>
+                ) : (
+                  <Link href={item.href}>
+                    <div
+                      className={`flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all cursor-pointer ${
+                        !sidebarOpen && 'justify-center'
+                      } ${
+                        isActive
+                          ? 'bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400'
+                          : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-900'
+                      }`}
+                      title={!sidebarOpen ? item.label : undefined}
+                    >
+                      <Icon className="h-4.5 w-4.5 flex-shrink-0" />
+                      {sidebarOpen && <span className="text-sm font-medium">{item.label}</span>}
+                    </div>
+                  </Link>
+                )
               )}
             </div>
           );

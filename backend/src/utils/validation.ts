@@ -335,6 +335,7 @@ export const userUpdateProfileSchema = z.object({
     language: z.string().optional(),
     notifications: z.boolean().optional(),
   }).optional(),
+  onboardingComplete: z.boolean().optional(),
 });
 
 export const userChangePasswordSchema = z.object({

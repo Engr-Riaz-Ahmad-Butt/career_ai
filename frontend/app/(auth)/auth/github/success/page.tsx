@@ -9,17 +9,36 @@ import { useAuthStore } from '@/store/authStore';
 function GitHubSuccessContent() {
   const router      = useRouter();
   const params      = useSearchParams();
-  const setToken    = useAuthStore((s) => s.setToken);
+  const setAccessToken = useAuthStore((s) => s.setAccessToken);
+  const setUser     = useAuthStore((s) => s.setUser);
 
   useEffect(() => {
     const token = params.get('token');
     if (token) {
-      setToken(token);         // Store in Zustand (and localStorage via persist)
-      router.replace('/dashboard');
+      setAccessToken(token);         // Store in Zustand
+      
+      // Fetch user profile to check onboarding status
+      fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api/v1'}/user/me`, {
+        headers: { Authorization: `Bearer ${token}` }
+      })
+        .then(res => res.json())
+        .then(data => {
+          if (data.success && data.data && data.data.user) {
+            setUser(data.data.user);
+            if (data.data.user.onboardingComplete) {
+              router.replace('/dashboard');
+            } else {
+              router.replace('/onboarding');
+            }
+          } else {
+            router.replace('/dashboard');
+          }
+        })
+        .catch(() => router.replace('/dashboard'));
     } else {
       router.replace('/auth/login?error=github_failed');
     }
-  }, [params, router, setToken]);
+  }, [params, router, setAccessToken, setUser]);
 
   return (
     <div className="flex h-screen items-center justify-center">

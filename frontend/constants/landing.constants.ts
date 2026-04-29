@@ -9,9 +9,9 @@ export const SITE_CONFIG = {
         "Build ATS-optimized resumes, tailor them to any job in seconds, generate cover letters and scholarship documents — all in one AI-powered platform.",
     url: "https://careerforge.ai",
     stats: {
-        resumesThisMonth: "12,400+",
-        rating: "4.9",
-        totalUsers: "12,000+",
+        resumesThisMonth: "Beta Phase",
+        rating: "New Release",
+        totalUsers: "Join us",
     },
 } as const;
 
@@ -20,7 +20,7 @@ export const SITE_CONFIG = {
 export const NAV_LINKS: NavLink[] = [
     { name: "Features", href: "/#features" },
     { name: "How It Works", href: "/#how-it-works" },
-    { name: "Reviews", href: "/#testimonials" },
+    { name: "How It Works", href: "/#how-it-works" },
     { name: "Pricing", href: "/pricing" },
     { name: "About", href: "/about" },
 ];
@@ -142,43 +142,6 @@ export const HOW_IT_WORKS_STEPS: HowItWorksStep[] = [
         color: "text-[var(--teal)]",
     },
 ];
-
-// ─── Testimonials ─────────────────────────────────────────────────────────────
-
-export const TESTIMONIALS: Testimonial[] = [
-    {
-        stars: "★★★★★",
-        quote:
-            "My ATS score went from 41 to 89 after tailoring. I got 3 callbacks the same week. CareerForge is genuinely the best $12 I've spent in my job search.",
-        avatar: "AK",
-        name: "Alex Kim",
-        role: "Software Engineer at Stripe",
-        badge: "ATS: 41 → 89",
-        gradient: "linear-gradient(135deg,#3b82f6,#1d4ed8)",
-    },
-    {
-        stars: "★★★★★",
-        quote:
-            "I used CareerForge's scholarship SOP generator for my Chevening application. Got accepted. The AI understood the tone and format perfectly for UK scholarship boards.",
-        avatar: "MR",
-        name: "Maria Rodriguez",
-        role: "Chevening Scholar, MSc UCL",
-        badge: "Scholarship Won ✓",
-        gradient: "linear-gradient(135deg,#10b981,#059669)",
-    },
-    {
-        stars: "★★★★★",
-        quote:
-            "As an international student switching careers into data science, the resume tailoring was a game changer. I was applying to 20 jobs a day with perfectly optimized resumes.",
-        avatar: "JS",
-        name: "Jae-won Shin",
-        role: "Data Scientist at Amazon",
-        badge: "3 Offers in 6 weeks",
-        gradient: "linear-gradient(135deg,#2dd4bf,#0d9488)",
-    },
-];
-
-// ─── Hero Avatar Initials ─────────────────────────────────────────────────────
 
 export const HERO_AVATARS = [
     { initial: "AK", gradient: "linear-gradient(135deg,#3b82f6,#1d4ed8)" },

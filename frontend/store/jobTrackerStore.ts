@@ -41,9 +41,9 @@ const calculateStats = (jobs: JobApplication[]): JobStats => {
 };
 
 export const useJobTrackerStore = create<JobTrackerState>((set, get) => ({
-  jobs: mockJobApplications,
+  jobs: [],
   selectedJobId: null,
-  stats: calculateStats(mockJobApplications),
+  stats: { total: 0, byStatus: { applied: 0, interview: 0, rejected: 0, offer: 0 }, conversionRate: 0 },
 
   setJobs: (jobs) => set({ jobs, stats: calculateStats(jobs) }),
 

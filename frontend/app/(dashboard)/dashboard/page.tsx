@@ -11,17 +11,18 @@ import {
   GraduationCap,
   User,
   Mic,
-  ArrowRight,
-  Clock,
   Sparkles,
+  Loader2,
 } from 'lucide-react';
 import Link from 'next/link';
+import { useQuery } from '@tanstack/react-query';
 
 import { StatsCard } from '@/components/common/StatsCard';
 import { Button } from '@/components/ui/button';
 import { useAuthStore } from '@/store/authStore';
-import { useJobTrackerStore } from '@/store/jobTrackerStore';
+import { useDocumentsLibrary } from '@/hooks/useDocumentsLibrary';
 import { fadeInContainer, fadeInItem } from '@/lib/animations';
+import apiClient from '@/lib/api/client';
 
 
 
@@ -88,17 +89,12 @@ const quickCreateItems = [
   },
 ];
 
-// Mock recent documents (replace with real API data later)
-const recentDocuments = [
-  { id: '1', title: 'Software Engineer Resume', type: 'Resume', updatedAt: '2026-02-22', href: '/resume-builder' },
-  { id: '2', title: 'Google Cover Letter', type: 'Cover Letter', updatedAt: '2026-02-21', href: '/cover-letters' },
-  { id: '3', title: 'Masters SOP – MIT', type: 'SOP', updatedAt: '2026-02-20', href: '/sop' },
-];
-
 const typeIconMap: Record<string, React.ElementType> = {
   Resume: FileText,
   'Cover Letter': Mail,
   SOP: GraduationCap,
+  'Study Plan': GraduationCap,
+  'Motivation Letter': Mail,
 };
 
 const typeColorMap: Record<string, string> = {
@@ -108,8 +104,20 @@ const typeColorMap: Record<string, string> = {
 };
 
 export default function DashboardPage() {
-  const jobStats = useJobTrackerStore((state) => state.stats);
   const user = useAuthStore((state) => state.user);
+  const { items: allRecentDocs, isLoading: isDocsLoading } = useDocumentsLibrary();
+  const recentDocuments = allRecentDocs.slice(0, 3);
+
+  const { data: stats, isLoading: isStatsLoading } = useQuery({
+    queryKey: ['dashboard', 'stats'],
+    queryFn: () => apiClient.get('/dashboard/stats').then((r) => r.data.data),
+  });
+
+  const { data: jobStats, isLoading: isJobStatsLoading } = useQuery({
+    queryKey: ['job-tracker', 'stats'],
+    queryFn: () => apiClient.get('/job-tracker/stats').then((r) => r.data.data),
+    initialData: { total: 0, byStatus: { applied: 0, interview: 0, rejected: 0, offer: 0 }, conversionRate: 0 },
+  });
 
   const greeting = () => {
     const hour = new Date().getHours();
@@ -183,11 +191,15 @@ export default function DashboardPage() {
           </Link>
         </div>
 
-        {recentDocuments.length > 0 ? (
+        {isDocsLoading ? (
+          <div className="flex justify-center py-12">
+            <Loader2 className="h-8 w-8 animate-spin text-indigo-600" />
+          </div>
+        ) : recentDocuments.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {recentDocuments.map((doc) => {
-              const DocIcon = typeIconMap[doc.type] ?? FileText;
-              const colorClass = typeColorMap[doc.type] ?? 'bg-slate-100 text-slate-600';
+              const DocIcon = typeIconMap[doc.category] ?? FileText;
+              const colorClass = typeColorMap[doc.category] ?? 'bg-slate-100 text-slate-600';
               return (
                 <motion.div
                   key={doc.id}
@@ -202,11 +214,11 @@ export default function DashboardPage() {
                       <p className="font-semibold text-sm text-slate-900 dark:text-white truncate">{doc.title}</p>
                       <p className="text-xs text-slate-400 flex items-center gap-1 mt-0.5">
                         <Clock className="h-3 w-3" />
-                        {doc.type} · {new Date(doc.updatedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                        {doc.category} · {new Date(doc.lastModified).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
                       </p>
                     </div>
                   </div>
-                  <Link href={doc.href} className="w-full">
+                  <Link href={doc.link} className="w-full">
                     <Button variant="outline" size="sm" className="w-full text-xs font-semibold rounded-lg">
                       Continue
                     </Button>
@@ -233,31 +245,31 @@ export default function DashboardPage() {
             label="Active Applications"
             value={jobStats.total}
             change={jobStats.byStatus.applied}
-            changeLabel="pending"
+            changeLabel="applied"
             trend="up"
           />
           <StatsCard
             icon={CheckCircle2}
             label="Conversion Rate"
             value={`${jobStats.conversionRate.toFixed(1)}%`}
-            change={5}
-            changeLabel="vs last month"
+            change={0}
+            changeLabel="this month"
             trend="up"
           />
           <StatsCard
             icon={BarChart3}
             label="Avg Resume Score"
-            value="0/100"
+            value={`${stats?.avgAtsScore ?? 0}/100`}
             change={0}
-            changeLabel="from last week"
+            changeLabel="overall"
             trend="up"
           />
           <StatsCard
             icon={TrendingUp}
             label="Offers Received"
             value={jobStats.byStatus.offer}
-            change={1}
-            changeLabel="pending decision"
+            change={0}
+            changeLabel="congratulations!"
             trend="up"
           />
         </div>

@@ -119,9 +119,13 @@ const envSchema = z.object({
     RATE_LIMIT_WINDOW_MS: z.coerce.number().default(900000),
     RATE_LIMIT_MAX_REQUESTS: z.coerce.number().default(100),
 
-    // Stripe (optional)
-    STRIPE_SECRET_KEY: z.string().optional(),
-    STRIPE_WEBHOOK_SECRET: z.string().optional(),
+    // Stripe (optional in dev, required in prod)
+    STRIPE_SECRET_KEY: process.env.NODE_ENV === 'production'
+        ? z.string().min(1, 'STRIPE_SECRET_KEY is required in production')
+        : z.string().optional(),
+    STRIPE_WEBHOOK_SECRET: process.env.NODE_ENV === 'production'
+        ? z.string().min(1, 'STRIPE_WEBHOOK_SECRET is required in production')
+        : z.string().optional(),
     STRIPE_API_VERSION: z.string().default('2023-10-16'),
     STRIPE_PRICE_PRO_MONTHLY: z.string().default(''),
     STRIPE_PRICE_PRO_ANNUAL: z.string().default(''),
@@ -134,7 +138,9 @@ const envSchema = z.object({
     AUTH_REFRESH_COOKIE_MAX_AGE_MS: z.coerce.number().int().positive().default(7 * 24 * 60 * 60 * 1000),
 
     // AI
-    GEMINI_API_KEY: z.string().optional(),
+    GEMINI_API_KEY: process.env.NODE_ENV === 'production'
+        ? z.string().min(1, 'GEMINI_API_KEY is required in production')
+        : z.string().min(1, 'GEMINI_API_KEY is required for AI features').optional(),
     USE_ENHANCED_PROMPTS: z.enum(['true', 'false']).default('true').transform((value) => value === 'true'),
     INTERVIEW_DEFAULT_QUESTION_COUNT: z.coerce.number().int().positive().default(10),
 
