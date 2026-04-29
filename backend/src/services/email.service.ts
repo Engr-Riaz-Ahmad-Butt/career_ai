@@ -46,13 +46,13 @@ export class EmailService {
     }
 
     async sendVerificationEmail(email: string, name: string, token: string) {
-        const url = `${env.FRONTEND_URL}/verify-email?token=${token}`;
+        const url = `${env.FRONTEND_URL}/auth/verify-email?token=${token}`;
         const html = await render(VerificationEmail({ name: name || 'User', verificationLink: url }));
         await this.sendEmail(email, 'Verify your CareerForge AI account', html);
     }
 
     async sendPasswordResetEmail(email: string, name: string, token: string) {
-        const url = `${env.FRONTEND_URL}/reset-password?token=${token}`;
+        const url = `${env.FRONTEND_URL}/auth/reset-password?token=${token}`;
         const html = await render(PasswordResetEmail({ name: name || 'User', resetLink: url }));
         await this.sendEmail(email, 'Reset your CareerForge AI password', html);
     }
