@@ -21,8 +21,8 @@ export const Experience: React.FC<ExperienceProps> = ({
         Experience
       </h3>
       <div className="space-y-6">
-        {experience.map((exp) => (
-          <div key={exp.id} className="space-y-2">
+        {experience.map((exp, index) => (
+          <div key={exp.id || `exp-${index}`} className="space-y-2">
             <div className="flex justify-between items-baseline">
               <h4 className="text-base font-bold text-slate-800">{exp.position}</h4>
               <span className="text-sm font-medium text-slate-500">{exp.startDate} - {exp.endDate}</span>

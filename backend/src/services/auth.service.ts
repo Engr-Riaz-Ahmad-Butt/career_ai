@@ -13,7 +13,7 @@ import { createHttpError } from '@/utils/errorHandler';
 import { emailService } from '@/services/email.service';
 import { env } from '@/config/env';
 
-const googleClient = new OAuth2Client(env.GOOGLE_CLIENT_ID);
+const googleClient = env.GOOGLE_CLIENT_ID ? new OAuth2Client(env.GOOGLE_CLIENT_ID) : null;
 
 // ── Helpers ───────────────────────────────────────────────────────────────
 
@@ -166,6 +166,9 @@ export class AuthService {
     // ── Google OAuth ──────────────────────────────────────────────────────
 
     async googleAuth(googleToken: string) {
+        if (!googleClient || !env.GOOGLE_CLIENT_ID) {
+            throw createHttpError(501, 'Google OAuth is not configured on this server');
+        }
         const ticket = await googleClient.verifyIdToken({ idToken: googleToken, audience: env.GOOGLE_CLIENT_ID });
         const payload = ticket.getPayload();
         if (!payload?.email) throw createHttpError(400, 'Invalid Google token');
@@ -206,6 +209,9 @@ export class AuthService {
     // ── GitHub OAuth ──────────────────────────────────────────────────────
 
     async loginWithGitHub(code: string) {
+        if (!env.GITHUB_CLIENT_ID || !env.GITHUB_CLIENT_SECRET) {
+            throw createHttpError(501, 'GitHub OAuth is not configured on this server');
+        }
         // Step 1: Exchange code for access token
         const tokenRes = await axios.post(
             'https://github.com/login/oauth/access_token',

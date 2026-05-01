@@ -95,23 +95,33 @@ export function PortfolioPreviewStep() {
             <p className="text-sm text-slate-600 dark:text-slate-400 mb-6 text-center max-w-lg">
               You&apos;re all set! You can customize your portfolio theme, domain, and sections from the dashboard anytime.
             </p>
-            <Button
-              className="w-full max-w-md h-14 bg-indigo-600 hover:bg-indigo-700 text-lg font-bold shadow-xl shadow-indigo-200 dark:shadow-none"
-              onClick={handleFinish}
-              disabled={isFinishing}
-            >
-              {isFinishing ? (
-                <>
-                  <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                  Setting up...
-                </>
-              ) : (
-                <>
-                  Complete Onboarding
-                  <CheckCircle2 className="ml-2 h-5 w-5" />
-                </>
-              )}
-            </Button>
+            <div className="flex gap-4 w-full max-w-md">
+              <Button
+                variant="outline"
+                className="h-14 px-8 rounded-2xl border-2 text-slate-600 dark:text-slate-400 font-bold"
+                onClick={() => useOnboardingStore.getState().setStep(3)}
+                disabled={isFinishing}
+              >
+                Back
+              </Button>
+              <Button
+                className="flex-1 h-14 bg-indigo-600 hover:bg-indigo-700 text-lg font-bold shadow-xl shadow-indigo-200 dark:shadow-none"
+                onClick={handleFinish}
+                disabled={isFinishing}
+              >
+                {isFinishing ? (
+                  <>
+                    <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                    Setting up...
+                  </>
+                ) : (
+                  <>
+                    Complete
+                    <CheckCircle2 className="ml-2 h-5 w-5" />
+                  </>
+                )}
+              </Button>
+            </div>
           </div>
         </motion.div>
       </div>

@@ -2,7 +2,7 @@
 
 import { motion } from 'framer-motion';
 import { Upload, FilePlus, Loader2, CheckCircle2 } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { toast } from 'sonner';
 
 import { Button } from '@/components/ui/button';
@@ -13,6 +13,7 @@ export function ResumeUploadStep() {
   const { setStep, setResumeId } = useOnboardingStore();
   const [isUploading, setIsUploading] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -20,12 +21,16 @@ export function ResumeUploadStep() {
 
     setIsUploading(true);
     try {
-      const response = await resumeApi.upload(file);
-      setResumeId(response.data.id);
+      // The resumeApi.uploadFile method already unwraps the response to return the Resume object
+      const resume = await resumeApi.uploadFile(file);
+      setResumeId(resume.id);
       setIsSuccess(true);
       toast.success('Resume uploaded and parsed successfully!');
-      setTimeout(() => setStep(2), 1500);
+      setTimeout(() => {
+        setStep(2);
+      }, 1500);
     } catch (error: any) {
+      console.error('Upload failed:', error);
       toast.error(error.response?.data?.message || 'Failed to upload resume');
     } finally {
       setIsUploading(false);
@@ -35,13 +40,15 @@ export function ResumeUploadStep() {
   const handleStartFromScratch = async () => {
     setIsUploading(true);
     try {
-      const response = await resumeApi.create({
+      // The resumeApi.create method already unwraps the response to return the Resume object
+      const resume = await resumeApi.create({
         title: 'My Resume',
         template: 'modern',
       });
-      setResumeId(response.data.id);
+      setResumeId(resume.id);
       setStep(2);
     } catch (error: any) {
+      console.error('Failed to create resume:', error);
       toast.error(error.response?.data?.message || 'Failed to create resume');
     } finally {
       setIsUploading(false);
@@ -83,18 +90,23 @@ export function ResumeUploadStep() {
               <p className="text-sm text-slate-500 dark:text-slate-400 mb-6">
                 PDF, DOCX supported. Our AI extracts everything for you.
               </p>
-              <label className="w-full">
-                <input
-                  type="file"
-                  className="hidden"
-                  accept=".pdf,.docx"
-                  onChange={handleFileUpload}
-                  disabled={isUploading}
-                />
-                <Button className="w-full bg-indigo-600 hover:bg-indigo-700" disabled={isUploading}>
-                  Select File
-                </Button>
-              </label>
+              
+              <input
+                type="file"
+                ref={fileInputRef}
+                className="hidden"
+                accept=".pdf,.docx"
+                onChange={handleFileUpload}
+                disabled={isUploading}
+              />
+              <button 
+                type="button"
+                className="w-full h-10 px-4 rounded-md bg-indigo-600 hover:bg-indigo-700 text-white font-medium transition-colors disabled:opacity-50" 
+                disabled={isUploading}
+                onClick={() => fileInputRef.current?.click()}
+              >
+                Select File
+              </button>
             </>
           )}
         </motion.div>

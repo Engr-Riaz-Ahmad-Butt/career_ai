@@ -21,8 +21,8 @@ export const Languages: React.FC<LanguagesProps> = ({
         Languages
       </h3>
       <div className="space-y-2">
-        {languages.map((lang) => (
-          <div key={lang.id} className="flex justify-between text-sm">
+        {languages.map((lang, index) => (
+          <div key={lang.id || `lang-${index}`} className="flex justify-between text-sm">
             <span className="font-medium text-slate-700">{lang.name}</span>
             <span className="text-slate-500">{lang.level}</span>
           </div>

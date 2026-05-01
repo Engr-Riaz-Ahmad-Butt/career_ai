@@ -7,7 +7,7 @@ import { toast } from 'sonner';
 
 import { Button } from '@/components/ui/button';
 import { useOnboardingStore } from '@/store/onboardingStore';
-import { aiApi } from '@/lib/api/endpoints/ai.api';
+import { aiApi } from '@/lib/api/endpoints/aiApi';
 
 export function DocumentGenerateStep() {
   const { setStep, resumeId, jobDescription, setGeneratedDocument } = useOnboardingStore();
@@ -60,7 +60,8 @@ export function DocumentGenerateStep() {
       </div>
 
       {!result ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           {/* Cover Letter Option */}
           <motion.div
             whileHover={{ y: -5 }}
@@ -111,6 +112,18 @@ export function DocumentGenerateStep() {
             </Button>
           </motion.div>
         </div>
+        
+        <div className="mt-8 flex justify-center">
+          <Button
+            variant="ghost"
+            className="text-slate-500 hover:text-slate-900 dark:hover:text-white"
+            onClick={() => setStep(2)}
+            disabled={isGenerating}
+          >
+            ← Back to ATS Scan
+          </Button>
+        </div>
+        </>
       ) : (
         <motion.div
           initial={{ opacity: 0, y: 20 }}

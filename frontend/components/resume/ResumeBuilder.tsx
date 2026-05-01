@@ -196,7 +196,7 @@ export function ResumeBuilder({
     const resumes = useMemo(() => resumesResponse?.data || [], [resumesResponse]);
     const { data: resumeResponse, isLoading: isLoadingResume } = useResume(resumeId);
     const createMutation = useCreateResume();
-    const updateMutation = useUpdateResume();
+    const { mutate: updateResumeFn, isPending: isUpdatingResume } = useUpdateResume();
     const deleteMutation = useDeleteResume();
 
     // Sync server data to store
@@ -214,11 +214,11 @@ export function ResumeBuilder({
     const saveId = resumeId || currentResume?.id;
     useEffect(() => {
         if (isDirty && debouncedResume && saveId) {
-            updateMutation.mutate({ id: saveId, data: toApiResumePayload(debouncedResume) }, {
+            updateResumeFn({ id: saveId, data: toApiResumePayload(debouncedResume) }, {
                 onSuccess: () => markSaved()
             });
         }
-    }, [debouncedResume, isDirty, saveId, updateMutation, markSaved]);
+    }, [debouncedResume, isDirty, saveId, updateResumeFn, markSaved]);
 
     const { sidebarOpen } = useUIStore();
 
@@ -773,8 +773,10 @@ export function ResumeBuilder({
 
                             <div className="xl:col-span-7 sticky top-[80px] h-[calc(100vh-130px)] bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-xl overflow-hidden flex flex-col">
                                 <div className="flex-1 overflow-auto p-8 bg-slate-50/50 dark:bg-slate-900/50 flex justify-center items-start">
-                                    <div id="preview-renderer-container" className="shadow-2xl bg-white origin-top" style={{ transform: `scale(${previewZoom / 100})` }}>
-                                        <TemplateRenderer resume={currentResume} zoom={1} />
+                                    <div style={{ width: `${800 * (previewZoom / 100)}px`, height: `${1132 * (previewZoom / 100)}px`, position: 'relative', flexShrink: 0, transition: 'all 0.3s ease' }}>
+                                        <div id="preview-renderer-container" className="shadow-2xl bg-white origin-top-left absolute top-0 left-0" style={{ transform: `scale(${previewZoom / 100})`, width: '800px', minHeight: '1132px', transition: 'transform 0.3s ease' }}>
+                                            <TemplateRenderer resume={currentResume} zoom={1} />
+                                        </div>
                                     </div>
                                 </div>
                                 <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-white/90 dark:bg-slate-800/90 backdrop-blur px-4 py-2 rounded-full shadow-lg flex items-center gap-4 border border-slate-200 dark:border-slate-700">
@@ -796,8 +798,12 @@ export function ResumeBuilder({
                             </div>
                             <div className="xl:col-span-8">
                                 <div className="sticky top-24 h-[calc(100vh-160px)] rounded-3xl bg-white dark:bg-slate-900 border-8 border-slate-100 dark:border-slate-800 overflow-hidden shadow-2xl">
-                                    <div className="h-full overflow-y-auto p-12 bg-slate-100/50 dark:bg-slate-900/50">
-                                        <TemplateRenderer resume={currentResume} zoom={previewZoom / 100} />
+                                    <div className="h-full overflow-auto p-12 bg-slate-100/50 dark:bg-slate-900/50 flex justify-center items-start">
+                                        <div style={{ width: `${800 * (previewZoom / 100)}px`, height: `${1132 * (previewZoom / 100)}px`, position: 'relative', flexShrink: 0, transition: 'all 0.3s ease' }}>
+                                            <div className="shadow-2xl bg-white origin-top-left absolute top-0 left-0" style={{ transform: `scale(${previewZoom / 100})`, width: '800px', minHeight: '1132px', transition: 'transform 0.3s ease' }}>
+                                                <TemplateRenderer resume={currentResume} zoom={1} />
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -873,7 +879,7 @@ export function ResumeBuilder({
                     <Button variant="ghost" size="icon" className="h-9 w-9"><Redo2 className="w-4 h-4" /></Button>
                 </div>
                 <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">
-                    {updateMutation.isPending ? 'Saving…' : 'All changes saved'}
+                    {isUpdatingResume ? 'Saving…' : 'All changes saved'}
                 </p>
             </div>
         </div>

@@ -21,8 +21,8 @@ export const Education: React.FC<EducationProps> = ({
         Education
       </h3>
       <div className="space-y-4">
-        {education.map((edu) => (
-          <div key={edu.id} className="space-y-1">
+        {education.map((edu, index) => (
+          <div key={edu.id || `edu-${index}`} className="space-y-1">
             <div className="flex justify-between items-baseline">
               <h4 className="text-base font-bold text-slate-800">{edu.degree}</h4>
               <span className="text-sm font-medium text-slate-500">{edu.startDate} - {edu.endDate}</span>

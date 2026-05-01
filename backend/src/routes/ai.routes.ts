@@ -27,10 +27,10 @@ router.use(authenticate);
 router.use(aiRateLimit); // 30 AI requests per 10 min per user
 
 // ── Resume AI ─────────────────────────────────────────────────────────────
-router.post('/resume/enhance', validate(enhanceResumeSchema), requireCredits(2), enhanceResume);
+router.post('/resume/:id/enhance', validate(enhanceResumeSchema), requireCredits(2), enhanceResume);
 router.post('/resume/tailor', heavyAiRateLimit, validate(tailorResumeSchema), requireCredits(3), tailorResume);
-router.post('/resume/ats-score', validate(atsScoreSchema), requireCredits(1), scoreAts);
-router.post('/resume/suggestions', validate(aiSuggestionsSchema), getSuggestions);
+router.post('/resume/:id/ats-score', validate(atsScoreSchema), requireCredits(1), scoreAts);
+router.post('/resume/:id/suggestions', validate(aiSuggestionsSchema), getSuggestions);
 
 // ── Document Generators (aliases at /ai/* per spec) ──────────────────────
 router.post('/cover-letter/generate', requireCredits(2), generateCoverLetter);

@@ -69,11 +69,12 @@ export const scoreAts = asyncHandler(async (req: Request, res: Response) => {
 
 export const getSuggestions = asyncHandler(async (req: Request, res: Response) => {
   const userId = requireUserId(req);
+  const resumeId = requireResumeId(req);
   const { section, targetRole } = req.body;
   
   if (!section) throw new ValidationError('section is required');
 
-  const result = await ai.generateSuggestions(userId, req.params.resumeId, section, targetRole);
+  const result = await ai.generateSuggestions(userId, resumeId, section, targetRole);
   res.json({ success: true, data: result });
 });
 

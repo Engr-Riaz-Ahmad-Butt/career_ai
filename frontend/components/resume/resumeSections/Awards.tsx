@@ -21,8 +21,8 @@ export const Awards: React.FC<AwardsProps> = ({
         Awards
       </h3>
       <div className="space-y-2">
-        {awards.map((cert) => (
-          <div key={cert.id} className="flex justify-between text-sm">
+        {awards.map((cert, index) => (
+          <div key={cert.id || `cert-${index}`} className="flex justify-between text-sm">
             <span className="font-medium text-slate-700">{cert.name}</span>
             <span className="text-slate-500">{cert.issuer} {cert.date ? `(${cert.date})` : ''}</span>
           </div>

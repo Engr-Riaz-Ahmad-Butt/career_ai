@@ -7,7 +7,7 @@ import { toast } from 'sonner';
 
 import { Button } from '@/components/ui/button';
 import { useOnboardingStore } from '@/store/onboardingStore';
-import { aiApi } from '@/lib/api/endpoints/ai.api';
+import { aiApi } from '@/lib/api/endpoints/aiApi';
 
 export function AtsScanStep() {
   const { setStep, resumeId, setAtsScore, setJobDescription } = useOnboardingStore();
@@ -73,14 +73,24 @@ export function AtsScanStep() {
             )}
           </div>
 
-          <Button
-            className="w-full h-14 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-lg font-bold shadow-lg shadow-indigo-200 dark:shadow-none"
-            onClick={handleAnalyze}
-            disabled={isAnalyzing || !jd}
-          >
-            {isAnalyzing ? 'Analyzing...' : 'Scan My Resume'}
-            <Sparkles className="ml-2 h-5 w-5" />
-          </Button>
+          <div className="flex gap-4">
+            <Button
+              variant="outline"
+              className="h-14 px-8 rounded-2xl border-2 text-slate-600 dark:text-slate-400 font-bold"
+              onClick={() => setStep(1)}
+              disabled={isAnalyzing}
+            >
+              Back
+            </Button>
+            <Button
+              className="flex-1 h-14 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-lg font-bold shadow-lg shadow-indigo-200 dark:shadow-none"
+              onClick={handleAnalyze}
+              disabled={isAnalyzing || !jd}
+            >
+              {isAnalyzing ? 'Analyzing...' : 'Scan My Resume'}
+              <Sparkles className="ml-2 h-5 w-5" />
+            </Button>
+          </div>
         </div>
       ) : (
         <motion.div

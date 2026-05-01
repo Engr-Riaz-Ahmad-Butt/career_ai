@@ -85,13 +85,13 @@ const envSchema = z.object({
             .min(1)
             .default('application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document'),
 
-    // Google OAuth (optional — only needed if Google auth is used)
-    GOOGLE_CLIENT_ID: z.string().min(1, 'GOOGLE_CLIENT_ID is required'),
-    GOOGLE_CLIENT_SECRET: z.string().min(1, 'GOOGLE_CLIENT_SECRET is required'),
+    // Google OAuth (optional)
+    GOOGLE_CLIENT_ID: z.string().optional(),
+    GOOGLE_CLIENT_SECRET: z.string().optional(),
 
-    // GitHub OAuth
-    GITHUB_CLIENT_ID: z.string().min(1, 'GITHUB_CLIENT_ID is required'),
-    GITHUB_CLIENT_SECRET: z.string().min(1, 'GITHUB_CLIENT_SECRET is required'),
+    // GitHub OAuth (optional)
+    GITHUB_CLIENT_ID: z.string().optional(),
+    GITHUB_CLIENT_SECRET: z.string().optional(),
     GITHUB_CALLBACK_URL: z.string().url().default('http://localhost:5000/auth/github/callback'),
 
     // Email / SMTP (optional — gracefully skipped if not set)

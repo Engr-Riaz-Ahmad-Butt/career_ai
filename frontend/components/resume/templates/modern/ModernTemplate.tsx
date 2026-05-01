@@ -40,8 +40,8 @@ export function ModernTemplatePreview({ template, data = SAMPLE_DATA }: Template
                 [" ✉", data.personalInfo.email], 
                 ["📍", data.personalInfo.location], 
                 ["🔗", data.personalInfo.linkedin?.replace('https://', '')]
-              ].map(([ic, val]) => val && (
-                <div key={val} style={{ display: "flex", gap: "7px", fontSize: "11px", color: "#888", alignItems: "center" }}><span style={{ minWidth: "12px" }}>{ic}</span><span>{val}</span></div>
+              ].map(([ic, val], idx) => val && (
+                <div key={idx} style={{ display: "flex", gap: "7px", fontSize: "11px", color: "#888", alignItems: "center" }}><span style={{ minWidth: "12px" }}>{ic}</span><span>{val}</span></div>
               ))}
             </div>
           </div>
@@ -51,7 +51,7 @@ export function ModernTemplatePreview({ template, data = SAMPLE_DATA }: Template
         <div style={{ display: "grid", gridTemplateColumns: "1fr 200px", gap: "14px" }}>
           <div>
             {data.experience?.length > 0 && (
-              <>
+              <React.Fragment key="experience">
                 <MDarkSection label="Experience" />
                 {data.experience.map(job => (
                   <div key={job.id} style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.07)", borderRadius: "10px", padding: "16px 18px", marginBottom: "10px" }}>
@@ -72,11 +72,11 @@ export function ModernTemplatePreview({ template, data = SAMPLE_DATA }: Template
                     ))}
                   </div>
                 ))}
-              </>
+              </React.Fragment>
             )}
 
             {data.education?.length > 0 && (
-              <>
+              <React.Fragment key="education">
                 <MDarkSection label="Education" />
                 {data.education.map(ed => (
                   <div key={ed.id} style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.07)", borderRadius: "10px", padding: "14px 18px", marginBottom: "10px" }}>
@@ -92,13 +92,13 @@ export function ModernTemplatePreview({ template, data = SAMPLE_DATA }: Template
                     </div>
                   </div>
                 ))}
-              </>
+              </React.Fragment>
             )}
           </div>
 
           <div>
             {skills.length > 0 && (
-              <>
+              <React.Fragment key="skills">
                 <MDarkSection label="Skills" />
                 {skills.map(s => (
                   <div key={s} style={{ marginBottom: "10px" }}>
@@ -108,11 +108,11 @@ export function ModernTemplatePreview({ template, data = SAMPLE_DATA }: Template
                     </div>
                   </div>
                 ))}
-              </>
+              </React.Fragment>
             )}
 
             {data.languages?.length > 0 && (
-              <>
+              <React.Fragment key="languages">
                 <MDarkSection label="Languages" />
                 {data.languages.map(l => (
                   <div key={l.id} style={{ display: "flex", justifyContent: "space-between", fontSize: "11px", color: "#888", marginBottom: "8px" }}>
@@ -120,10 +120,10 @@ export function ModernTemplatePreview({ template, data = SAMPLE_DATA }: Template
                     <span style={{ color: "#635bff", background: "rgba(99,91,255,0.1)", padding: "1px 8px", borderRadius: "10px", border: "1px solid rgba(99,91,255,0.2)" }}>{l.level}</span>
                   </div>
                 ))}
-              </>
+              </React.Fragment>
             )}
 
-            {data.certifications?.length > 0 && <>
+            {data.certifications?.length > 0 && <React.Fragment key="certifications">
               <MDarkSection label="Awards" />
               {data.certifications.map((a, i) => (
                 <div key={i} style={{ marginBottom: "10px", display: "flex", gap: "8px" }}>
@@ -134,7 +134,7 @@ export function ModernTemplatePreview({ template, data = SAMPLE_DATA }: Template
                   </div>
                 </div>
               ))}
-            </>}
+            </React.Fragment>}
           </div>
         </div>
       </div>

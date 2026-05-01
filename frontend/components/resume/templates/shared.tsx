@@ -1,10 +1,10 @@
 'use client';
 
 import React from 'react';
-import { ResumeData, ResumeExperience, ResumeEducation, ResumeCertification, ResumeLanguage, ResumeProject } from '@/types/resume';
+import { ResumeData } from '@/types/resume';
 
 export interface TemplatePreviewProps {
-  template: any; // ResumeTemplate
+  template: any;
   data?: ResumeData;
   isSelected?: boolean;
 }
@@ -16,44 +16,87 @@ export const SAMPLE_DATA: ResumeData = {
   status: 'COMPLETE',
   template: 'simple-professional',
   personalInfo: {
-    fullName: 'John Doe',
-    email: 'john.doe@example.com',
-    phone: '+1 234 567 890',
-    location: 'New York, USA',
+    fullName: 'Alexandra Chen',
+    email: 'alex.chen@gmail.com',
+    phone: '+1 (415) 555-0192',
+    location: 'San Francisco, CA',
+    linkedin: 'linkedin.com/in/alexchen',
+    website: 'alexchen.dev',
   },
-  summary: 'Experienced professional with a strong track record of success in various roles. Skilled in leadership, communication, and problem-solving.',
+  summary:
+    'Senior Software Engineer with 7+ years building scalable systems at high-growth companies. Led cross-functional teams of 8+ engineers delivering products used by 10M+ users globally.',
   experience: [
     {
       id: 'exp1',
-      company: 'Tech Solutions Inc.',
+      company: 'Stripe',
       position: 'Senior Software Engineer',
-      startDate: 'Jan 2020',
+      startDate: 'Jan 2021',
       endDate: 'Present',
-      description: 'Leading a team of developers to build scalable web applications.',
+      location: 'San Francisco, CA',
+      achievements: [
+        'Architected payment processing system handling $2B+ in annual transactions with 99.99% uptime',
+        'Led team of 6 engineers to deliver Checkout redesign, increasing conversion by 23%',
+        'Reduced API latency by 40% through strategic caching and query optimization',
+      ],
+    },
+    {
+      id: 'exp2',
+      company: 'Airbnb',
+      position: 'Software Engineer',
+      startDate: 'Jun 2018',
+      endDate: 'Dec 2020',
+      location: 'San Francisco, CA',
+      achievements: [
+        'Built real-time messaging system serving 5M+ daily active users',
+        'Improved search ranking algorithm, increasing booking conversion by 18%',
+      ],
     },
   ],
   education: [
     {
       id: 'edu1',
-      school: 'University of Technology',
-      degree: 'Bachelor of Science in Computer Science',
-      startDate: 'Sep 2012',
-      endDate: 'May 2016',
+      school: 'Stanford University',
+      degree: 'B.S. Computer Science',
+      field: 'Computer Science',
+      startDate: '2014',
+      endDate: '2018',
+      gpa: '3.8 / 4.0',
     },
   ],
   skills: {
-    technical: ['React', 'TypeScript', 'Node.js'],
-    soft: ['Leadership', 'Communication'],
+    technical: ['TypeScript', 'React', 'Node.js', 'PostgreSQL', 'Redis', 'AWS', 'Docker', 'Kubernetes'],
+    soft: ['Technical Leadership', 'System Design', 'Agile / Scrum'],
   },
-  projects: [],
-  certifications: [],
-  languages: [],
+  projects: [
+    {
+      id: 'proj1',
+      name: 'OpenMetrics',
+      description: 'Open-source observability platform with 2k+ GitHub stars',
+      technologies: ['Go', 'Prometheus', 'Grafana'],
+      url: 'github.com/alexchen/openmetrics',
+    },
+  ],
+  certifications: [
+    { id: 'cert1', name: 'AWS Solutions Architect – Professional', issuer: 'Amazon Web Services', date: '2023' },
+  ],
+  languages: [
+    { id: 'lang1', name: 'English', level: 'Native' },
+    { id: 'lang2', name: 'Mandarin', level: 'Professional' },
+  ],
   interests: [],
   createdAt: new Date(),
   updatedAt: new Date(),
   styling: {
-    spacing: { fontSize: 10, lineHeight: 1.2, sideMargin: 15, topBottomMargin: 15, entrySpacing: 5 },
-    colors: { primary: '#1e293b', secondary: '#f3f4f6', accent: '#3b82f6', applyToName: true, applyToTitle: true, applyToIcons: true, applyToBubbles: true },
+    spacing: { fontSize: 10, lineHeight: 1.4, sideMargin: 15, topBottomMargin: 15, entrySpacing: 5 },
+    colors: {
+      primary: '#1e293b',
+      secondary: '#f3f4f6',
+      accent: '#3b82f6',
+      applyToName: true,
+      applyToTitle: true,
+      applyToIcons: true,
+      applyToBubbles: true,
+    },
     typography: { fontFamily: 'Inter', category: 'Sans' },
     headingStyle: { style: 'line-under', capitalization: 'uppercase', size: 'L', icons: 'filled' },
     personalDetails: { align: 'left', arrangement: 'horizontal', iconStyle: 'classic' },
